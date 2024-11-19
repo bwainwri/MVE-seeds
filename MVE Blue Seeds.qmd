@@ -34,13 +34,335 @@ Read in necessary packages.
 library(readr)
 library(dplyr)
 library(tidyr)
+library(tidyverse)
 library(ggplot2)
 library(viridis) # colorblind friendly color palette
+library(reshape2)
+library(vegan)
+library(lme4)
+library(car)
+library(readxl)
+library(googlesheets4)
 ```
 
 ## Read Data
 
+Bring in seed monitoring data for all five years, bring in keys, bring in soil moisture data, bring in climate data.
+
+```{r}
+# bring in each year of data (2019-2023, 5 years total)
+
+# De-authorize googlesheets to bypass log-in
+googlesheets4::gs4_deauth()
+
+linx <- c("https://docs.google.com/spreadsheets/d/1BDSYfiaHBwYWqZEIeu27-rVX_AMyd407eGlDyf7hc6g/edit?gid=1889905658#gid=1889905658",
+          "https://docs.google.com/spreadsheets/d/1RfcWQR4zSo-6zbAwZbR5s9DhxPF_gderfNvnlOFTxLE/edit#gid=974160277",
+          "https://docs.google.com/spreadsheets/d/1Y6MBlHEawdBZKeywWfAKHqT4wDQxGLlTCyE1NG0Mfe8/edit#gid=1947016736",
+          "https://docs.google.com/spreadsheets/d/1bixaeVyjCgqI7d3j5kNcQwR9zRAd9duY9ipoA2uWvaY/edit#gid=1207134008",
+          "https://docs.google.com/spreadsheets/d/1712pb0TIKS5K3FU3-pRHc9oI3K6uavZMcF8a3YW8SHY/edit#gid=0")
+
+blue19 <- as.data.frame(googlesheets4::read_sheet(ss = linx[1]))
+num_files <- length(linx)
+
+for (i in 1:num_files) {
+  filename <- linx[i]
+  data <- as.data.frame(googlesheets4::read_sheet(ss = filename))
+  count <- nrow(data)
+  results[i] <- count
+}
+
+for (i in 1:length(linx)) {
+  blue <- as.data.frame(googlesheets4::read_sheet(ss = linx[i]))
+                        blue[i] <- blue
+}
+
+# Load in the data from google drive (make loop or function)
+blue_2019 <- as.data.frame(googlesheets4::read_sheet(
+  ss="https://docs.google.com/spreadsheets/d/1BDSYfiaHBwYWqZEIeu27-rVX_AMyd407eGlDyf7hc6g/edit?gid=1889905658#gid=1889905658"))
+
+blue_2020 <- as.data.frame(googlesheets4::read_sheet(
+  ss="https://docs.google.com/spreadsheets/d/1RfcWQR4zSo-6zbAwZbR5s9DhxPF_gderfNvnlOFTxLE/edit#gid=974160277"))
+
+blue_2021 <- as.data.frame(googlesheets4::read_sheet(
+  ss="https://docs.google.com/spreadsheets/d/1Y6MBlHEawdBZKeywWfAKHqT4wDQxGLlTCyE1NG0Mfe8/edit#gid=1947016736"))
+
+blue_2022 <- as.data.frame(googlesheets4::read_sheet(
+  ss="https://docs.google.com/spreadsheets/d/1bixaeVyjCgqI7d3j5kNcQwR9zRAd9duY9ipoA2uWvaY/edit#gid=1207134008"))
+
+blue_2023 <- as.data.frame(googlesheets4::read_sheet(
+  ss="https://docs.google.com/spreadsheets/d/1712pb0TIKS5K3FU3-pRHc9oI3K6uavZMcF8a3YW8SHY/edit#gid=0"))
+
+# Change column header dates to be readable by R (make loop or fxn)
+names(blue_2019)[str_detect(names(blue_2019), "\\d{5}")] <- 
+  format(as.Date(as.numeric(names(blue_2019)[str_detect(names(blue_2019), "\\d{5}")]), origin = "1899-12-30"), "%d-%b-%y")
+
+names(blue_2020)[str_detect(names(blue_2020), "\\d{5}")] <- 
+  format(as.Date(as.numeric(names(blue_2020)[str_detect(names(blue_2020), "\\d{5}")]), origin = "1899-12-30"), "%d-%b-%y")
+
+names(blue_2021)[str_detect(names(blue_2021), "\\d{5}")] <- 
+  format(as.Date(as.numeric(names(blue_2021)[str_detect(names(blue_2021), "\\d{5}")]), origin = "1899-12-30"), "%d-%b-%y")
+
+names(blue_2022)[str_detect(names(blue_2022), "\\d{5}")] <- 
+  format(as.Date(as.numeric(names(blue_2022)[str_detect(names(blue_2022), "\\d{5}")]), origin = "1899-12-30"), "%d-%b-%y")
+
+names(blue_2023)[str_detect(names(blue_2023), "\\d{5}")] <- 
+  format(as.Date(as.numeric(names(blue_2023)[str_detect(names(blue_2023), "\\d{5}")]), origin = "1899-12-30"), "%d-%b-%y")
+
+# Give the cohort name for each dataframe (make loop or fxn)
+blue_2019$Add_Year <- 2019
+blue_2020$Add_Year <- 2020
+blue_2021$Add_Year <- 2021
+blue_2022$Add_Year <- 2022
+blue_2023$Add_Year <- 2023
+
+# convert columns to numeric (make loop or fxn)
+blue_2019 <- blue_2019 %>%
+  mutate(across( # mutate observations in multiple columns
+    matches("\\d{1,2}-"), # that contain digits in the column name
+    as.numeric)) 
+blue_2020 <- blue_2020 %>%
+  mutate(across( # mutate observations in multiple columns
+    matches("\\d{1,2}-"), # that contain digits in the column name
+    as.numeric)) 
+blue_2021 <- blue_2021 %>%
+  mutate(across( # mutate observations in multiple columns
+    matches("\\d{1,2}-"), # that contain digits in the column name
+    as.numeric)) 
+blue_2022 <- blue_2022 %>%
+  mutate(across( # mutate observations in multiple columns
+    matches("\\d{1,2}-"), # that contain digits in the column name
+    as.numeric)) 
+blue_2023 <- blue_2023 %>%
+  mutate(across( # mutate observations in multiple columns
+    matches("\\d{1,2}-"), # that contain digits in the column name
+    as.numeric)) 
+
+# make TP ID (make loop or fxn)
+blue_2019$TP_ID<- 
+  with(blue_2019, 
+       paste0(Add_Year, Plot, Species, Corner, Row, Column))
+blue_2020$TP_ID<- 
+  with(blue_2020, 
+       paste0(Add_Year, Plot, Species, Corner, Row, Column))
+blue_2021$TP_ID<- 
+  with(blue_2021, 
+       paste0(Add_Year, Plot, Species, Corner, Row, Column))
+blue_2022$TP_ID<- 
+  with(blue_2022, 
+       paste0(Add_Year, Plot, Species, Corner, Row, Column))
+blue_2023$TP_ID<- 
+  with(blue_2023, 
+       paste0(Add_Year, Plot, Species, Corner, Row, Column))
+
+# pivot long (make loop or fxn)
+blue_2019_long <-
+  pivot_longer(blue_2019,
+               cols = c("2019-09-07":"2019-10-13"),
+               names_to = "Obs_Date",
+               values_to = "Germ.binom") %>%
+  mutate(Obs_Date=as.Date(Obs_Date,format="%Y-%m-%d")) # Format dates
+unique(blue_2019_long$Obs_Date)
+blue_2020_long <-
+  pivot_longer(blue_2020,
+               cols = c("7/31/2020":"6/2/2023"),
+               names_to = "Obs_Date",
+               values_to = "Germ.binom") %>%
+  mutate(Obs_Date=as.Date(Obs_Date,format="%m/%d/%Y")) # Format dates
+unique(blue_2020_long$Obs_Date)
+
+str(blue_2021)
+blue_2021_long <-
+  pivot_longer(blue_2021,
+               cols = c("2021-07-26":"2024-02-06"),
+               names_to = "Obs_Date",
+               values_to = "Germ.binom") %>%
+  mutate(Obs_Date=as.Date(Obs_Date,format="%Y-%m-%d")) # Format dates
+unique(blue_2021_long$Obs_Date)
+
+blue_2022_long <-
+  pivot_longer(blue_2022,
+               cols = c("7/5/2022":"4/3/2024"),
+               names_to = "Obs_Date",
+               values_to = "Germ.binom") %>%
+  mutate(Obs_Date=as.Date(Obs_Date,format="%m/%d/%Y")) # Format dates
+unique(blue_2022_long$Obs_Date)
+
+blue_2023_long <-
+  pivot_longer(blue_2023,
+               cols = c("2023-07-07":"2024-03-06"),
+               names_to = "Obs_Date",
+               values_to = "Germ.binom") %>%
+  mutate(Obs_Date=as.Date(Obs_Date,format="%Y-%m-%d")) # Format dates
+unique(blue_2023_long$Obs_Date)
+
+# reduce germ to 1 (make loop or function)
+blue_2019_long <-
+  blue_2019_long %>%
+  mutate(
+    Germ.binom =
+      case_when(
+        Germ.binom == 1 ~ 1
+        , Germ.binom == 2 ~ 1
+        , Germ.binom == 3 ~ 1
+        , Germ.binom == 0 ~ 0
+      )
+  )
+blue_2020_long <-
+  blue_2020_long %>%
+  mutate(
+    Germ.binom =
+      case_when(
+        Germ.binom == 1 ~ 1
+        , Germ.binom == 2 ~ 1
+        , Germ.binom == 3 ~ 1
+        , Germ.binom == 0 ~ 0
+      )
+  )
+blue_2021_long <-
+  blue_2021_long %>%
+  mutate(
+    Germ.binom =
+      case_when(
+        Germ.binom == 1 ~ 1
+        , Germ.binom == 2 ~ 1
+        , Germ.binom == 3 ~ 1
+        , Germ.binom == 0 ~ 0
+      )
+  )
+blue_2022_long <-
+  blue_2022_long %>%
+  mutate(
+    Germ.binom =
+      case_when(
+        Germ.binom == 1 ~ 1
+        , Germ.binom == 2 ~ 1
+        , Germ.binom == 3 ~ 1
+        , Germ.binom == 0 ~ 0
+      )
+  )
+blue_2023_long <-
+  blue_2023_long %>%
+  mutate(
+    Germ.binom =
+      case_when(
+        Germ.binom == 1 ~ 1
+        , Germ.binom == 2 ~ 1
+        , Germ.binom == 3 ~ 1
+        , Germ.binom == 0 ~ 0
+      )
+  )
+
+# order by germ binom then by obs date in order to rm duplicates (make loop or function)
+blue_2019_long <- blue_2019_long[order(-blue_2019_long$Germ.binom, blue_2019_long$Obs_Date), ]
+blue_2020_long <- blue_2020_long[order(-blue_2020_long$Germ.binom, blue_2020_long$Obs_Date), ]
+blue_2021_long <- blue_2021_long[order(-blue_2021_long$Germ.binom, blue_2021_long$Obs_Date), ]
+blue_2022_long <- blue_2022_long[order(-blue_2022_long$Germ.binom, blue_2022_long$Obs_Date), ]
+blue_2023_long <- blue_2023_long[order(-blue_2023_long$Germ.binom, blue_2023_long$Obs_Date), ]
+
+# remove duplicates (make loop or function)
+blue_2019_long <- blue_2019_long %>%
+  distinct(TP_ID, Plot, Corner, Species, Row, Column, Add_Year, .keep_all = TRUE)
+blue_2020_long <- blue_2020_long %>%
+  distinct(TP_ID, Plot, Corner, Species, Row, Column, Add_Year, .keep_all = TRUE)
+blue_2021_long <- blue_2021_long %>%
+  distinct(TP_ID, Plot, Corner, Species, Row, Column, Add_Year, .keep_all = TRUE)
+blue_2022_long <- blue_2022_long %>%
+  distinct(TP_ID, Plot, Corner, Species, Row, Column, Add_Year, .keep_all = TRUE)
+blue_2023_long <- blue_2023_long %>%
+  distinct(TP_ID, Plot, Corner, Species, Row, Column, Add_Year, .keep_all = TRUE)
+
+# Get each year ready fro rbind (make loop or fxn)
+
+blue_2019_long <-
+  blue_2019_long %>%
+  select(
+    Plot,
+    Corner,
+    Species,
+    Row,
+    Column,
+    TP_ID,
+    Add_Year,
+    Obs_Date,
+    Germ.binom
+  )
+blue_2020_long <-
+  blue_2020_long %>%
+  select(
+    Plot,
+    Corner,
+    Species,
+    Row,
+    Column,
+    TP_ID,
+    Add_Year,
+    Obs_Date,
+    Germ.binom
+  )
+blue_2021_long <-
+  blue_2021_long %>%
+  select(
+    Plot,
+    Corner,
+    Species,
+    Row,
+    Column,
+    TP_ID,
+    Add_Year,
+    Obs_Date,
+    Germ.binom
+  )
+blue_2022_long <-
+  blue_2022_long %>%
+  select(
+    Plot,
+    Corner,
+    Species,
+    Row,
+    Column,
+    TP_ID,
+    Add_Year,
+    Obs_Date,
+    Germ.binom
+  )
+blue_2023_long <-
+  blue_2023_long %>%
+  select(
+    Plot,
+    Corner,
+    Species,
+    Row,
+    Column,
+    TP_ID,
+    Add_Year,
+    Obs_Date,
+    Germ.binom
+  )
+
+blue_19_23 <- rbind(
+  blue_2019_long,
+  blue_2020_long,
+  blue_2021_long,
+  blue_2022_long,
+  blue_2023_long
+  )
+
+# Bring in treatments
+
+trts<-read.csv("meanvar_blue_treatments.csv")
+str(trts)
+
+# Bring in soil moisture data
+
+
+# Bring in climate data
+
+
+```
+
+
 ## Data Exploration 
+
 
 ## Characterize Climate
 
