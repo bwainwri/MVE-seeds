@@ -1,0 +1,31 @@
+﻿site,Block,plot,mean_treatment,var_treatment_2019,var_treatment_2020,var_treatment_2021,var_treatment_2022,var_treatment
+meanvar_blue,1,1,ambient,increase,increase,decrease,increase,increase
+meanvar_blue,1,2,ambient,decrease,decrease,increase,decrease,increase
+meanvar_blue,1,3,ambient,ambient,ambient,ambient,ambient,ambient
+meanvar_blue,1,4,reduced,decrease ,decrease ,decrease ,decrease ,increase
+meanvar_blue,1,5,reduced,increase,increase,increase,increase,increase
+meanvar_blue,1,6,reduced,ambient,ambient,ambient,ambient,ambient
+meanvar_blue,2,7,reduced,decrease ,increase,decrease ,increase,increase
+meanvar_blue,2,8,reduced,increase,decrease ,increase,decrease ,increase
+meanvar_blue,2,9,reduced,ambient,ambient,ambient,ambient,ambient
+meanvar_blue,2,10,ambient,increase,decrease,increase,increase,increase
+meanvar_blue,2,11,ambient,decrease,increase,decrease,decrease,increase
+meanvar_blue,2,12,ambient,ambient,ambient,ambient,ambient,ambient
+meanvar_blue,3,13,ambient,ambient,ambient,ambient,ambient,ambient
+meanvar_blue,3,14,ambient,increase,increase,increase,decrease,increase
+meanvar_blue,3,15,ambient,decrease,decrease,decrease,increase,increase
+meanvar_blue,3,16,reduced,ambient,ambient,ambient,ambient,ambient
+meanvar_blue,3,17,reduced,decrease ,increase,increase,increase,increase
+meanvar_blue,3,18,reduced,increase,decrease ,decrease ,decrease ,increase
+meanvar_blue,4,19,ambient,decrease,decrease,decrease,decrease,increase
+meanvar_blue,4,20,ambient,increase,increase,increase,increase,increase
+meanvar_blue,4,21,ambient,ambient,ambient,ambient,ambient,ambient
+meanvar_blue,4,22,reduced,ambient,ambient,ambient,ambient,ambient
+meanvar_blue,4,23,reduced,decrease ,increase,increase,increase,increase
+meanvar_blue,4,24,reduced,increase,decrease ,decrease ,decrease ,increase
+meanvar_blue,5,25,reduced,increase,increase,decrease ,increase,increase
+meanvar_blue,5,26,reduced,decrease ,decrease ,increase,decrease ,increase
+meanvar_blue,5,27,reduced,ambient,ambient,ambient,ambient,ambient
+meanvar_blue,5,28,ambient,decrease,increase,decrease,decrease,increase
+meanvar_blue,5,29,ambient,increase,decrease,increase,increase,increase
+meanvar_blue,5,30,ambient,ambient,ambient,ambient,ambient,ambient
