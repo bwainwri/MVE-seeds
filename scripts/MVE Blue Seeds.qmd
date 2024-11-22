@@ -49,6 +49,10 @@ library(googlesheets4)
 
 Bring in seed monitoring data for all five years, bring in keys, bring in soil moisture data, bring in climate data.
 
+Seed Census Data
+
+DO NOT RUN THIS SECTION
+
 ```{r}
 # bring in each year of data (2019-2023, 5 years total)
 
@@ -141,6 +145,7 @@ blue_2019_long <-
                values_to = "Germ.binom") %>%
   mutate(Obs_Date=as.Date(Obs_Date,format="%Y-%m-%d")) # Format dates
 unique(blue_2019_long$Obs_Date)
+
 blue_2020_long <-
   pivot_longer(blue_2020,
                cols = c("7/31/2020":"6/2/2023"),
@@ -149,10 +154,9 @@ blue_2020_long <-
   mutate(Obs_Date=as.Date(Obs_Date,format="%m/%d/%Y")) # Format dates
 unique(blue_2020_long$Obs_Date)
 
-str(blue_2021)
 blue_2021_long <-
   pivot_longer(blue_2021,
-               cols = c("2021-07-26":"2024-02-06"),
+               cols = c("2021-07-26":"2024-04-03"),
                names_to = "Obs_Date",
                values_to = "Germ.binom") %>%
   mutate(Obs_Date=as.Date(Obs_Date,format="%Y-%m-%d")) # Format dates
@@ -168,7 +172,7 @@ unique(blue_2022_long$Obs_Date)
 
 blue_2023_long <-
   pivot_longer(blue_2023,
-               cols = c("2023-07-07":"2024-03-06"),
+               cols = c("2023-07-07":"2024-04-03"),
                names_to = "Obs_Date",
                values_to = "Germ.binom") %>%
   mutate(Obs_Date=as.Date(Obs_Date,format="%Y-%m-%d")) # Format dates
@@ -326,13 +330,20 @@ blue_19_23 <- rbind(
   blue_2023_long
   )
 
-### Bring in treatments
+write_csv(blue_19_23, "germ_19_23.csv")
 
+```
+
+### Bring in treatments
+DO NOT RUN THIS SECTION
+```{r}
 trts<-read.csv("meanvar_blue_treatments.csv")
 str(trts)
+```
 
 ### Bring in soil moisture data
-
+DO NOT RUN THIS SECTION
+```{r}
 # path to where the load_MVE_data_into_R.R file is located - CHANGE THIS TO THE PATH ON YOUR COMPUTER
 source("load_MVE_data_into_R.R")
 
@@ -493,27 +504,172 @@ process_mve("blue", 2020)
 process_mve("blue", 2019)
 process_mve("blue", 2018)
 
-
-# Bring in climate data
-
+sm_t_18 <- read_csv("MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2018.csv")
+sm_t_19 <- read_csv("MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2019.csv")
+sm_t_20 <- read_csv("MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2020.csv")
+sm_t_21 <- read_csv("MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2021.csv")
+sm_t_22 <- read_csv("MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2022.csv")
+sm_t_23 <- read_csv("MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2023.csv")
 
 ```
 
+# Bring in climate data
+DO NOT RUN THIS SECTION
+
+```{r}
+met_00_04 <- read_csv("https://portal.edirepository.org/nis/dataviewer?packageid=knb-lter-sev.1.17&entityid=371109f8068b35cf65edc8ba4237c8bd")
+met_05_09 <- read_csv("https://portal.edirepository.org/nis/dataviewer?packageid=knb-lter-sev.1.17&entityid=e326dbe48c0cdc5b91496a469a50e36d")
+met_10_14 <- read_csv("https://portal.edirepository.org/nis/dataviewer?packageid=knb-lter-sev.1.17&entityid=011fd6eb9726321cace6c72b50cb8056")
+met_15_19 <- read_csv("https://portal.edirepository.org/nis/dataviewer?packageid=knb-lter-sev.1.17&entityid=76922a0b041ac5ab05be6132ff7f90d7")
+met_20_23 <- read_csv("https://portal.edirepository.org/nis/dataviewer?packageid=knb-lter-sev.1.17&entityid=65056476604ff22cb44dcc3d3bebfd2a")
+
+unique(met_00_04$StationID)
+met_00_04_50 <- met_00_04 %>% 
+  filter(StationID == 50) %>% 
+  select(StationID,
+         Date_Time,
+         Date,
+         Year,
+         Month,
+         Day_of_Month,
+         Julian_Day,
+         Hour,
+         Temp_C,
+         Min_Temp_C,
+         Max_Temp_C,
+         Precipitation)
+unique(met_00_04_50$StationID)
+str(met_00_04_50)
+
+unique(met_05_09$StationID)
+met_05_09_50 <- met_05_09 %>% 
+  filter(StationID == 50) %>% 
+  select(StationID,
+         Date_Time,
+         Date,
+         Year,
+         Month,
+         Day_of_Month,
+         Julian_Day,
+         Hour,
+         Temp_C,
+         Min_Temp_C,
+         Max_Temp_C,
+         Precipitation)
+unique(met_05_09_50$StationID)
+
+unique(met_10_14$StationID)
+met_10_14_50 <- met_10_14 %>% 
+  filter(StationID == 50) %>% 
+  select(StationID,
+         Date_Time,
+         Date,
+         Year,
+         Month,
+         Day_of_Month,
+         Julian_Day,
+         Hour,
+         Temp_C,
+         Min_Temp_C,
+         Max_Temp_C,
+         Precipitation)
+unique(met_10_14_50$StationID)
+
+unique(met_15_19$StationID)
+met_15_19_50 <- met_15_19 %>% 
+  filter(StationID == 50) %>% 
+  select(StationID,
+         Date_Time,
+         Date,
+         Year,
+         Month,
+         Day_of_Month,
+         Julian_Day,
+         Hour,
+         Temp_C,
+         Min_Temp_C,
+         Max_Temp_C,
+         Precipitation)
+unique(met_15_19_50$StationID)
+
+unique(met_20_23$StationID)
+met_20_23_50 <- met_20_23 %>% 
+  filter(StationID == 50) %>% 
+  select(StationID,
+         Date_Time,
+         Date,
+         Year,
+         Month,
+         Day_of_Month,
+         Julian_Day,
+         Hour,
+         Temp_C,
+         Min_Temp_C,
+         Max_Temp_C,
+         Precipitation)
+ unique(met_20_23_50$StationID)
+
+ met_00_23_50 <- rbind(met_00_04_50,
+      met_05_09_50,
+      met_10_14_50,
+      met_15_19_50,
+      met_20_23_50)
+ 
+ write_csv(met_00_23_50, "met_50.csv")
+```
+
+PICK UP HERE
+```{r}
+blue_19_23 <- read_csv("germ_19_23.csv")
+
+trts<-read.csv("meanvar_blue_treatments.csv")
+
+sm_t_18 <- read_csv("MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2018.csv")
+sm_t_19 <- read_csv("MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2019.csv")
+sm_t_20 <- read_csv("MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2020.csv")
+sm_t_21 <- read_csv("MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2021.csv")
+sm_t_22 <- read_csv("MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2022.csv")
+sm_t_23 <- read_csv("MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2023.csv")
+
+
+met_00_23_50 <- read_csv <- ("met_50.csv")
+```
+
+
 ## Data Exploration
 
-## Characterize Climate
+Our data objects are 'blue_19_23','trts', 'sm_t_18':'sm_t_23', 'met_00_23_50'
+```{r}
+summary(blue_19_23)
+head(blue_19_23)
+str(blue_19_23)
+sum(blue_19_23$Germ.binom, na.rm = TRUE)/(nrow(blue_19_23)-1)
 
-## Germination & Survival (Separate)
+summary(sm_t_20)
+head(sm_t_20)
+
+summary(met_00_23_50)
+head(met_00_23_50)
+str(met_00_23_50)
+```
+Overall germination rate of 13.4% across five years, both treatments, both species.
+
+## Characterize and Graph Climate
+
+```{r}
+
+```
+
 
 ## Simple model of germination using Year and Treatments
 
 ## Graph germination by year and treatments
 
-## Model & Graph Survival
-
 ## Model Soil Moisture Germination Events
 
-## Graph Soil Moisture Events
+## Graph Soil Moisture Germination Events
+
+## Model & Graph Survival
 
 ## Characterize Survival (Pulse or Press)
 
