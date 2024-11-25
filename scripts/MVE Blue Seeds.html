@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.57">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Brooke Wainwright">
+
+<title>MVE Blue Seeds</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="MVE Blue Seeds_files/libs/clipboard/clipboard.min.js"></script>
+<script src="MVE Blue Seeds_files/libs/quarto-html/quarto.js"></script>
+<script src="MVE Blue Seeds_files/libs/quarto-html/popper.min.js"></script>
+<script src="MVE Blue Seeds_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="MVE Blue Seeds_files/libs/quarto-html/anchor.min.js"></script>
+<link href="MVE Blue Seeds_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="MVE Blue Seeds_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="MVE Blue Seeds_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="MVE Blue Seeds_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="MVE Blue Seeds_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">MVE Blue Seeds</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Brooke Wainwright </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="background" class="level2">
+<h2 class="anchored" data-anchor-id="background">Background</h2>
+<p>The Sevilleta Long Term Ecological Research (LTER) Program (Socorro, NM) rolled out a novel climate change experiment in 2019: the Mean-Variance Experiment (MVE). The experiment has been replicated in four ecosystems to date but the focus of this document is on the experimental infrastructure found in the Great Plains Grassland ecosystem, dominated by blue grama grass (<em>Bouteloua gracilis</em>). Hence Mean-Variance Blue or MVE Blue. The ecosystem is dominated by blue grama grass but the adjacent ecosystem, Chihuahuan Desert Grassland, is dominated by black grama grass (<em>Bouteloua eriopoda</em>). Great Plains Grassland extends northward throughout central North America while Chihuahuan Desert Grassland extends southward into Mexico. Thus, under a more arid climate, we would expect Chihuahuan Desert Grassland to expand it’s range northward. The experimental infrastructure is set near the ecotone of these two ecosystems. More information on this experiment can be found here: <a href="https://sevlter.unm.edu/mean-variance-experiment/" class="uri">https://sevlter.unm.edu/mean-variance-experiment/</a>. To test the recruitment dynamics of these dominant plants under climate change, we added seeds of each species to the experimental plots from 2019-2023 and tracked their germination and survival biweekly during the growing season and monthly during the dormant season.</p>
+</section>
+<section id="objectives" class="level2">
+<h2 class="anchored" data-anchor-id="objectives">Objectives</h2>
+<ol type="1">
+<li>Bring in seed monitoring data for all five years, bring in keys, bring in soil moisture data, bring in climate data.</li>
+<li>Explore data provide summary statistics.</li>
+<li>Create graph of typical climate (last 5-6 years) for temperature and precipitation.</li>
+<li>Separate monitoring data into germination and survival.</li>
+<li>Find the best model for the germination data using year and mean and variance treatments as predictors</li>
+<li>Graph germination by year, mean, and variance.</li>
+<li>Find best model of survival by species, year, and mean and variance treatments. Or a model for each species. Graph.</li>
+<li>Figure out the 1-3 events each year where 90-95% of germination occurs and isolate germination and soil moisture to those events and build a model to understand how soil moisture determines germination probability. Graph.</li>
+<li>Characterize die off/survival. Is it gradual and consistent or happen in major events like germination. Graph?</li>
+<li>Figure out how to test for legacy effects on germination and/or survival. Graph.</li>
+</ol>
+</section>
+<section id="setup" class="level2">
+<h2 class="anchored" data-anchor-id="setup">Setup</h2>
+<p>Read in necessary packages.</p>
+</section>
+<section id="read-data" class="level2">
+<h2 class="anchored" data-anchor-id="read-data">Read Data</h2>
+<p>Bring in seed monitoring data for all five years, bring in keys, bring in soil moisture data, bring in climate data.</p>
+<p>Seed Census Data</p>
+<p>DO NOT RUN THIS SECTION</p>
+<section id="bring-in-treatments" class="level3">
+<h3 class="anchored" data-anchor-id="bring-in-treatments">Bring in treatments</h3>
+<p>DO NOT RUN THIS SECTION</p>
+</section>
+<section id="bring-in-soil-moisture-data" class="level3">
+<h3 class="anchored" data-anchor-id="bring-in-soil-moisture-data">Bring in soil moisture data</h3>
+<p>DO NOT RUN THIS SECTION</p>
+</section>
+</section>
+<section id="bring-in-climate-data" class="level1">
+<h1>Bring in climate data</h1>
+<p>DO NOT RUN THIS SECTION</p>
+<p>PICK UP HERE</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>blue_19_23 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"germ_19_23.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 26581 Columns: 9
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr  (4): Corner, Species, Column, TP_ID
+dbl  (4): Plot, Row, Add_Year, Germ.binom
+date (1): Obs_Date
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>trts<span class="ot">&lt;-</span><span class="fu">read.csv</span>(<span class="st">"meanvar_blue_treatments.csv"</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>sm_t_18 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2018.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 491730 Columns: 7
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr  (4): sensor_id, sensor, plot, new
+dbl  (2): depth, value
+dttm (1): TIMESTAMP
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>sm_t_19 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2019.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 1913973 Columns: 7
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr  (4): sensor_id, sensor, plot, new
+dbl  (2): depth, value
+dttm (1): TIMESTAMP
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>sm_t_20 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2020.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 1950048 Columns: 7
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr  (4): sensor_id, sensor, plot, new
+dbl  (2): depth, value
+dttm (1): TIMESTAMP
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>sm_t_21 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2021.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 1942389 Columns: 7
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr  (4): sensor_id, sensor, plot, new
+dbl  (2): depth, value
+dttm (1): TIMESTAMP
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>sm_t_22 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2022.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 1700742 Columns: 7
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr  (4): sensor_id, sensor, plot, new
+dbl  (2): depth, value
+dttm (1): TIMESTAMP
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>sm_t_23 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2023.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 969696 Columns: 7
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr  (4): sensor_id, sensor, plot, new
+dbl  (2): depth, value
+dttm (1): TIMESTAMP
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>met_00_23_50 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"met_50.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 190069 Columns: 12
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+dbl  (10): StationID, Year, Month, Day_of_Month, Julian_Day, Hour, Temp_C, M...
+dttm  (1): Date_Time
+date  (1): Date
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+</div>
+<section id="data-exploration" class="level2">
+<h2 class="anchored" data-anchor-id="data-exploration">Data Exploration</h2>
+<p>Our data objects are ‘blue_19_23’,‘trts’, ‘sm_t_18’:‘sm_t_23’, ‘met_00_23_50’</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(blue_19_23)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>      Plot         Corner            Species               Row       
+ Min.   : 1.0   Length:26581       Length:26581       Min.   :1.000  
+ 1st Qu.: 8.0   Class :character   Class :character   1st Qu.:2.000  
+ Median :15.0   Mode  :character   Mode  :character   Median :3.000  
+ Mean   :15.5                                         Mean   :2.795  
+ 3rd Qu.:23.0                                         3rd Qu.:4.000  
+ Max.   :30.0                                         Max.   :5.000  
+ NA's   :1                                            NA's   :5      
+    Column             TP_ID              Add_Year       Obs_Date         
+ Length:26581       Length:26581       Min.   :2019   Min.   :2019-09-07  
+ Class :character   Class :character   1st Qu.:2020   1st Qu.:2020-07-31  
+ Mode  :character   Mode  :character   Median :2021   Median :2021-07-26  
+                                       Mean   :2021   Mean   :2021-08-07  
+                                       3rd Qu.:2022   3rd Qu.:2022-07-05  
+                                       Max.   :2023   Max.   :2024-04-03  
+                                                                          
+   Germ.binom   
+ Min.   :0.000  
+ 1st Qu.:0.000  
+ Median :0.000  
+ Mean   :0.134  
+ 3rd Qu.:0.000  
+ Max.   :1.000  
+ NA's   :1      </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(blue_19_23)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 9
+   Plot Corner Species   Row Column TP_ID         Add_Year Obs_Date   Germ.binom
+  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;   &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;            &lt;dbl&gt; &lt;date&gt;          &lt;dbl&gt;
+1     8 SW     BLACK       1 F      20198BLACKSW…     2019 2019-09-21          1
+2    14 SW     BLACK       1 H      201914BLACKS…     2019 2019-09-21          1
+3    18 SW     BLACK       1 J      201918BLACKS…     2019 2019-09-21          1
+4    18 SW     BLACK       1 A      201918BLACKS…     2019 2019-09-21          1
+5    24 SW     BLACK       1 A      201924BLACKS…     2019 2019-09-21          1
+6    14 SW     BLACK       1 B      201914BLACKS…     2019 2019-09-21          1</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(blue_19_23)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>spc_tbl_ [26,581 × 9] (S3: spec_tbl_df/tbl_df/tbl/data.frame)
+ $ Plot      : num [1:26581] 8 14 18 18 24 14 24 14 20 25 ...
+ $ Corner    : chr [1:26581] "SW" "SW" "SW" "SW" ...
+ $ Species   : chr [1:26581] "BLACK" "BLACK" "BLACK" "BLACK" ...
+ $ Row       : num [1:26581] 1 1 1 1 1 1 1 1 1 2 ...
+ $ Column    : chr [1:26581] "F" "H" "J" "A" ...
+ $ TP_ID     : chr [1:26581] "20198BLACKSW1F" "201914BLACKSW1H" "201918BLACKSW1J" "201918BLACKSW1A" ...
+ $ Add_Year  : num [1:26581] 2019 2019 2019 2019 2019 ...
+ $ Obs_Date  : Date[1:26581], format: "2019-09-21" "2019-09-21" ...
+ $ Germ.binom: num [1:26581] 1 1 1 1 1 1 1 1 1 1 ...
+ - attr(*, "spec")=
+  .. cols(
+  ..   Plot = col_double(),
+  ..   Corner = col_character(),
+  ..   Species = col_character(),
+  ..   Row = col_double(),
+  ..   Column = col_character(),
+  ..   TP_ID = col_character(),
+  ..   Add_Year = col_double(),
+  ..   Obs_Date = col_date(format = ""),
+  ..   Germ.binom = col_double()
+  .. )
+ - attr(*, "problems")=&lt;externalptr&gt; </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(blue_19_23<span class="sc">$</span>Germ.binom, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)<span class="sc">/</span>(<span class="fu">nrow</span>(blue_19_23)<span class="sc">-</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.1339729</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(sm_t_20)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   TIMESTAMP                    sensor_id            sensor         
+ Min.   :2020-01-01 00:00:00   Length:1950048     Length:1950048    
+ 1st Qu.:2020-04-01 11:52:30   Class :character   Class :character  
+ Median :2020-07-01 23:45:00   Mode  :character   Mode  :character  
+ Mean   :2020-07-01 23:45:00                                        
+ 3rd Qu.:2020-10-01 11:37:30                                        
+ Max.   :2020-12-31 23:30:00                                        
+                                                                    
+     plot               depth           new                value      
+ Length:1950048     Min.   :12.00   Length:1950048     Min.   :-1.30  
+ Class :character   1st Qu.:12.00   Class :character   1st Qu.: 0.09  
+ Mode  :character   Median :22.00   Mode  :character   Median : 0.25  
+                    Mean   :23.67                      Mean   :10.19  
+                    3rd Qu.:37.00                      3rd Qu.:21.43  
+                    Max.   :37.00                      Max.   :46.90  
+                                                       NA's   :53042  </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(sm_t_20)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 7
+  TIMESTAMP           sensor_id sensor plot  depth new   value
+  &lt;dttm&gt;              &lt;chr&gt;     &lt;chr&gt;  &lt;chr&gt; &lt;dbl&gt; &lt;chr&gt; &lt;dbl&gt;
+1 2020-01-01 00:00:00 VWC_P1_12 VWC    P1       12 &lt;NA&gt;  0.124
+2 2020-01-01 00:00:00 T_P1_12   T      P1       12 &lt;NA&gt;  1.17 
+3 2020-01-01 00:00:00 VWC_P1_22 VWC    P1       22 &lt;NA&gt;  0.093
+4 2020-01-01 00:00:00 T_P1_22   T      P1       22 &lt;NA&gt;  2.8  
+5 2020-01-01 00:00:00 VWC_P1_37 VWC    P1       37 &lt;NA&gt;  0.136
+6 2020-01-01 00:00:00 T_P1_37   T      P1       37 &lt;NA&gt;  4    </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(met_00_23_50)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   StationID    Date_Time                           Date           
+ Min.   :50   Min.   :2002-01-01 00:00:00.00   Min.   :2002-01-01  
+ 1st Qu.:50   1st Qu.:2007-09-10 07:00:00.00   1st Qu.:2007-09-10  
+ Median :50   Median :2013-02-23 18:00:00.00   Median :2013-02-23  
+ Mean   :50   Mean   :2013-02-12 12:26:56.50   Mean   :2013-02-12  
+ 3rd Qu.:50   3rd Qu.:2018-07-31 01:00:00.00   3rd Qu.:2018-07-31  
+ Max.   :50   Max.   :2023-12-31 23:00:00.00   Max.   :2023-12-31  
+                                                                   
+      Year          Month         Day_of_Month     Julian_Day         Hour     
+ Min.   :2002   Min.   : 1.000   Min.   : 1.00   Min.   :  1.0   Min.   : 0.0  
+ 1st Qu.:2007   1st Qu.: 4.000   1st Qu.: 8.00   1st Qu.: 95.0   1st Qu.: 5.0  
+ Median :2013   Median : 7.000   Median :16.00   Median :185.0   Median :12.0  
+ Mean   :2013   Mean   : 6.569   Mean   :15.74   Mean   :184.5   Mean   :11.5  
+ 3rd Qu.:2018   3rd Qu.:10.000   3rd Qu.:23.00   3rd Qu.:275.0   3rd Qu.:17.0  
+ Max.   :2023   Max.   :12.000   Max.   :31.00   Max.   :366.0   Max.   :23.0  
+                                                                               
+     Temp_C         Min_Temp_C        Max_Temp_C     Precipitation     
+ Min.   :-40.00   Min.   :-40.000   Min.   :-40.00   Min.   : 0.00000  
+ 1st Qu.:  7.64   1st Qu.:  6.554   1st Qu.:  8.72   1st Qu.: 0.00000  
+ Median : 16.17   Median : 15.170   Median : 17.18   Median : 0.00000  
+ Mean   : 15.43   Mean   : 14.422   Mean   : 16.45   Mean   : 0.02873  
+ 3rd Qu.: 23.29   3rd Qu.: 22.320   3rd Qu.: 24.25   3rd Qu.: 0.00000  
+ Max.   : 40.60   Max.   : 39.130   Max.   : 41.79   Max.   :28.90000  
+ NA's   :301      NA's   :302       NA's   :290      NA's   :120       </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(met_00_23_50)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 12
+  StationID Date_Time           Date        Year Month Day_of_Month Julian_Day
+      &lt;dbl&gt; &lt;dttm&gt;              &lt;date&gt;     &lt;dbl&gt; &lt;dbl&gt;        &lt;dbl&gt;      &lt;dbl&gt;
+1        50 2002-01-01 00:00:00 2002-01-01  2002     1            1          1
+2        50 2002-01-02 00:00:00 2002-01-02  2002     1            2          2
+3        50 2002-01-03 00:00:00 2002-01-03  2002     1            3          3
+4        50 2002-01-04 00:00:00 2002-01-04  2002     1            4          4
+5        50 2002-01-05 00:00:00 2002-01-05  2002     1            5          5
+6        50 2002-01-06 00:00:00 2002-01-06  2002     1            6          6
+# ℹ 5 more variables: Hour &lt;dbl&gt;, Temp_C &lt;dbl&gt;, Min_Temp_C &lt;dbl&gt;,
+#   Max_Temp_C &lt;dbl&gt;, Precipitation &lt;dbl&gt;</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(met_00_23_50)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>spc_tbl_ [190,069 × 12] (S3: spec_tbl_df/tbl_df/tbl/data.frame)
+ $ StationID    : num [1:190069] 50 50 50 50 50 50 50 50 50 50 ...
+ $ Date_Time    : POSIXct[1:190069], format: "2002-01-01 00:00:00" "2002-01-02 00:00:00" ...
+ $ Date         : Date[1:190069], format: "2002-01-01" "2002-01-02" ...
+ $ Year         : num [1:190069] 2002 2002 2002 2002 2002 ...
+ $ Month        : num [1:190069] 1 1 1 1 1 1 1 1 1 1 ...
+ $ Day_of_Month : num [1:190069] 1 2 3 4 5 6 7 8 9 10 ...
+ $ Julian_Day   : num [1:190069] 1 2 3 4 5 6 7 8 9 10 ...
+ $ Hour         : num [1:190069] 0 0 0 0 0 0 0 0 0 0 ...
+ $ Temp_C       : num [1:190069] NA NA NA NA NA NA NA NA NA NA ...
+ $ Min_Temp_C   : num [1:190069] NA NA NA NA NA NA NA NA NA NA ...
+ $ Max_Temp_C   : num [1:190069] NA NA NA NA NA NA NA NA NA NA ...
+ $ Precipitation: num [1:190069] NA NA NA NA NA NA NA NA NA NA ...
+ - attr(*, "spec")=
+  .. cols(
+  ..   StationID = col_double(),
+  ..   Date_Time = col_datetime(format = ""),
+  ..   Date = col_date(format = ""),
+  ..   Year = col_double(),
+  ..   Month = col_double(),
+  ..   Day_of_Month = col_double(),
+  ..   Julian_Day = col_double(),
+  ..   Hour = col_double(),
+  ..   Temp_C = col_double(),
+  ..   Min_Temp_C = col_double(),
+  ..   Max_Temp_C = col_double(),
+  ..   Precipitation = col_double()
+  .. )
+ - attr(*, "problems")=&lt;externalptr&gt; </code></pre>
+</div>
+</div>
+<p>Overall germination rate of 13.4% across five years, both treatments, both species.</p>
+</section>
+<section id="characterize-and-graph-climate" class="level2">
+<h2 class="anchored" data-anchor-id="characterize-and-graph-climate">Characterize and Graph Climate</h2>
+<p>The climate data are collected from meteorological stations at the Sevilleta NWR. These data come from met station 50, which is the nearest station to MVE Blue. Data began in 2000 and continues through 2023. Data is organized by date and time, temperature in celsius per hour, and minimum and maximum temperature for hour, total precipitation per hour in millimeters. I’m interested in the average range of temperatures for each season and the average annual and seasonal precipitation.</p>
+<p>I want a graph where the x-axis is days of the year and there are three lines, each with confidence bands: average daily precip, daily high temperature, daily low temperature.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(met_00_23_50)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>spc_tbl_ [190,069 × 12] (S3: spec_tbl_df/tbl_df/tbl/data.frame)
+ $ StationID    : num [1:190069] 50 50 50 50 50 50 50 50 50 50 ...
+ $ Date_Time    : POSIXct[1:190069], format: "2002-01-01 00:00:00" "2002-01-02 00:00:00" ...
+ $ Date         : Date[1:190069], format: "2002-01-01" "2002-01-02" ...
+ $ Year         : num [1:190069] 2002 2002 2002 2002 2002 ...
+ $ Month        : num [1:190069] 1 1 1 1 1 1 1 1 1 1 ...
+ $ Day_of_Month : num [1:190069] 1 2 3 4 5 6 7 8 9 10 ...
+ $ Julian_Day   : num [1:190069] 1 2 3 4 5 6 7 8 9 10 ...
+ $ Hour         : num [1:190069] 0 0 0 0 0 0 0 0 0 0 ...
+ $ Temp_C       : num [1:190069] NA NA NA NA NA NA NA NA NA NA ...
+ $ Min_Temp_C   : num [1:190069] NA NA NA NA NA NA NA NA NA NA ...
+ $ Max_Temp_C   : num [1:190069] NA NA NA NA NA NA NA NA NA NA ...
+ $ Precipitation: num [1:190069] NA NA NA NA NA NA NA NA NA NA ...
+ - attr(*, "spec")=
+  .. cols(
+  ..   StationID = col_double(),
+  ..   Date_Time = col_datetime(format = ""),
+  ..   Date = col_date(format = ""),
+  ..   Year = col_double(),
+  ..   Month = col_double(),
+  ..   Day_of_Month = col_double(),
+  ..   Julian_Day = col_double(),
+  ..   Hour = col_double(),
+  ..   Temp_C = col_double(),
+  ..   Min_Temp_C = col_double(),
+  ..   Max_Temp_C = col_double(),
+  ..   Precipitation = col_double()
+  .. )
+ - attr(*, "problems")=&lt;externalptr&gt; </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>met_00_23_50<span class="sc">$</span>Month_Yr <span class="ot">&lt;-</span> <span class="fu">format</span>(<span class="fu">as.Date</span>(met_00_23_50<span class="sc">$</span>Date), <span class="st">"%Y-%m"</span>)</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>clim_sum <span class="ot">&lt;-</span> met_00_23_50 <span class="sc">%&gt;%</span> </span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Month, Year) <span class="sc">%&gt;%</span> </span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">sum_pp =</span> <span class="fu">sum</span>(Precipitation),</span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">daily_min =</span> <span class="fu">min</span>(Min_Temp_C),</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">daily_max =</span> <span class="fu">max</span>(Max_Temp_C))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`summarise()` has grouped output by 'Month'. You can override using the
+`.groups` argument.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>clim_sum_pp <span class="ot">&lt;-</span> clim_sum <span class="sc">%&gt;%</span> </span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Month) <span class="sc">%&gt;%</span> </span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean_pp =</span> <span class="fu">mean</span>(sum_pp, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">sd_pp =</span> <span class="fu">sd</span>(sum_pp, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">n_pp =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">se_pp =</span> sd_pp <span class="sc">/</span> <span class="fu">sqrt</span>(n_pp),</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">lower_ci_pp =</span> mean_pp <span class="sc">-</span> <span class="fu">qt</span>(<span class="dv">1</span> <span class="sc">-</span> (<span class="fl">0.05</span> <span class="sc">/</span> <span class="dv">2</span>), n_pp <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">*</span> se_pp,</span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">upper_ci_pp =</span> mean_pp <span class="sc">+</span> <span class="fu">qt</span>(<span class="dv">1</span> <span class="sc">-</span> (<span class="fl">0.05</span> <span class="sc">/</span> <span class="dv">2</span>), n_pp<span class="sc">-</span> <span class="dv">1</span>) <span class="sc">*</span> se_pp)</span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(clim_sum_pp, <span class="fu">aes</span>(<span class="at">x =</span> Month, <span class="at">y =</span> mean_pp)) <span class="sc">+</span> </span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`geom_smooth()` using method = 'loess' and formula = 'y ~ x'</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="MVE-Blue-Seeds_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Average Daily Precip (mm)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$title
+[1] "Average Daily Precip (mm)"
+
+attr(,"class")
+[1] "labels"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>clim_sum_max_t <span class="ot">&lt;-</span> clim_sum <span class="sc">%&gt;%</span> </span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Month) <span class="sc">%&gt;%</span> </span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean_max_t =</span> <span class="fu">mean</span>(daily_max, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">sd_max_t =</span> <span class="fu">sd</span>(daily_max, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">n_max_t =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">se_max_t =</span> sd_max_t <span class="sc">/</span> <span class="fu">sqrt</span>(n_max_t),</span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">lower_ci_max_t =</span> mean_max_t <span class="sc">-</span> <span class="fu">qt</span>(<span class="dv">1</span> <span class="sc">-</span> (<span class="fl">0.05</span> <span class="sc">/</span> <span class="dv">2</span>), n_max_t <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">*</span> se_max_t,</span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">upper_ci_max_t =</span> mean_max_t <span class="sc">+</span> <span class="fu">qt</span>(<span class="dv">1</span> <span class="sc">-</span> (<span class="fl">0.05</span> <span class="sc">/</span> <span class="dv">2</span>), n_max_t<span class="sc">-</span> <span class="dv">1</span>) <span class="sc">*</span> se_max_t)</span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>clim_sum_min_t <span class="ot">&lt;-</span> clim_sum <span class="sc">%&gt;%</span> </span>
+<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Month) <span class="sc">%&gt;%</span> </span>
+<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean_min_t =</span> <span class="fu">mean</span>(daily_min, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb43-13"><a href="#cb43-13" aria-hidden="true" tabindex="-1"></a>            <span class="at">sd_min_t =</span> <span class="fu">sd</span>(daily_min, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb43-14"><a href="#cb43-14" aria-hidden="true" tabindex="-1"></a>            <span class="at">n_min_t =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb43-15"><a href="#cb43-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">se_min_t =</span> sd_min_t <span class="sc">/</span> <span class="fu">sqrt</span>(n_min_t),</span>
+<span id="cb43-16"><a href="#cb43-16" aria-hidden="true" tabindex="-1"></a>         <span class="at">lower_ci_min_t =</span> mean_min_t <span class="sc">-</span> <span class="fu">qt</span>(<span class="dv">1</span> <span class="sc">-</span> (<span class="fl">0.05</span> <span class="sc">/</span> <span class="dv">2</span>), n_min_t <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">*</span> se_min_t,</span>
+<span id="cb43-17"><a href="#cb43-17" aria-hidden="true" tabindex="-1"></a>         <span class="at">upper_ci_min_t =</span> mean_min_t <span class="sc">+</span> <span class="fu">qt</span>(<span class="dv">1</span> <span class="sc">-</span> (<span class="fl">0.05</span> <span class="sc">/</span> <span class="dv">2</span>), n_min_t<span class="sc">-</span> <span class="dv">1</span>) <span class="sc">*</span> se_min_t)</span>
+<span id="cb43-18"><a href="#cb43-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-19"><a href="#cb43-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-20"><a href="#cb43-20" aria-hidden="true" tabindex="-1"></a>clim_sum_2 <span class="ot">&lt;-</span> <span class="fu">full_join</span>(clim_sum_pp,clim_sum_max_t, <span class="at">by =</span> <span class="fu">join_by</span>(Month))</span>
+<span id="cb43-21"><a href="#cb43-21" aria-hidden="true" tabindex="-1"></a>clim_sum_3 <span class="ot">&lt;-</span> <span class="fu">full_join</span>(clim_sum_2,clim_sum_min_t, <span class="at">by =</span> <span class="fu">join_by</span>(Month))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Ok time to graph. Graph each one individually first.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(clim_sum_3, <span class="fu">aes</span>(<span class="at">x =</span> Month, <span class="at">y =</span> mean_pp)) <span class="sc">+</span> </span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`geom_smooth()` using method = 'loess' and formula = 'y ~ x'</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="MVE-Blue-Seeds_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Average Monthly Precip (mm)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$title
+[1] "Average Monthly Precip (mm)"
+
+attr(,"class")
+[1] "labels"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(clim_sum_3, <span class="fu">aes</span>(<span class="at">x =</span> Month, <span class="at">y =</span> mean_max_t)) <span class="sc">+</span> </span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`geom_smooth()` using method = 'loess' and formula = 'y ~ x'</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="MVE-Blue-Seeds_files/figure-html/unnamed-chunk-9-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Average Daily Temp Max (C)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$title
+[1] "Average Daily Temp Max (C)"
+
+attr(,"class")
+[1] "labels"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(clim_sum_3, <span class="fu">aes</span>(<span class="at">x =</span> Month, <span class="at">y =</span> mean_min_t)) <span class="sc">+</span> </span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`geom_smooth()` using method = 'loess' and formula = 'y ~ x'</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="MVE-Blue-Seeds_files/figure-html/unnamed-chunk-9-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Average Daily Temp Min (C)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$title
+[1] "Average Daily Temp Min (C)"
+
+attr(,"class")
+[1] "labels"</code></pre>
+</div>
+</div>
+<p>The precipitation plot looks especially underwhelming and doesn’t capture those deluges of rain. Consider grouping by month. Also pivot longer the climate variables so they’re easier to graph</p>
+</section>
+<section id="simple-model-of-germination-using-year-and-treatments" class="level2">
+<h2 class="anchored" data-anchor-id="simple-model-of-germination-using-year-and-treatments">Simple model of germination using Year and Treatments</h2>
+</section>
+<section id="graph-germination-by-year-and-treatments" class="level2">
+<h2 class="anchored" data-anchor-id="graph-germination-by-year-and-treatments">Graph germination by year and treatments</h2>
+</section>
+<section id="model-soil-moisture-germination-events" class="level2">
+<h2 class="anchored" data-anchor-id="model-soil-moisture-germination-events">Model Soil Moisture Germination Events</h2>
+</section>
+<section id="graph-soil-moisture-germination-events" class="level2">
+<h2 class="anchored" data-anchor-id="graph-soil-moisture-germination-events">Graph Soil Moisture Germination Events</h2>
+</section>
+<section id="model-graph-survival" class="level2">
+<h2 class="anchored" data-anchor-id="model-graph-survival">Model &amp; Graph Survival</h2>
+</section>
+<section id="characterize-survival-pulse-or-press" class="level2">
+<h2 class="anchored" data-anchor-id="characterize-survival-pulse-or-press">Characterize Survival (Pulse or Press)</h2>
+</section>
+<section id="legacy-model-graph" class="level2">
+<h2 class="anchored" data-anchor-id="legacy-model-graph">Legacy Model &amp; Graph</h2>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

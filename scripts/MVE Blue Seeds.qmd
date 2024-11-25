@@ -43,6 +43,7 @@ library(lme4)
 library(car)
 library(readxl)
 library(googlesheets4)
+library(lubridate)
 ```
 
 ## Read Data
@@ -54,6 +55,10 @@ Seed Census Data
 DO NOT RUN THIS SECTION
 
 ```{r}
+#| eval: false # Do not evaluate this chunk
+#| echo: false # Do not show this chunk in the final rendered document
+
+print("Dont run this code")
 # bring in each year of data (2019-2023, 5 years total)
 
 # De-authorize googlesheets to bypass log-in
@@ -335,15 +340,25 @@ write_csv(blue_19_23, "germ_19_23.csv")
 ```
 
 ### Bring in treatments
+
 DO NOT RUN THIS SECTION
+
 ```{r}
+#| eval: false # Do not evaluate this chunk
+#| echo: false # Do not show this chunk in the final rendered document
+
 trts<-read.csv("meanvar_blue_treatments.csv")
 str(trts)
 ```
 
 ### Bring in soil moisture data
+
 DO NOT RUN THIS SECTION
+
 ```{r}
+#| eval: false # Do not evaluate this chunk
+#| echo: false # Do not show this chunk in the final rendered document
+
 # path to where the load_MVE_data_into_R.R file is located - CHANGE THIS TO THE PATH ON YOUR COMPUTER
 source("load_MVE_data_into_R.R")
 
@@ -514,9 +529,13 @@ sm_t_23 <- read_csv("MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2023.c
 ```
 
 # Bring in climate data
+
 DO NOT RUN THIS SECTION
 
 ```{r}
+#| eval: false # Do not evaluate this chunk
+#| echo: false # Do not show this chunk in the final rendered document
+
 met_00_04 <- read_csv("https://portal.edirepository.org/nis/dataviewer?packageid=knb-lter-sev.1.17&entityid=371109f8068b35cf65edc8ba4237c8bd")
 met_05_09 <- read_csv("https://portal.edirepository.org/nis/dataviewer?packageid=knb-lter-sev.1.17&entityid=e326dbe48c0cdc5b91496a469a50e36d")
 met_10_14 <- read_csv("https://portal.edirepository.org/nis/dataviewer?packageid=knb-lter-sev.1.17&entityid=011fd6eb9726321cace6c72b50cb8056")
@@ -619,6 +638,7 @@ met_20_23_50 <- met_20_23 %>%
 ```
 
 PICK UP HERE
+
 ```{r}
 blue_19_23 <- read_csv("germ_19_23.csv")
 
@@ -632,13 +652,13 @@ sm_t_22 <- read_csv("MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2022.c
 sm_t_23 <- read_csv("MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2023.csv")
 
 
-met_00_23_50 <- read_csv <- ("met_50.csv")
+met_00_23_50 <- read_csv("met_50.csv")
 ```
-
 
 ## Data Exploration
 
 Our data objects are 'blue_19_23','trts', 'sm_t_18':'sm_t_23', 'met_00_23_50'
+
 ```{r}
 summary(blue_19_23)
 head(blue_19_23)
@@ -652,14 +672,84 @@ summary(met_00_23_50)
 head(met_00_23_50)
 str(met_00_23_50)
 ```
+
 Overall germination rate of 13.4% across five years, both treatments, both species.
 
 ## Characterize and Graph Climate
 
+The climate data are collected from meteorological stations at the Sevilleta NWR. These data come from met station 50, which is the nearest station to MVE Blue. Data began in 2000 and continues through 2023. Data is organized by date and time, temperature in celsius per hour, and minimum and maximum temperature for hour, total precipitation per hour in millimeters. I'm interested in the average range of temperatures for each season and the average annual and seasonal precipitation.
+
+I want a graph where the x-axis is days of the year and there are three lines, each with confidence bands: average daily precip, daily high temperature, daily low temperature.
+
 ```{r}
+str(met_00_23_50)
+met_00_23_50$Month_Yr <- format(as.Date(met_00_23_50$Date), "%Y-%m")
+
+clim_sum <- met_00_23_50 %>% 
+  group_by(Month, Year) %>% 
+  summarise(sum_pp = sum(Precipitation),
+            daily_min = min(Min_Temp_C),
+            daily_max = max(Max_Temp_C))
+
+clim_sum_pp <- clim_sum %>% 
+  group_by(Month) %>% 
+  summarise(mean_pp = mean(sum_pp, na.rm = TRUE),
+            sd_pp = sd(sum_pp, na.rm = TRUE),
+            n_pp = n()) %>%
+  mutate(se_pp = sd_pp / sqrt(n_pp),
+         lower_ci_pp = mean_pp - qt(1 - (0.05 / 2), n_pp - 1) * se_pp,
+         upper_ci_pp = mean_pp + qt(1 - (0.05 / 2), n_pp- 1) * se_pp)
+
+ggplot(clim_sum_pp, aes(x = Month, y = mean_pp)) + 
+  geom_point() + 
+  geom_smooth()
+  labs(title = "Average Daily Precip (mm)")
+  
+
+clim_sum_max_t <- clim_sum %>% 
+  group_by(Month) %>% 
+  summarise(mean_max_t = mean(daily_max, na.rm = TRUE),
+            sd_max_t = sd(daily_max, na.rm = TRUE),
+            n_max_t = n()) %>%
+  mutate(se_max_t = sd_max_t / sqrt(n_max_t),
+         lower_ci_max_t = mean_max_t - qt(1 - (0.05 / 2), n_max_t - 1) * se_max_t,
+         upper_ci_max_t = mean_max_t + qt(1 - (0.05 / 2), n_max_t- 1) * se_max_t)
+
+clim_sum_min_t <- clim_sum %>% 
+  group_by(Month) %>% 
+  summarise(mean_min_t = mean(daily_min, na.rm = TRUE),
+            sd_min_t = sd(daily_min, na.rm = TRUE),
+            n_min_t = n()) %>%
+  mutate(se_min_t = sd_min_t / sqrt(n_min_t),
+         lower_ci_min_t = mean_min_t - qt(1 - (0.05 / 2), n_min_t - 1) * se_min_t,
+         upper_ci_min_t = mean_min_t + qt(1 - (0.05 / 2), n_min_t- 1) * se_min_t)
+
+
+clim_sum_2 <- full_join(clim_sum_pp,clim_sum_max_t, by = join_by(Month))
+clim_sum_3 <- full_join(clim_sum_2,clim_sum_min_t, by = join_by(Month))
 
 ```
 
+Ok time to graph. Graph each one individually first.
+
+```{r}
+ggplot(clim_sum_3, aes(x = Month, y = mean_pp)) + 
+  geom_point() + 
+  geom_smooth()
+  labs(title = "Average Monthly Precip (mm)")
+  
+ggplot(clim_sum_3, aes(x = Month, y = mean_max_t)) + 
+  geom_point() + 
+  geom_smooth()
+  labs(title = "Average Daily Temp Max (C)")
+  
+ggplot(clim_sum_3, aes(x = Month, y = mean_min_t)) + 
+  geom_point() + 
+  geom_smooth()
+  labs(title = "Average Daily Temp Min (C)")
+```
+
+The precipitation plot looks especially underwhelming and doesn't capture those deluges of rain. Consider grouping by month. Also pivot longer the climate variables so they're easier to graph 
 
 ## Simple model of germination using Year and Treatments
 
