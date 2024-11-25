@@ -702,7 +702,7 @@ clim_sum_pp <- clim_sum %>%
 
 ggplot(clim_sum_pp, aes(x = Month, y = mean_pp)) + 
   geom_point() + 
-  geom_smooth()
+  geom_smooth() +
   labs(title = "Average Daily Precip (mm)")
   
 
@@ -735,17 +735,17 @@ Ok time to graph. Graph each one individually first.
 ```{r}
 ggplot(clim_sum_3, aes(x = Month, y = mean_pp)) + 
   geom_point() + 
-  geom_smooth()
+  geom_smooth() +
   labs(title = "Average Monthly Precip (mm)")
   
 ggplot(clim_sum_3, aes(x = Month, y = mean_max_t)) + 
   geom_point() + 
-  geom_smooth()
+  geom_smooth() +
   labs(title = "Average Daily Temp Max (C)")
   
 ggplot(clim_sum_3, aes(x = Month, y = mean_min_t)) + 
   geom_point() + 
-  geom_smooth()
+  geom_smooth() +
   labs(title = "Average Daily Temp Min (C)")
 ```
 
