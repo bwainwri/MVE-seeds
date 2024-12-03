@@ -665,6 +665,9 @@ head(blue_19_23)
 str(blue_19_23)
 sum(blue_19_23$Germ.binom, na.rm = TRUE)/(nrow(blue_19_23)-1)
 
+str(trts)
+head(trts)
+
 summary(sm_t_20)
 head(sm_t_20)
 
@@ -684,12 +687,14 @@ I want a graph where the x-axis is days of the year and there are three lines, e
 ```{r}
 str(met_00_23_50)
 met_00_23_50$Month_Yr <- format(as.Date(met_00_23_50$Date), "%Y-%m")
+met_00_23_50$Min_Temp_F <- ((met_00_23_50$Min_Temp_C)*(9/5)) + 32
+met_00_23_50$Max_Temp_F <- ((met_00_23_50$Max_Temp_C)*(9/5)) + 32
 
 clim_sum <- met_00_23_50 %>% 
   group_by(Month, Year) %>% 
   summarise(sum_pp = sum(Precipitation),
-            daily_min = min(Min_Temp_C),
-            daily_max = max(Max_Temp_C))
+            daily_min = min(Min_Temp_F),
+            daily_max = max(Max_Temp_F))
 
 clim_sum_pp <- clim_sum %>% 
   group_by(Month) %>% 
@@ -700,12 +705,6 @@ clim_sum_pp <- clim_sum %>%
          lower_ci_pp = mean_pp - qt(1 - (0.05 / 2), n_pp - 1) * se_pp,
          upper_ci_pp = mean_pp + qt(1 - (0.05 / 2), n_pp- 1) * se_pp)
 
-ggplot(clim_sum_pp, aes(x = Month, y = mean_pp)) + 
-  geom_point() + 
-  geom_smooth() +
-  labs(title = "Average Daily Precip (mm)")
-  
-
 clim_sum_max_t <- clim_sum %>% 
   group_by(Month) %>% 
   summarise(mean_max_t = mean(daily_max, na.rm = TRUE),
@@ -714,6 +713,7 @@ clim_sum_max_t <- clim_sum %>%
   mutate(se_max_t = sd_max_t / sqrt(n_max_t),
          lower_ci_max_t = mean_max_t - qt(1 - (0.05 / 2), n_max_t - 1) * se_max_t,
          upper_ci_max_t = mean_max_t + qt(1 - (0.05 / 2), n_max_t- 1) * se_max_t)
+max(clim_sum_max_t$mean_max_t)
 
 clim_sum_min_t <- clim_sum %>% 
   group_by(Month) %>% 
@@ -723,35 +723,61 @@ clim_sum_min_t <- clim_sum %>%
   mutate(se_min_t = sd_min_t / sqrt(n_min_t),
          lower_ci_min_t = mean_min_t - qt(1 - (0.05 / 2), n_min_t - 1) * se_min_t,
          upper_ci_min_t = mean_min_t + qt(1 - (0.05 / 2), n_min_t- 1) * se_min_t)
-
+min(clim_sum_min_t$mean_min_t)
 
 clim_sum_2 <- full_join(clim_sum_pp,clim_sum_max_t, by = join_by(Month))
 clim_sum_3 <- full_join(clim_sum_2,clim_sum_min_t, by = join_by(Month))
 
+colors <- viridis(3)
+coeff <- 2
+ggplot(clim_sum_3, aes(x = Month)) + 
+  geom_point(aes(y = mean_pp), size = 1.5, color = colors[1]) +  
+  geom_smooth(aes(y = mean_pp), size = 1.5, color = colors[1]) +
+  geom_point(aes(y = mean_max_t/coeff), size = 1.5, color = colors[2]) +  
+  geom_smooth(aes(y = mean_max_t/coeff), size = 1.5, color = colors[2]) +
+  geom_point(aes(y = mean_min_t/coeff), size = 1.5, color = colors[2]) +  
+  geom_smooth(aes(y = mean_min_t/coeff), size = 1.5, color = colors[2]) +
+  #geom_line(aes(y = mean_pp), size = 1.5, color = '#00BFC4') + 
+ # geom_line(aes(y = mean_max_t/coeff), size = 1.5, color = '#F8766D') +
+  #geom_line(aes(y = mean_min_t/coeff), size = 1.5, color = '#C77CFF') +
+  labs(
+    #title = "Monthly Climate Averages from 2000-2023 at Great Plains Grassland Meteorological Station",
+       x = "Month") +
+  theme_bw() +
+  theme(plot.title = element_text(size = 11),
+        axis.title.y = element_text(color = colors[1], size=9),
+        axis.title.y.right = element_text(color = colors[2], size=9),
+        axis.title.x = element_text(size = 9),
+        axis.text = element_text(size = 9)) +
+  scale_x_continuous(breaks=seq(0,13,by=1)) +
+  scale_y_continuous(
+    name = "Average Monthly Total Precipitation (mm)", # Features of the first axis
+    sec.axis = sec_axis( trans=~.*coeff, name="Average Daily Temperature High and Low (F)")) # Add 2nd axis & specify features
+
+# make axis numbers larger
+
 ```
 
-Ok time to graph. Graph each one individually first.
-
-```{r}
-ggplot(clim_sum_3, aes(x = Month, y = mean_pp)) + 
-  geom_point() + 
-  geom_smooth() +
-  labs(title = "Average Monthly Precip (mm)")
-  
-ggplot(clim_sum_3, aes(x = Month, y = mean_max_t)) + 
-  geom_point() + 
-  geom_smooth() +
-  labs(title = "Average Daily Temp Max (C)")
-  
-ggplot(clim_sum_3, aes(x = Month, y = mean_min_t)) + 
-  geom_point() + 
-  geom_smooth() +
-  labs(title = "Average Daily Temp Min (C)")
-```
-
-The precipitation plot looks especially underwhelming and doesn't capture those deluges of rain. Consider grouping by month. Also pivot longer the climate variables so they're easier to graph 
+Figure 1. Climate averages for Meteorological Station 50 near Mean-Variance Blue Experiment from 2000-2023. Purple dots represent total monthly precipitation in millimeters, averaged over 2000-2023. Turquoise dots represent monthly average daily minimum and maximum temperatures in Fahrenheit from 2000-2023. Shaded regions represent 95% confidence intervals.
 
 ## Simple model of germination using Year and Treatments
+
+Make a generalized linear mixed model with a binomial or bernoulli distribution and corner, plot, and block, and maybe Year as random effects. Possible fixed effects are species, mean treatment, variance treatment, Year, annual rainfall, or monsoon rainfall.
+
+You'll need to remove toothpicks in the NW corner in 2019 since those were planted among adult blue grama grass to test facilitation. Consider removed 2019 altogether since it was planted so late. 
+
+```{r}
+summary(blue_19_23)
+head(blue_19_23)
+str(blue_19_23)
+sum(blue_19_23$Germ.binom, na.rm = TRUE)/(nrow(blue_19_23)-1)
+
+head(trts)
+m0
+
+
+```
+
 
 ## Graph germination by year and treatments
 
