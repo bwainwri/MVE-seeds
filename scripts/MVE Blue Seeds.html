@@ -317,7 +317,37 @@ date  (1): Date
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.1339729</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(sm_t_20)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(trts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>'data.frame':   30 obs. of  9 variables:
+ $ site              : chr  "meanvar_blue" "meanvar_blue" "meanvar_blue" "meanvar_blue" ...
+ $ Block             : int  1 1 1 1 1 1 2 2 2 2 ...
+ $ plot              : int  1 2 3 4 5 6 7 8 9 10 ...
+ $ mean_treatment    : chr  "ambient" "ambient" "ambient" "reduced" ...
+ $ var_treatment_2019: chr  "increase" "decrease" "ambient" "decrease " ...
+ $ var_treatment_2020: chr  "increase" "decrease" "ambient" "decrease " ...
+ $ var_treatment_2021: chr  "decrease" "increase" "ambient" "decrease " ...
+ $ var_treatment_2022: chr  "increase" "decrease" "ambient" "decrease " ...
+ $ var_treatment     : chr  "increase" "increase" "ambient" "increase" ...</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(trts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          site Block plot mean_treatment var_treatment_2019 var_treatment_2020
+1 meanvar_blue     1    1        ambient           increase           increase
+2 meanvar_blue     1    2        ambient           decrease           decrease
+3 meanvar_blue     1    3        ambient            ambient            ambient
+4 meanvar_blue     1    4        reduced          decrease           decrease 
+5 meanvar_blue     1    5        reduced           increase           increase
+6 meanvar_blue     1    6        reduced            ambient            ambient
+  var_treatment_2021 var_treatment_2022 var_treatment
+1           decrease           increase      increase
+2           increase           decrease      increase
+3            ambient            ambient       ambient
+4          decrease           decrease       increase
+5           increase           increase      increase
+6            ambient            ambient       ambient</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(sm_t_20)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   TIMESTAMP                    sensor_id            sensor         
  Min.   :2020-01-01 00:00:00   Length:1950048     Length:1950048    
@@ -336,7 +366,7 @@ date  (1): Date
                     Max.   :37.00                      Max.   :46.90  
                                                        NA's   :53042  </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(sm_t_20)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(sm_t_20)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 7
   TIMESTAMP           sensor_id sensor plot  depth new   value
@@ -348,7 +378,7 @@ date  (1): Date
 5 2020-01-01 00:00:00 VWC_P1_37 VWC    P1       37 &lt;NA&gt;  0.136
 6 2020-01-01 00:00:00 T_P1_37   T      P1       37 &lt;NA&gt;  4    </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(met_00_23_50)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(met_00_23_50)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   StationID    Date_Time                           Date           
  Min.   :50   Min.   :2002-01-01 00:00:00.00   Min.   :2002-01-01  
@@ -375,7 +405,7 @@ date  (1): Date
  Max.   : 40.60   Max.   : 39.130   Max.   : 41.79   Max.   :28.90000  
  NA's   :301      NA's   :302       NA's   :290      NA's   :120       </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(met_00_23_50)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(met_00_23_50)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 12
   StationID Date_Time           Date        Year Month Day_of_Month Julian_Day
@@ -389,7 +419,7 @@ date  (1): Date
 # ℹ 5 more variables: Hour &lt;dbl&gt;, Temp_C &lt;dbl&gt;, Min_Temp_C &lt;dbl&gt;,
 #   Max_Temp_C &lt;dbl&gt;, Precipitation &lt;dbl&gt;</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(met_00_23_50)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(met_00_23_50)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>spc_tbl_ [190,069 × 12] (S3: spec_tbl_df/tbl_df/tbl/data.frame)
  $ StationID    : num [1:190069] 50 50 50 50 50 50 50 50 50 50 ...
@@ -426,10 +456,10 @@ date  (1): Date
 </section>
 <section id="characterize-and-graph-climate" class="level2">
 <h2 class="anchored" data-anchor-id="characterize-and-graph-climate">Characterize and Graph Climate</h2>
-<p>The climate data are collected from meteorological stations at the Sevilleta NWR. These data come from met station 50, which is the nearest station to MVE Blue. Data began in 2000 and continues through 2023. Data is organized by date and time, temperature in celsius per hour, and minimum and maximum temperature for hour, total precipitation per hour in millimeters. I’m interested in the average range of temperatures for each season and the average annual and seasonal precipitation.</p>
+<p>The climate data are collected from meteorological stations at the Sevilleta NWR. These data come from met station 50, which is the nearest station to MVE Blue. Data began in 2000 and continues through 2023. Data is organized by date and time, temperature in celsius per hour, and minimum and maximum temperature for hour, total precipitation per hour in millimeters. I’m interested in the average range of temperatures for each season and the average annual and seasonal precipitation. Data comes from here(<a href="https://portal.edirepository.org/nis/mapbrowse?packageid=knb-lter-sev.1.17" class="uri">https://portal.edirepository.org/nis/mapbrowse?packageid=knb-lter-sev.1.17</a>)</p>
 <p>I want a graph where the x-axis is days of the year and there are three lines, each with confidence bands: average daily precip, daily high temperature, daily low temperature.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(met_00_23_50)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(met_00_23_50)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>spc_tbl_ [190,069 × 12] (S3: spec_tbl_df/tbl_df/tbl/data.frame)
  $ StationID    : num [1:190069] 50 50 50 50 50 50 50 50 50 50 ...
@@ -461,31 +491,92 @@ date  (1): Date
   .. )
  - attr(*, "problems")=&lt;externalptr&gt; </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>met_00_23_50<span class="sc">$</span>Month_Yr <span class="ot">&lt;-</span> <span class="fu">format</span>(<span class="fu">as.Date</span>(met_00_23_50<span class="sc">$</span>Date), <span class="st">"%Y-%m"</span>)</span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>clim_sum <span class="ot">&lt;-</span> met_00_23_50 <span class="sc">%&gt;%</span> </span>
-<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Month, Year) <span class="sc">%&gt;%</span> </span>
-<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">sum_pp =</span> <span class="fu">sum</span>(Precipitation),</span>
-<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">daily_min =</span> <span class="fu">min</span>(Min_Temp_C),</span>
-<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">daily_max =</span> <span class="fu">max</span>(Max_Temp_C))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>met_00_23_50<span class="sc">$</span>Month_Yr <span class="ot">&lt;-</span> <span class="fu">format</span>(<span class="fu">as.Date</span>(met_00_23_50<span class="sc">$</span>Date), <span class="st">"%Y-%m"</span>)</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>met_00_23_50<span class="sc">$</span>Min_Temp_F <span class="ot">&lt;-</span> ((met_00_23_50<span class="sc">$</span>Min_Temp_C)<span class="sc">*</span>(<span class="dv">9</span><span class="sc">/</span><span class="dv">5</span>)) <span class="sc">+</span> <span class="dv">32</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>met_00_23_50<span class="sc">$</span>Max_Temp_F <span class="ot">&lt;-</span> ((met_00_23_50<span class="sc">$</span>Max_Temp_C)<span class="sc">*</span>(<span class="dv">9</span><span class="sc">/</span><span class="dv">5</span>)) <span class="sc">+</span> <span class="dv">32</span></span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>clim_sum <span class="ot">&lt;-</span> met_00_23_50 <span class="sc">%&gt;%</span> </span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Month, Year) <span class="sc">%&gt;%</span> </span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">sum_pp =</span> <span class="fu">sum</span>(Precipitation),</span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">daily_min =</span> <span class="fu">min</span>(Min_Temp_F),</span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">daily_max =</span> <span class="fu">max</span>(Max_Temp_F))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>`summarise()` has grouped output by 'Month'. You can override using the
 `.groups` argument.</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>clim_sum_pp <span class="ot">&lt;-</span> clim_sum <span class="sc">%&gt;%</span> </span>
-<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Month) <span class="sc">%&gt;%</span> </span>
-<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean_pp =</span> <span class="fu">mean</span>(sum_pp, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">sd_pp =</span> <span class="fu">sd</span>(sum_pp, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">n_pp =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
-<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">se_pp =</span> sd_pp <span class="sc">/</span> <span class="fu">sqrt</span>(n_pp),</span>
-<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">lower_ci_pp =</span> mean_pp <span class="sc">-</span> <span class="fu">qt</span>(<span class="dv">1</span> <span class="sc">-</span> (<span class="fl">0.05</span> <span class="sc">/</span> <span class="dv">2</span>), n_pp <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">*</span> se_pp,</span>
-<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">upper_ci_pp =</span> mean_pp <span class="sc">+</span> <span class="fu">qt</span>(<span class="dv">1</span> <span class="sc">-</span> (<span class="fl">0.05</span> <span class="sc">/</span> <span class="dv">2</span>), n_pp<span class="sc">-</span> <span class="dv">1</span>) <span class="sc">*</span> se_pp)</span>
-<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(clim_sum_pp, <span class="fu">aes</span>(<span class="at">x =</span> Month, <span class="at">y =</span> mean_pp)) <span class="sc">+</span> </span>
-<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
-<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>clim_sum_pp <span class="ot">&lt;-</span> clim_sum <span class="sc">%&gt;%</span> </span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Month) <span class="sc">%&gt;%</span> </span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean_pp =</span> <span class="fu">mean</span>(sum_pp, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">sd_pp =</span> <span class="fu">sd</span>(sum_pp, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">n_pp =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">se_pp =</span> sd_pp <span class="sc">/</span> <span class="fu">sqrt</span>(n_pp),</span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">lower_ci_pp =</span> mean_pp <span class="sc">-</span> <span class="fu">qt</span>(<span class="dv">1</span> <span class="sc">-</span> (<span class="fl">0.05</span> <span class="sc">/</span> <span class="dv">2</span>), n_pp <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">*</span> se_pp,</span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">upper_ci_pp =</span> mean_pp <span class="sc">+</span> <span class="fu">qt</span>(<span class="dv">1</span> <span class="sc">-</span> (<span class="fl">0.05</span> <span class="sc">/</span> <span class="dv">2</span>), n_pp<span class="sc">-</span> <span class="dv">1</span>) <span class="sc">*</span> se_pp)</span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>clim_sum_max_t <span class="ot">&lt;-</span> clim_sum <span class="sc">%&gt;%</span> </span>
+<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Month) <span class="sc">%&gt;%</span> </span>
+<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean_max_t =</span> <span class="fu">mean</span>(daily_max, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb43-13"><a href="#cb43-13" aria-hidden="true" tabindex="-1"></a>            <span class="at">sd_max_t =</span> <span class="fu">sd</span>(daily_max, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb43-14"><a href="#cb43-14" aria-hidden="true" tabindex="-1"></a>            <span class="at">n_max_t =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb43-15"><a href="#cb43-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">se_max_t =</span> sd_max_t <span class="sc">/</span> <span class="fu">sqrt</span>(n_max_t),</span>
+<span id="cb43-16"><a href="#cb43-16" aria-hidden="true" tabindex="-1"></a>         <span class="at">lower_ci_max_t =</span> mean_max_t <span class="sc">-</span> <span class="fu">qt</span>(<span class="dv">1</span> <span class="sc">-</span> (<span class="fl">0.05</span> <span class="sc">/</span> <span class="dv">2</span>), n_max_t <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">*</span> se_max_t,</span>
+<span id="cb43-17"><a href="#cb43-17" aria-hidden="true" tabindex="-1"></a>         <span class="at">upper_ci_max_t =</span> mean_max_t <span class="sc">+</span> <span class="fu">qt</span>(<span class="dv">1</span> <span class="sc">-</span> (<span class="fl">0.05</span> <span class="sc">/</span> <span class="dv">2</span>), n_max_t<span class="sc">-</span> <span class="dv">1</span>) <span class="sc">*</span> se_max_t)</span>
+<span id="cb43-18"><a href="#cb43-18" aria-hidden="true" tabindex="-1"></a><span class="fu">max</span>(clim_sum_max_t<span class="sc">$</span>mean_max_t)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 102.1631</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>clim_sum_min_t <span class="ot">&lt;-</span> clim_sum <span class="sc">%&gt;%</span> </span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Month) <span class="sc">%&gt;%</span> </span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean_min_t =</span> <span class="fu">mean</span>(daily_min, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">sd_min_t =</span> <span class="fu">sd</span>(daily_min, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">n_min_t =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">se_min_t =</span> sd_min_t <span class="sc">/</span> <span class="fu">sqrt</span>(n_min_t),</span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">lower_ci_min_t =</span> mean_min_t <span class="sc">-</span> <span class="fu">qt</span>(<span class="dv">1</span> <span class="sc">-</span> (<span class="fl">0.05</span> <span class="sc">/</span> <span class="dv">2</span>), n_min_t <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">*</span> se_min_t,</span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">upper_ci_min_t =</span> mean_min_t <span class="sc">+</span> <span class="fu">qt</span>(<span class="dv">1</span> <span class="sc">-</span> (<span class="fl">0.05</span> <span class="sc">/</span> <span class="dv">2</span>), n_min_t<span class="sc">-</span> <span class="dv">1</span>) <span class="sc">*</span> se_min_t)</span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a><span class="fu">min</span>(clim_sum_min_t<span class="sc">$</span>mean_min_t)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 11.31886</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>clim_sum_2 <span class="ot">&lt;-</span> <span class="fu">full_join</span>(clim_sum_pp,clim_sum_max_t, <span class="at">by =</span> <span class="fu">join_by</span>(Month))</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>clim_sum_3 <span class="ot">&lt;-</span> <span class="fu">full_join</span>(clim_sum_2,clim_sum_min_t, <span class="at">by =</span> <span class="fu">join_by</span>(Month))</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>colors <span class="ot">&lt;-</span> <span class="fu">viridis</span>(<span class="dv">3</span>)</span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>coeff <span class="ot">&lt;-</span> <span class="dv">2</span></span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(clim_sum_3, <span class="fu">aes</span>(<span class="at">x =</span> Month)) <span class="sc">+</span> </span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">y =</span> mean_pp), <span class="at">size =</span> <span class="fl">1.5</span>, <span class="at">color =</span> colors[<span class="dv">1</span>]) <span class="sc">+</span>  </span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="fu">aes</span>(<span class="at">y =</span> mean_pp), <span class="at">size =</span> <span class="fl">1.5</span>, <span class="at">color =</span> colors[<span class="dv">1</span>]) <span class="sc">+</span></span>
+<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">y =</span> mean_max_t<span class="sc">/</span>coeff), <span class="at">size =</span> <span class="fl">1.5</span>, <span class="at">color =</span> colors[<span class="dv">2</span>]) <span class="sc">+</span>  </span>
+<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="fu">aes</span>(<span class="at">y =</span> mean_max_t<span class="sc">/</span>coeff), <span class="at">size =</span> <span class="fl">1.5</span>, <span class="at">color =</span> colors[<span class="dv">2</span>]) <span class="sc">+</span></span>
+<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">y =</span> mean_min_t<span class="sc">/</span>coeff), <span class="at">size =</span> <span class="fl">1.5</span>, <span class="at">color =</span> colors[<span class="dv">2</span>]) <span class="sc">+</span>  </span>
+<span id="cb47-12"><a href="#cb47-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="fu">aes</span>(<span class="at">y =</span> mean_min_t<span class="sc">/</span>coeff), <span class="at">size =</span> <span class="fl">1.5</span>, <span class="at">color =</span> colors[<span class="dv">2</span>]) <span class="sc">+</span></span>
+<span id="cb47-13"><a href="#cb47-13" aria-hidden="true" tabindex="-1"></a>  <span class="co">#geom_line(aes(y = mean_pp), size = 1.5, color = '#00BFC4') + </span></span>
+<span id="cb47-14"><a href="#cb47-14" aria-hidden="true" tabindex="-1"></a> <span class="co"># geom_line(aes(y = mean_max_t/coeff), size = 1.5, color = '#F8766D') +</span></span>
+<span id="cb47-15"><a href="#cb47-15" aria-hidden="true" tabindex="-1"></a>  <span class="co">#geom_line(aes(y = mean_min_t/coeff), size = 1.5, color = '#C77CFF') +</span></span>
+<span id="cb47-16"><a href="#cb47-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb47-17"><a href="#cb47-17" aria-hidden="true" tabindex="-1"></a>    <span class="co">#title = "Monthly Climate Averages from 2000-2023 at Great Plains Grassland Meteorological Station",</span></span>
+<span id="cb47-18"><a href="#cb47-18" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Month"</span>) <span class="sc">+</span></span>
+<span id="cb47-19"><a href="#cb47-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb47-20"><a href="#cb47-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">11</span>),</span>
+<span id="cb47-21"><a href="#cb47-21" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title.y =</span> <span class="fu">element_text</span>(<span class="at">color =</span> colors[<span class="dv">1</span>], <span class="at">size=</span><span class="dv">9</span>),</span>
+<span id="cb47-22"><a href="#cb47-22" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title.y.right =</span> <span class="fu">element_text</span>(<span class="at">color =</span> colors[<span class="dv">2</span>], <span class="at">size=</span><span class="dv">9</span>),</span>
+<span id="cb47-23"><a href="#cb47-23" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">9</span>),</span>
+<span id="cb47-24"><a href="#cb47-24" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">9</span>)) <span class="sc">+</span></span>
+<span id="cb47-25"><a href="#cb47-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks=</span><span class="fu">seq</span>(<span class="dv">0</span>,<span class="dv">13</span>,<span class="at">by=</span><span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb47-26"><a href="#cb47-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(</span>
+<span id="cb47-27"><a href="#cb47-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">"Average Monthly Total Precipitation (mm)"</span>, <span class="co"># Features of the first axis</span></span>
+<span id="cb47-28"><a href="#cb47-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">sec.axis =</span> <span class="fu">sec_axis</span>( <span class="at">trans=</span><span class="sc">~</span>.<span class="sc">*</span>coeff, <span class="at">name=</span><span class="st">"Average Daily Temperature High and Low (F)"</span>)) <span class="co"># Add 2nd axis &amp; specify features</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>`geom_smooth()` using method = 'loess' and formula = 'y ~ x'</code></pre>
+<pre><code>Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
+ℹ Please use `linewidth` instead.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: The `trans` argument of `sec_axis()` is deprecated as of ggplot2 3.5.0.
+ℹ Please use the `transform` argument instead.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`geom_smooth()` using method = 'loess' and formula = 'y ~ x'
+`geom_smooth()` using method = 'loess' and formula = 'y ~ x'
+`geom_smooth()` using method = 'loess' and formula = 'y ~ x'</code></pre>
 </div>
 <div class="cell-output-display">
 <div>
@@ -494,106 +585,102 @@ date  (1): Date
 </figure>
 </div>
 </div>
-<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Average Daily Precip (mm)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>$title
-[1] "Average Daily Precip (mm)"
-
-attr(,"class")
-[1] "labels"</code></pre>
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="co"># make axis numbers larger</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>clim_sum_max_t <span class="ot">&lt;-</span> clim_sum <span class="sc">%&gt;%</span> </span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Month) <span class="sc">%&gt;%</span> </span>
-<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean_max_t =</span> <span class="fu">mean</span>(daily_max, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">sd_max_t =</span> <span class="fu">sd</span>(daily_max, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">n_max_t =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
-<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">se_max_t =</span> sd_max_t <span class="sc">/</span> <span class="fu">sqrt</span>(n_max_t),</span>
-<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">lower_ci_max_t =</span> mean_max_t <span class="sc">-</span> <span class="fu">qt</span>(<span class="dv">1</span> <span class="sc">-</span> (<span class="fl">0.05</span> <span class="sc">/</span> <span class="dv">2</span>), n_max_t <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">*</span> se_max_t,</span>
-<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">upper_ci_max_t =</span> mean_max_t <span class="sc">+</span> <span class="fu">qt</span>(<span class="dv">1</span> <span class="sc">-</span> (<span class="fl">0.05</span> <span class="sc">/</span> <span class="dv">2</span>), n_max_t<span class="sc">-</span> <span class="dv">1</span>) <span class="sc">*</span> se_max_t)</span>
-<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>clim_sum_min_t <span class="ot">&lt;-</span> clim_sum <span class="sc">%&gt;%</span> </span>
-<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Month) <span class="sc">%&gt;%</span> </span>
-<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean_min_t =</span> <span class="fu">mean</span>(daily_min, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb43-13"><a href="#cb43-13" aria-hidden="true" tabindex="-1"></a>            <span class="at">sd_min_t =</span> <span class="fu">sd</span>(daily_min, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb43-14"><a href="#cb43-14" aria-hidden="true" tabindex="-1"></a>            <span class="at">n_min_t =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
-<span id="cb43-15"><a href="#cb43-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">se_min_t =</span> sd_min_t <span class="sc">/</span> <span class="fu">sqrt</span>(n_min_t),</span>
-<span id="cb43-16"><a href="#cb43-16" aria-hidden="true" tabindex="-1"></a>         <span class="at">lower_ci_min_t =</span> mean_min_t <span class="sc">-</span> <span class="fu">qt</span>(<span class="dv">1</span> <span class="sc">-</span> (<span class="fl">0.05</span> <span class="sc">/</span> <span class="dv">2</span>), n_min_t <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">*</span> se_min_t,</span>
-<span id="cb43-17"><a href="#cb43-17" aria-hidden="true" tabindex="-1"></a>         <span class="at">upper_ci_min_t =</span> mean_min_t <span class="sc">+</span> <span class="fu">qt</span>(<span class="dv">1</span> <span class="sc">-</span> (<span class="fl">0.05</span> <span class="sc">/</span> <span class="dv">2</span>), n_min_t<span class="sc">-</span> <span class="dv">1</span>) <span class="sc">*</span> se_min_t)</span>
-<span id="cb43-18"><a href="#cb43-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb43-19"><a href="#cb43-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb43-20"><a href="#cb43-20" aria-hidden="true" tabindex="-1"></a>clim_sum_2 <span class="ot">&lt;-</span> <span class="fu">full_join</span>(clim_sum_pp,clim_sum_max_t, <span class="at">by =</span> <span class="fu">join_by</span>(Month))</span>
-<span id="cb43-21"><a href="#cb43-21" aria-hidden="true" tabindex="-1"></a>clim_sum_3 <span class="ot">&lt;-</span> <span class="fu">full_join</span>(clim_sum_2,clim_sum_min_t, <span class="at">by =</span> <span class="fu">join_by</span>(Month))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>Ok time to graph. Graph each one individually first.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(clim_sum_3, <span class="fu">aes</span>(<span class="at">x =</span> Month, <span class="at">y =</span> mean_pp)) <span class="sc">+</span> </span>
-<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
-<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>`geom_smooth()` using method = 'loess' and formula = 'y ~ x'</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="MVE-Blue-Seeds_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Average Monthly Precip (mm)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>$title
-[1] "Average Monthly Precip (mm)"
-
-attr(,"class")
-[1] "labels"</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(clim_sum_3, <span class="fu">aes</span>(<span class="at">x =</span> Month, <span class="at">y =</span> mean_max_t)) <span class="sc">+</span> </span>
-<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
-<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>`geom_smooth()` using method = 'loess' and formula = 'y ~ x'</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="MVE-Blue-Seeds_files/figure-html/unnamed-chunk-9-2.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Average Daily Temp Max (C)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>$title
-[1] "Average Daily Temp Max (C)"
-
-attr(,"class")
-[1] "labels"</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(clim_sum_3, <span class="fu">aes</span>(<span class="at">x =</span> Month, <span class="at">y =</span> mean_min_t)) <span class="sc">+</span> </span>
-<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
-<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>`geom_smooth()` using method = 'loess' and formula = 'y ~ x'</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="MVE-Blue-Seeds_files/figure-html/unnamed-chunk-9-3.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Average Daily Temp Min (C)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>$title
-[1] "Average Daily Temp Min (C)"
-
-attr(,"class")
-[1] "labels"</code></pre>
-</div>
-</div>
-<p>The precipitation plot looks especially underwhelming and doesn’t capture those deluges of rain. Consider grouping by month. Also pivot longer the climate variables so they’re easier to graph</p>
+<p>Figure 1. Climate averages for Meteorological Station 50 near Mean-Variance Blue Experiment from 2000-2023. Purple dots represent total monthly precipitation in millimeters, averaged over 2000-2023. Turquoise dots represent monthly average daily minimum and maximum temperatures in Fahrenheit from 2000-2023. Shaded regions represent 95% confidence intervals.</p>
 </section>
 <section id="simple-model-of-germination-using-year-and-treatments" class="level2">
 <h2 class="anchored" data-anchor-id="simple-model-of-germination-using-year-and-treatments">Simple model of germination using Year and Treatments</h2>
+<p>Make a generalized linear mixed model with a binomial or bernoulli distribution and corner, plot, and block, and maybe Year as random effects. Possible fixed effects are species, mean treatment, variance treatment, Year, annual rainfall, or monsoon rainfall.</p>
+<p>You’ll need to remove toothpicks in the NW corner in 2019 since those were planted among adult blue grama grass to test facilitation. Consider removed 2019 altogether since it was planted so late.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(blue_19_23)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>      Plot         Corner            Species               Row       
+ Min.   : 1.0   Length:26581       Length:26581       Min.   :1.000  
+ 1st Qu.: 8.0   Class :character   Class :character   1st Qu.:2.000  
+ Median :15.0   Mode  :character   Mode  :character   Median :3.000  
+ Mean   :15.5                                         Mean   :2.795  
+ 3rd Qu.:23.0                                         3rd Qu.:4.000  
+ Max.   :30.0                                         Max.   :5.000  
+ NA's   :1                                            NA's   :5      
+    Column             TP_ID              Add_Year       Obs_Date         
+ Length:26581       Length:26581       Min.   :2019   Min.   :2019-09-07  
+ Class :character   Class :character   1st Qu.:2020   1st Qu.:2020-07-31  
+ Mode  :character   Mode  :character   Median :2021   Median :2021-07-26  
+                                       Mean   :2021   Mean   :2021-08-07  
+                                       3rd Qu.:2022   3rd Qu.:2022-07-05  
+                                       Max.   :2023   Max.   :2024-04-03  
+                                                                          
+   Germ.binom   
+ Min.   :0.000  
+ 1st Qu.:0.000  
+ Median :0.000  
+ Mean   :0.134  
+ 3rd Qu.:0.000  
+ Max.   :1.000  
+ NA's   :1      </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(blue_19_23)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 9
+   Plot Corner Species   Row Column TP_ID         Add_Year Obs_Date   Germ.binom
+  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;   &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;            &lt;dbl&gt; &lt;date&gt;          &lt;dbl&gt;
+1     8 SW     BLACK       1 F      20198BLACKSW…     2019 2019-09-21          1
+2    14 SW     BLACK       1 H      201914BLACKS…     2019 2019-09-21          1
+3    18 SW     BLACK       1 J      201918BLACKS…     2019 2019-09-21          1
+4    18 SW     BLACK       1 A      201918BLACKS…     2019 2019-09-21          1
+5    24 SW     BLACK       1 A      201924BLACKS…     2019 2019-09-21          1
+6    14 SW     BLACK       1 B      201914BLACKS…     2019 2019-09-21          1</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(blue_19_23)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>spc_tbl_ [26,581 × 9] (S3: spec_tbl_df/tbl_df/tbl/data.frame)
+ $ Plot      : num [1:26581] 8 14 18 18 24 14 24 14 20 25 ...
+ $ Corner    : chr [1:26581] "SW" "SW" "SW" "SW" ...
+ $ Species   : chr [1:26581] "BLACK" "BLACK" "BLACK" "BLACK" ...
+ $ Row       : num [1:26581] 1 1 1 1 1 1 1 1 1 2 ...
+ $ Column    : chr [1:26581] "F" "H" "J" "A" ...
+ $ TP_ID     : chr [1:26581] "20198BLACKSW1F" "201914BLACKSW1H" "201918BLACKSW1J" "201918BLACKSW1A" ...
+ $ Add_Year  : num [1:26581] 2019 2019 2019 2019 2019 ...
+ $ Obs_Date  : Date[1:26581], format: "2019-09-21" "2019-09-21" ...
+ $ Germ.binom: num [1:26581] 1 1 1 1 1 1 1 1 1 1 ...
+ - attr(*, "spec")=
+  .. cols(
+  ..   Plot = col_double(),
+  ..   Corner = col_character(),
+  ..   Species = col_character(),
+  ..   Row = col_double(),
+  ..   Column = col_character(),
+  ..   TP_ID = col_character(),
+  ..   Add_Year = col_double(),
+  ..   Obs_Date = col_date(format = ""),
+  ..   Germ.binom = col_double()
+  .. )
+ - attr(*, "problems")=&lt;externalptr&gt; </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(blue_19_23<span class="sc">$</span>Germ.binom, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)<span class="sc">/</span>(<span class="fu">nrow</span>(blue_19_23)<span class="sc">-</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.1339729</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(trts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          site Block plot mean_treatment var_treatment_2019 var_treatment_2020
+1 meanvar_blue     1    1        ambient           increase           increase
+2 meanvar_blue     1    2        ambient           decrease           decrease
+3 meanvar_blue     1    3        ambient            ambient            ambient
+4 meanvar_blue     1    4        reduced          decrease           decrease 
+5 meanvar_blue     1    5        reduced           increase           increase
+6 meanvar_blue     1    6        reduced            ambient            ambient
+  var_treatment_2021 var_treatment_2022 var_treatment
+1           decrease           increase      increase
+2           increase           decrease      increase
+3            ambient            ambient       ambient
+4          decrease           decrease       increase
+5           increase           increase      increase
+6            ambient            ambient       ambient</code></pre>
+</div>
+</div>
 </section>
 <section id="graph-germination-by-year-and-treatments" class="level2">
 <h2 class="anchored" data-anchor-id="graph-germination-by-year-and-treatments">Graph germination by year and treatments</h2>

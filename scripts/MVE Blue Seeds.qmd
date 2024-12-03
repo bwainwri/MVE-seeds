@@ -773,7 +773,6 @@ str(blue_19_23)
 sum(blue_19_23$Germ.binom, na.rm = TRUE)/(nrow(blue_19_23)-1)
 
 head(trts)
-m0
 
 
 ```
