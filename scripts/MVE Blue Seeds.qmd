@@ -754,7 +754,8 @@ ggplot(clim_sum_3, aes(x = Month)) +
     name = "Average Monthly Total Precipitation (mm)", # Features of the first axis
     sec.axis = sec_axis( trans=~.*coeff, name="Average Daily Temperature High and Low (F)")) # Add 2nd axis & specify features
 
-# make axis numbers larger
+# Replace month numbers with month names
+# investigate rogue June precipitation
 
 ```
 
