@@ -44,6 +44,8 @@ library(car)
 library(readxl)
 library(googlesheets4)
 library(lubridate)
+library(bbmle)
+library(lmtest)
 ```
 
 ## Read Data
@@ -774,6 +776,98 @@ str(blue_19_23)
 sum(blue_19_23$Germ.binom, na.rm = TRUE)/(nrow(blue_19_23)-1)
 
 head(trts)
+
+# join treatments and germ dataset
+trts$Plot <- trts$plot
+blue_19_23_trt <- left_join(blue_19_23, trts, by = "Plot")
+
+# prepare for model
+# Remove toothpicks with Corner == NE and Add_Year == 2019
+blue_19_23_trt_NE19rm <- 
+  blue_19_23_trt %>%  
+  filter(!(Corner == "NE" & Add_Year == 2019))
+
+# separate dataset by species
+bluegrama <- 
+  blue_19_23_trt_NE19rm %>% 
+  filter(Species == "BLUE")
+
+blackgrama <- 
+  blue_19_23_trt_NE19rm %>% 
+  filter(Species == "BLACK")
+```
+
+
+```{r}
+#| eval: false # Do not evaluate this chunk
+#| echo: false # Do not show this chunk in the final rendered document
+
+# Try altogether first
+m0 <- glmer(Germ.binom ~ 1 + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blue_19_23_trt_NE19rm)
+
+m0b <- glmer(Germ.binom ~ 1 + (1|Block/Plot/Corner), family = binomial, data = blue_19_23_trt_NE19rm)
+
+m1 <- glmer(Germ.binom ~ mean_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blue_19_23_trt_NE19rm)
+
+m2 <- glmer(Germ.binom ~ var_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blue_19_23_trt_NE19rm)
+
+m3 <- glmer(Germ.binom ~ Species + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blue_19_23_trt_NE19rm)
+
+m4 <- glmer(Germ.binom ~ var_treatment + mean_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blue_19_23_trt_NE19rm)
+
+m5 <- glmer(Germ.binom ~ var_treatment + mean_treatment + mean_treatment*var_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blue_19_23_trt_NE19rm)
+
+m6 <- glmer(Germ.binom ~ Add_Year + (1|Block/Plot/Corner), family = binomial, data = blue_19_23_trt_NE19rm)
+
+lrtest(m0,m6)
+lrtest(m0b,m6)
+ICtab(m0,m1,m2,m3,m4,m5,m6)
+VarCorr(m0)
+# Temporal and spatial heterogeneity explain a lot of the data
+
+# No differences by treatments, not including species as a factor
+
+# try blue grama
+g0 <- glmer(Germ.binom ~ 1 + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = bluegrama)
+
+g1 <- glmer(Germ.binom ~ mean_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = bluegrama)
+
+g2 <- glmer(Germ.binom ~ var_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = bluegrama)
+
+g3 <- glmer(Germ.binom ~ var_treatment + mean_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = bluegrama)
+
+g4 <- glmer(Germ.binom ~ var_treatment + mean_treatment + mean_treatment*var_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = bluegrama)
+
+lrtest(g0,g4)
+ICtab(g0,g1,g2,g3,g4)
+VarCorr(g0)
+
+# try black grama
+e0 <- glmer(Germ.binom ~ 1 + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blackgrama)
+
+e1 <- glmer(Germ.binom ~ mean_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blackgrama)
+
+e2 <- glmer(Germ.binom ~ var_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blackgrama)
+
+e3 <- glmer(Germ.binom ~ var_treatment + mean_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blackgrama)
+
+e4 <- glmer(Germ.binom ~ var_treatment + mean_treatment + mean_treatment*var_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blackgrama)
+
+lrtest(e0,e4)
+ICtab(e0,e1,e2,e3,e4)
+VarCorr(e0)
+
+
+```
+Mean and variance treatments are not significant predictors of germination for blue or black grama. The null model (constant germination) was the best fit for the data at this time.
+
+Try including Year_added, monsoon rainfall, total precip, proportional precip (based on treatment), Quad_ID, mean_var
+
+We care about Year in that it might (likely does) interact with the treatment.
+
+Try limiting to year planted or year after 
+
+```{r new variables}
 
 
 ```

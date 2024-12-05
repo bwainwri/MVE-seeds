@@ -681,7 +681,152 @@ date  (1): Date
 5           increase           increase      increase
 6            ambient            ambient       ambient</code></pre>
 </div>
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="co"># join treatments and germ dataset</span></span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>trts<span class="sc">$</span>Plot <span class="ot">&lt;-</span> trts<span class="sc">$</span>plot</span>
+<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>blue_19_23_trt <span class="ot">&lt;-</span> <span class="fu">left_join</span>(blue_19_23, trts, <span class="at">by =</span> <span class="st">"Plot"</span>)</span>
+<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a><span class="co"># prepare for model</span></span>
+<span id="cb62-6"><a href="#cb62-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove toothpicks with Corner == NE and Add_Year == 2019</span></span>
+<span id="cb62-7"><a href="#cb62-7" aria-hidden="true" tabindex="-1"></a>blue_19_23_trt_NE19rm <span class="ot">&lt;-</span> </span>
+<span id="cb62-8"><a href="#cb62-8" aria-hidden="true" tabindex="-1"></a>  blue_19_23_trt <span class="sc">%&gt;%</span>  </span>
+<span id="cb62-9"><a href="#cb62-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>(Corner <span class="sc">==</span> <span class="st">"NE"</span> <span class="sc">&amp;</span> Add_Year <span class="sc">==</span> <span class="dv">2019</span>))</span>
+<span id="cb62-10"><a href="#cb62-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-11"><a href="#cb62-11" aria-hidden="true" tabindex="-1"></a><span class="co"># separate dataset by species</span></span>
+<span id="cb62-12"><a href="#cb62-12" aria-hidden="true" tabindex="-1"></a>bluegrama <span class="ot">&lt;-</span> </span>
+<span id="cb62-13"><a href="#cb62-13" aria-hidden="true" tabindex="-1"></a>  blue_19_23_trt_NE19rm <span class="sc">%&gt;%</span> </span>
+<span id="cb62-14"><a href="#cb62-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Species <span class="sc">==</span> <span class="st">"BLUE"</span>)</span>
+<span id="cb62-15"><a href="#cb62-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-16"><a href="#cb62-16" aria-hidden="true" tabindex="-1"></a>blackgrama <span class="ot">&lt;-</span> </span>
+<span id="cb62-17"><a href="#cb62-17" aria-hidden="true" tabindex="-1"></a>  blue_19_23_trt_NE19rm <span class="sc">%&gt;%</span> </span>
+<span id="cb62-18"><a href="#cb62-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Species <span class="sc">==</span> <span class="st">"BLACK"</span>)</span>
+<span id="cb62-19"><a href="#cb62-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-20"><a href="#cb62-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Try altogether first</span></span>
+<span id="cb62-21"><a href="#cb62-21" aria-hidden="true" tabindex="-1"></a>m0 <span class="ot">&lt;-</span> <span class="fu">glmer</span>(Germ.binom <span class="sc">~</span> <span class="dv">1</span> <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Block<span class="sc">/</span>Plot<span class="sc">/</span>Corner) <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Add_Year), <span class="at">family =</span> binomial, <span class="at">data =</span> blue_19_23_trt_NE19rm)</span>
+<span id="cb62-22"><a href="#cb62-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-23"><a href="#cb62-23" aria-hidden="true" tabindex="-1"></a>m1 <span class="ot">&lt;-</span> <span class="fu">glmer</span>(Germ.binom <span class="sc">~</span> mean_treatment <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Block<span class="sc">/</span>Plot<span class="sc">/</span>Corner) <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Add_Year), <span class="at">family =</span> binomial, <span class="at">data =</span> blue_19_23_trt_NE19rm)</span>
+<span id="cb62-24"><a href="#cb62-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-25"><a href="#cb62-25" aria-hidden="true" tabindex="-1"></a>m2 <span class="ot">&lt;-</span> <span class="fu">glmer</span>(Germ.binom <span class="sc">~</span> var_treatment <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Block<span class="sc">/</span>Plot<span class="sc">/</span>Corner) <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Add_Year), <span class="at">family =</span> binomial, <span class="at">data =</span> blue_19_23_trt_NE19rm)</span>
+<span id="cb62-26"><a href="#cb62-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-27"><a href="#cb62-27" aria-hidden="true" tabindex="-1"></a>m3 <span class="ot">&lt;-</span> <span class="fu">glmer</span>(Germ.binom <span class="sc">~</span> Species <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Block<span class="sc">/</span>Plot<span class="sc">/</span>Corner) <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Add_Year), <span class="at">family =</span> binomial, <span class="at">data =</span> blue_19_23_trt_NE19rm)</span>
+<span id="cb62-28"><a href="#cb62-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-29"><a href="#cb62-29" aria-hidden="true" tabindex="-1"></a>m4 <span class="ot">&lt;-</span> <span class="fu">glmer</span>(Germ.binom <span class="sc">~</span> var_treatment <span class="sc">+</span> mean_treatment <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Block<span class="sc">/</span>Plot<span class="sc">/</span>Corner) <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Add_Year), <span class="at">family =</span> binomial, <span class="at">data =</span> blue_19_23_trt_NE19rm)</span>
+<span id="cb62-30"><a href="#cb62-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-31"><a href="#cb62-31" aria-hidden="true" tabindex="-1"></a>m5 <span class="ot">&lt;-</span> <span class="fu">glmer</span>(Germ.binom <span class="sc">~</span> var_treatment <span class="sc">+</span> mean_treatment <span class="sc">+</span> mean_treatment<span class="sc">*</span>var_treatment <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Block<span class="sc">/</span>Plot<span class="sc">/</span>Corner) <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Add_Year), <span class="at">family =</span> binomial, <span class="at">data =</span> blue_19_23_trt_NE19rm)</span>
+<span id="cb62-32"><a href="#cb62-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-33"><a href="#cb62-33" aria-hidden="true" tabindex="-1"></a><span class="fu">lrtest</span>(m0,m3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Likelihood ratio test
+
+Model 1: Germ.binom ~ 1 + (1 | Block/Plot/Corner) + (1 | Add_Year)
+Model 2: Germ.binom ~ Species + (1 | Block/Plot/Corner) + (1 | Add_Year)
+  #Df  LogLik Df  Chisq Pr(&gt;Chisq)
+1   5 -9336.8                     
+2   6 -9336.7  1 0.2825     0.5951</code></pre>
 </div>
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ICtab</span>(m0,m1,m2,m3,m4,m5)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   dAIC df
+m0 0.0  5 
+m1 0.2  6 
+m5 1.7  8 
+m3 1.7  6 
+m2 1.9  6 
+m4 2.1  7 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="fu">VarCorr</span>(m0)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> Groups              Name        Std.Dev.
+ Corner:(Plot:Block) (Intercept) 0.33615 
+ Plot:Block          (Intercept) 0.33790 
+ Block               (Intercept) 0.14739 
+ Add_Year            (Intercept) 0.47205 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Temporal and spatial heterogeneity explain a lot of the data</span></span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a><span class="co"># No differences by treatments, not including species as a factor</span></span>
+<span id="cb68-4"><a href="#cb68-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb68-5"><a href="#cb68-5" aria-hidden="true" tabindex="-1"></a><span class="co"># try blue grama</span></span>
+<span id="cb68-6"><a href="#cb68-6" aria-hidden="true" tabindex="-1"></a>g0 <span class="ot">&lt;-</span> <span class="fu">glmer</span>(Germ.binom <span class="sc">~</span> <span class="dv">1</span> <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Block<span class="sc">/</span>Plot<span class="sc">/</span>Corner) <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Add_Year), <span class="at">family =</span> binomial, <span class="at">data =</span> bluegrama)</span>
+<span id="cb68-7"><a href="#cb68-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb68-8"><a href="#cb68-8" aria-hidden="true" tabindex="-1"></a>g1 <span class="ot">&lt;-</span> <span class="fu">glmer</span>(Germ.binom <span class="sc">~</span> mean_treatment <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Block<span class="sc">/</span>Plot<span class="sc">/</span>Corner) <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Add_Year), <span class="at">family =</span> binomial, <span class="at">data =</span> bluegrama)</span>
+<span id="cb68-9"><a href="#cb68-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb68-10"><a href="#cb68-10" aria-hidden="true" tabindex="-1"></a>g2 <span class="ot">&lt;-</span> <span class="fu">glmer</span>(Germ.binom <span class="sc">~</span> var_treatment <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Block<span class="sc">/</span>Plot<span class="sc">/</span>Corner) <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Add_Year), <span class="at">family =</span> binomial, <span class="at">data =</span> bluegrama)</span>
+<span id="cb68-11"><a href="#cb68-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb68-12"><a href="#cb68-12" aria-hidden="true" tabindex="-1"></a>g3 <span class="ot">&lt;-</span> <span class="fu">glmer</span>(Germ.binom <span class="sc">~</span> var_treatment <span class="sc">+</span> mean_treatment <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Block<span class="sc">/</span>Plot<span class="sc">/</span>Corner) <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Add_Year), <span class="at">family =</span> binomial, <span class="at">data =</span> bluegrama)</span>
+<span id="cb68-13"><a href="#cb68-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb68-14"><a href="#cb68-14" aria-hidden="true" tabindex="-1"></a>g4 <span class="ot">&lt;-</span> <span class="fu">glmer</span>(Germ.binom <span class="sc">~</span> var_treatment <span class="sc">+</span> mean_treatment <span class="sc">+</span> mean_treatment<span class="sc">*</span>var_treatment <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Block<span class="sc">/</span>Plot<span class="sc">/</span>Corner) <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Add_Year), <span class="at">family =</span> binomial, <span class="at">data =</span> bluegrama)</span>
+<span id="cb68-15"><a href="#cb68-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb68-16"><a href="#cb68-16" aria-hidden="true" tabindex="-1"></a><span class="fu">lrtest</span>(g0,g4)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Likelihood ratio test
+
+Model 1: Germ.binom ~ 1 + (1 | Block/Plot/Corner) + (1 | Add_Year)
+Model 2: Germ.binom ~ var_treatment + mean_treatment + mean_treatment * 
+    var_treatment + (1 | Block/Plot/Corner) + (1 | Add_Year)
+  #Df  LogLik Df  Chisq Pr(&gt;Chisq)
+1   5 -5377.3                     
+2   8 -5375.8  3 2.9304     0.4025</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ICtab</span>(g0,g1,g2,g3,g4)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   dAIC df
+g0 0.0  5 
+g1 0.9  6 
+g2 1.9  6 
+g3 2.8  7 
+g4 3.1  8 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="fu">VarCorr</span>(g0)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> Groups              Name        Std.Dev.
+ Corner:(Plot:Block) (Intercept) 0.37843 
+ Plot:Block          (Intercept) 0.36427 
+ Block               (Intercept) 0.11760 
+ Add_Year            (Intercept) 0.43001 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="co"># try black grama</span></span>
+<span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a>e0 <span class="ot">&lt;-</span> <span class="fu">glmer</span>(Germ.binom <span class="sc">~</span> <span class="dv">1</span> <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Block<span class="sc">/</span>Plot<span class="sc">/</span>Corner) <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Add_Year), <span class="at">family =</span> binomial, <span class="at">data =</span> blackgrama)</span>
+<span id="cb74-3"><a href="#cb74-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb74-4"><a href="#cb74-4" aria-hidden="true" tabindex="-1"></a>e1 <span class="ot">&lt;-</span> <span class="fu">glmer</span>(Germ.binom <span class="sc">~</span> mean_treatment <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Block<span class="sc">/</span>Plot<span class="sc">/</span>Corner) <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Add_Year), <span class="at">family =</span> binomial, <span class="at">data =</span> blackgrama)</span>
+<span id="cb74-5"><a href="#cb74-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb74-6"><a href="#cb74-6" aria-hidden="true" tabindex="-1"></a>e2 <span class="ot">&lt;-</span> <span class="fu">glmer</span>(Germ.binom <span class="sc">~</span> var_treatment <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Block<span class="sc">/</span>Plot<span class="sc">/</span>Corner) <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Add_Year), <span class="at">family =</span> binomial, <span class="at">data =</span> blackgrama)</span>
+<span id="cb74-7"><a href="#cb74-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb74-8"><a href="#cb74-8" aria-hidden="true" tabindex="-1"></a>e3 <span class="ot">&lt;-</span> <span class="fu">glmer</span>(Germ.binom <span class="sc">~</span> var_treatment <span class="sc">+</span> mean_treatment <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Block<span class="sc">/</span>Plot<span class="sc">/</span>Corner) <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Add_Year), <span class="at">family =</span> binomial, <span class="at">data =</span> blackgrama)</span>
+<span id="cb74-9"><a href="#cb74-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb74-10"><a href="#cb74-10" aria-hidden="true" tabindex="-1"></a>e4 <span class="ot">&lt;-</span> <span class="fu">glmer</span>(Germ.binom <span class="sc">~</span> var_treatment <span class="sc">+</span> mean_treatment <span class="sc">+</span> mean_treatment<span class="sc">*</span>var_treatment <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Block<span class="sc">/</span>Plot<span class="sc">/</span>Corner) <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>Add_Year), <span class="at">family =</span> binomial, <span class="at">data =</span> blackgrama)</span>
+<span id="cb74-11"><a href="#cb74-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb74-12"><a href="#cb74-12" aria-hidden="true" tabindex="-1"></a><span class="fu">lrtest</span>(e0,e4)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Likelihood ratio test
+
+Model 1: Germ.binom ~ 1 + (1 | Block/Plot/Corner) + (1 | Add_Year)
+Model 2: Germ.binom ~ var_treatment + mean_treatment + mean_treatment * 
+    var_treatment + (1 | Block/Plot/Corner) + (1 | Add_Year)
+  #Df  LogLik Df  Chisq Pr(&gt;Chisq)
+1   5 -3930.8                     
+2   8 -3928.3  3 5.0287     0.1697</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ICtab</span>(e0,e1,e2,e3,e4)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   dAIC df
+e1 0.0  6 
+e0 0.5  5 
+e4 1.4  8 
+e3 2.0  7 
+e2 2.5  6 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a><span class="fu">VarCorr</span>(e0)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> Groups              Name        Std.Dev.
+ Corner:(Plot:Block) (Intercept) 0.35447 
+ Plot:Block          (Intercept) 0.32408 
+ Block               (Intercept) 0.16698 
+ Add_Year            (Intercept) 0.64635 </code></pre>
+</div>
+</div>
+<p>Mean and variance treatments are not significant predictors of germination for blue or black grama. The null model (constant germination) was the best fit for the data at this time.</p>
+<p>Try including Year_added, Year-Observed, monsoon rainfall, total precip, proportional precip (based on treatment), Quad_ID, mean_var</p>
+<p>We care about Year in that it might (likely does) interact with the treatment.</p>
 </section>
 <section id="graph-germination-by-year-and-treatments" class="level2">
 <h2 class="anchored" data-anchor-id="graph-germination-by-year-and-treatments">Graph germination by year and treatments</h2>
