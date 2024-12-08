@@ -155,7 +155,6 @@ blue_2020_long <-
   mutate(Obs_Date=as.Date(Obs_Date,format="%m/%d/%Y")) # Format dates
 unique(blue_2020_long$Obs_Date)
 
-head(blue_2021)
 blue_2021_long <-
   pivot_longer(blue_2021,
                cols = c("2021-07-26":"2024-05-06"),
@@ -169,7 +168,8 @@ blue_2022_long <-
                cols = c("2022-07-05":"2024-04-03"),
                names_to = "Obs_Date",
                values_to = "Germ.binom") %>%
-  mutate(Obs_Date=as.Date(Obs_Date,format="%m-%d-%Y")) # Format dates
+  mutate(Obs_Date=as.Date(Obs_Date,format="%Y-%m-%d")) 
+# Format dates
 unique(blue_2022_long$Obs_Date)
 
 blue_2023_long <-
@@ -332,6 +332,7 @@ blue_19_23_reduced <- rbind(
   blue_2022_long_reduced,
   blue_2023_long_reduced
   )
+summary(blue_19_23_reduced)
 
 write_csv(blue_19_23_reduced, "germ_19_23.csv")
 ```
@@ -339,6 +340,9 @@ write_csv(blue_19_23_reduced, "germ_19_23.csv")
 Create an alternative dataset that preserves raw data. Create a dataset for modeling based on cohort year and one for soil moisture modeling.
 
 ```{r alternate long form germ}
+#| eval: false # Do not evaluate this chunk
+#| echo: false # Do not show this chunk in the final rendered document
+#| 
 # Get each year ready fro rbind (make loop or fxn)
 
 blue_2019_long <-
@@ -417,16 +421,52 @@ blue_19_23_long_raw <- rbind(
 
 write_csv(blue_19_23_long_raw, "germ_19_23_long_raw.csv")
 # use this for soil moisture
+```
 
+LEFT OFF HERE
+Could easily look at 2019-2022 together for number of germs in Y1 or Y2. If Obs Year == Add_Year, then Germ_Year = 1
+
+Make a data frame that looks at the current year and past year cohorts for each monsoon season. Those will be the trials for probability. But first confirm that most germination happens in first two years.
+
+```{r}
+
+# first look at germination over time by data for each year added -- I expect that we can reduce each one the year planted and the year after, so as to not inflate zeros
+# you actually want to use previously reduced data
+blue_19_23 <- read_csv("germ_19_23.csv")
+
+# Isolate by year
+blue_19 <- blue_19_23 %>% 
+  filter(Add_Year == 2019 & Germ.binom == 1) %>% 
+  mutate(Germ_Year = year(Obs_Date))
+hist(blue_19$Germ_Year)
+
+blue_20 <- blue_19_23 %>% 
+  filter(Add_Year == 2020 & Germ.binom == 1) %>% 
+  mutate(Germ_Year = year(Obs_Date))
+hist(blue_20$Germ_Year)
+
+blue_21 <- blue_19_23 %>% 
+  filter(Add_Year == 2021 & Germ.binom == 1) %>% 
+  mutate(Germ_Year = year(Obs_Date))
+hist(blue_21$Germ_Year)
+
+blue_22 <- blue_19_23 %>% 
+  filter(Add_Year == 2022 & Germ.binom == 1) %>% 
+  mutate(Germ_Year = year(Obs_Date))
+hist(blue_22$Germ_Year)
+
+blue_23 <- blue_19_23 %>% 
+  filter(Add_Year == 2023 & Germ.binom == 1) %>% 
+  mutate(Germ_Year = year(Obs_Date))
+hist(blue_23$Germ_Year)
 # Make a dataframe for each years crops of available seeds to germ
-# first, though, look at germination over time by data for each year added -- I expect that we can reduce each one the year planted and the year after, so as to not inflate zeros
 
-## LEFT OFF HERE
-
+# get some percentages
 
 
 ```
 
+There's clear evidence for limiting to first two years. Let's make it official. Go back to top of this code chunk and code for Year 1 Year 2 and then graph and get percentages.
 
 ```{r treatment data hidden}
 #| eval: false # Do not evaluate this chunk
@@ -720,7 +760,8 @@ Read in cleaned up datasets.
 #| warning: false
 #| message: false
 
-blue_19_23 <- read_csv("germ_19_23.csv")
+blue_19_23 <- read_csv("germ_19_23.csv") # reduced to only first germ
+blue_19_23_long_raw <- read_csv("germ_19_23_long_raw.csv") # All binomial observations from first germ through survival
 
 trts<-read.csv("meanvar_blue_treatments.csv")
 
