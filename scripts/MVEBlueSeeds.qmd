@@ -5,8 +5,6 @@ format: html
 editor: visual
 ---
 
-
-
 ## Background
 
 The Sevilleta Long Term Ecological Research (LTER) Program (Socorro, NM) rolled out a novel climate change experiment in 2019: the Mean-Variance Experiment (MVE). The experiment has been replicated in four ecosystems to date but the focus of this document is on the experimental infrastructure found in the Great Plains Grassland ecosystem, dominated by blue grama grass (*Bouteloua gracilis*). Hence Mean-Variance Blue or MVE Blue. The ecosystem is dominated by blue grama grass but the adjacent ecosystem, Chihuahuan Desert Grassland, is dominated by black grama grass (*Bouteloua eriopoda*). Great Plains Grassland extends northward throughout central North America while Chihuahuan Desert Grassland extends southward into Mexico. Thus, under a more arid climate, we would expect Chihuahuan Desert Grassland to expand it's range northward. The experimental infrastructure is set near the ecotone of these two ecosystems. More information on this experiment can be found here: <https://sevlter.unm.edu/mean-variance-experiment/>. To test the recruitment dynamics of these dominant plants under climate change, we added seeds of each species to the experimental plots from 2019-2023 and tracked their germination and survival biweekly during the growing season and monthly during the dormant season.
@@ -16,18 +14,16 @@ The Sevilleta Long Term Ecological Research (LTER) Program (Socorro, NM) rolled 
 1.  Read in seed monitoring data for all five years, treatments, soil moisture data, climate data.
 2.  Explore data, provide summary statistics.
 3.  Create graph of typical climate for temperature and precipitation.
-5.  Find the best model for the germination data using year and mean and variance treatments as predictors
-6.  Graph germination by year, mean, and variance by species.
-7.  Find best model of survival by species, year, and mean and variance treatments. Or a model for each species. Graph.
-8.  Figure out the 1-3 events each year where 90-95% of germination occurs and isolate germination and soil moisture to those events and build a model to understand how soil moisture determines germination probability. Graph.
-9.  Characterize die off/survival. Is it gradual and consistent or happen in major events like germination. Graph?
-10. Figure out how to test for legacy effects on germination and/or survival. Graph.
+4.  Find the best model for the germination data using year and mean and variance treatments as predictors
+5.  Graph germination by year, mean, and variance by species.
+6.  Find best model of survival by species, year, and mean and variance treatments. Or a model for each species. Graph.
+7.  Figure out the 1-3 events each year where 90-95% of germination occurs and isolate germination and soil moisture to those events and build a model to understand how soil moisture determines germination probability. Graph.
+8.  Characterize die off/survival. Is it gradual and consistent or happen in major events like germination. Graph?
+9.  Figure out how to test for legacy effects on germination and/or survival. Graph.
 
 ## Setup
 
 Read in necessary packages.
-
-
 
 ```{r}
 #| message: false
@@ -50,17 +46,12 @@ library(bbmle)
 library(lmtest)
 ```
 
-
-
-## Read Data
+## Clean and Wrangle Data
 
 Bring in seed monitoring data for all five years, bring in keys, bring in soil moisture data, bring in climate data.
 
-
-
 ```{r seed census data hidden}
 #| eval: false # Do not evaluate this chunk
-#| echo: false # Do not show this chunk in the final rendered document
 
 print("Dont run this code")
 # bring in each year of data (2019-2023, 5 years total)
@@ -345,17 +336,12 @@ summary(blue_19_23_reduced)
 write_csv(blue_19_23_reduced, "germ_19_23.csv")
 ```
 
-
-
-Create an alternative dataset that preserves raw data. Create a dataset for modeling based on cohort year and one for soil moisture modeling.
-
-
+Create an alternative dataset that preserves raw data.
 
 ```{r alternate long form germ}
 #| eval: false # Do not evaluate this chunk
-#| echo: false # Do not show this chunk in the final rendered document
-#| 
-# Get each year ready fro rbind (make loop or fxn)
+
+# Get each year ready for rbind (make loop or fxn)
 
 blue_2019_long <-
   blue_2019_long %>%
@@ -435,14 +421,7 @@ write_csv(blue_19_23_long_raw, "germ_19_23_long_raw.csv")
 # use this for soil moisture
 ```
 
-
-
-LEFT OFF HERE
-Could easily look at 2019-2022 together for number of germs in Y1 or Y2. If Obs Year == Add_Year, then Germ_Year = 1
-
 Make a data frame that looks at the current year and past year cohorts for each monsoon season. Those will be the trials for probability. But first confirm that most germination happens in first two years.
-
-
 
 ```{r}
 
@@ -483,16 +462,13 @@ year_sum <- blue_years %>%
   summarise(percent = (sum(Germ.binom)/total)*100)
 ```
 
-
-
 75% of germinated seeds occur in their first year, 20% occur in second year, 4% in the third and 0.77% in 4th year.
 
 Sufficient evidence to reduce to first year and second year.
 
-
-
 ```{r reduce to y1 and y2}
 #| warning: false
+#| eval: false
 
 # Make a dataframe for each years crops of available seeds to germ
 blue_19_23_long_raw <- read_csv("germ_19_23_long_raw.csv")
@@ -543,22 +519,24 @@ blue_Y2_filt <- blue_Y2 %>%
 
 which(blue_Y2_filt$TP_ID == "202116BLUENE1G")
 
+blue_y1_y2 <- rbind(blue_Y1, blue_Y2_filt)
+blue_y1_y2 <- blue_y1_y2 %>% 
+  mutate(plot = Plot)
 
-
-
+write_csv(blue_y1_y2, "blue_year_cohorts.csv")
 ```
+
 
 ```{r treatment data hidden}
 #| eval: false # Do not evaluate this chunk
-#| echo: false # Do not show this chunk in the final rendered document
 
 trts<-read.csv("meanvar_blue_treatments.csv")
 str(trts)
 ```
 
+
 ```{r soil moisture hidden}
 #| eval: false # Do not evaluate this chunk
-#| echo: false # Do not show this chunk in the final rendered document
 
 # path to where the load_MVE_data_into_R.R file is located - CHANGE THIS TO THE PATH ON YOUR COMPUTER
 source("load_MVE_data_into_R.R")
@@ -729,9 +707,9 @@ sm_t_23 <- read_csv("MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2023.c
 
 ```
 
+
 ```{r climate data hidden}
 #| eval: false # Do not evaluate this chunk
-#| echo: false # Do not show this chunk in the final rendered document
 
 met_00_04 <- read_csv("https://portal.edirepository.org/nis/dataviewer?packageid=knb-lter-sev.1.17&entityid=371109f8068b35cf65edc8ba4237c8bd")
 met_05_09 <- read_csv("https://portal.edirepository.org/nis/dataviewer?packageid=knb-lter-sev.1.17&entityid=e326dbe48c0cdc5b91496a469a50e36d")
@@ -834,11 +812,9 @@ met_20_23_50 <- met_20_23 %>%
  write_csv(met_00_23_50, "met_50.csv")
 ```
 
+## Read in Cleaned Data
 
-
-Read in cleaned up datasets.
-
-
+These are all the datasets cleaned above, this saves R time.
 
 ```{r}
 #| warning: false
@@ -846,6 +822,8 @@ Read in cleaned up datasets.
 
 blue_19_23 <- read_csv("germ_19_23.csv") # reduced to only first germ
 blue_19_23_long_raw <- read_csv("germ_19_23_long_raw.csv") # All binomial observations from first germ through survival
+
+bluebyyear <- read_csv("blue_year_cohorts.csv")
 
 trts<-read.csv("meanvar_blue_treatments.csv")
 
@@ -859,13 +837,9 @@ sm_t_23 <- read_csv("MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2023.c
 met_00_23_50 <- read_csv("met_50.csv")
 ```
 
-
-
 ## Data Exploration
 
-Our data objects are 'blue_19_23', 'trts',  'sm_t_18':'sm_t_23', 'met_00_23_50'.
-
-
+Our data objects are 'blue_19_23', 'trts', 'sm_t_18':'sm_t_23', 'met_00_23_50','blue_19_23_long_raw','bluebyyear'
 
 ```{r}
 summary(blue_19_23)
@@ -874,40 +848,45 @@ summary(blue_19_23)
 sum(blue_19_23$Germ.binom, na.rm = TRUE)/(nrow(blue_19_23)-1)
 ```
 
-
-
 Overall germination rate of 13.4% across five years, both treatments, both species. Columns are: Plot, Corner, Species, Row, Column, TP_ID, Add_Year, Obs_Date, and Germ.binom.
 
+```{r}
+summary(bluebyyear)
 
+# drop NAs in Add-Year, Obs_Date, and Germ_binom. Investigate later if you want
+bluebyyear <- bluebyyear[!is.na(bluebyyear$Add_Year),]
+bluebyyear <- bluebyyear[!is.na(bluebyyear$Obs_Date),]
+bluebyyear <- bluebyyear[!is.na(bluebyyear$Germ.binom),]
+
+summary(bluebyyear)
+
+bluebyyear$trial <- 1
+bluebyyear %>% 
+  group_by(Obs_Year) %>% 
+  summarise(germ_prob = sum(Germ.binom)/sum(trial))
+```
+
+Highest germination rate in 2022 at 10%. Lowest in 2019 at 1%.
 
 ```{r}
 # str(trts)
 head(trts)
 ```
 
-
-
 Treatments for mean-variance blue. Variance treatments flipped at random from 2019-2022.
-
-
 
 ```{r}
 # summary(sm_t_20)
 head(sm_t_20)
 ```
 
-
 Sensor data for 18/30 plots at mean-variance blue. sensor_id contains sensor type (temperature or volumentric water content), plot, and sensor depth (12, 22, or 37 cm).
-
-
 
 ```{r}
 summary(met_00_23_50)
 # head(met_00_23_50)
 # str(met_00_23_50)
 ```
-
-
 
 Hourly climate data from Met Station 50, limited to date and time, temperature, and precipitation.
 
@@ -916,8 +895,6 @@ Hourly climate data from Met Station 50, limited to date and time, temperature, 
 The climate data are collected from meteorological stations at the Sevilleta NWR. These data come from met station 50, which is the nearest station to MVE Blue. Data began in 2000 and continues through 2023. Data is organized by date and time, temperature in celsius per hour, and minimum and maximum temperature for hour, total precipitation per hour in millimeters. I'm interested in the average range of temperatures for each season and the average annual and seasonal precipitation. Data comes from here(<https://portal.edirepository.org/nis/mapbrowse?packageid=knb-lter-sev.1.17>)
 
 I want a graph where the x-axis is days of the year and there are three lines, each with confidence bands: average daily precip, daily high temperature, daily low temperature.
-
-
 
 ```{r}
 #| message: false
@@ -1000,10 +977,8 @@ ggsave("F1_MVEBlue_climate.jpg", clim_plot)
 
 # Replace month numbers with month names
 # investigate rogue June precipitation
-
+# Change character of the line to just go to each point as a straight line
 ```
-
-
 
 Figure 1. Climate averages for Meteorological Station 50 near Mean-Variance Blue Experiment from 2000-2023. Purple dots represent total monthly precipitation in millimeters, averaged over 2000-2023. Turquoise dots represent monthly average daily minimum and maximum temperatures in Fahrenheit from 2000-2023. Shaded regions represent 95% confidence intervals.
 
@@ -1011,9 +986,7 @@ Figure 1. Climate averages for Meteorological Station 50 near Mean-Variance Blue
 
 Make a generalized linear mixed model with a binomial or bernoulli distribution and corner, plot, and block, and maybe Year as random effects. Possible fixed effects are species, mean treatment, variance treatment, Year, annual rainfall, or monsoon rainfall.
 
-You'll need to remove toothpicks in the NW corner in 2019 since those were planted among adult blue grama grass to test facilitation. Consider removed 2019 altogether since it was planted so late. 
-
-
+You'll need to remove toothpicks in the NW corner in 2019 since those were planted among adult blue grama grass to test facilitation.
 
 ```{r}
 #| message: false
@@ -1046,35 +1019,49 @@ blackgrama <-
   filter(Species == "BLACK")
 ```
 
+Try generalized linear mixed effects models for the simplest dataset blue_19_23. This considers what year the seeds were planted but not necessarily the year they germinated. This is only the probability of whether a given seed germinated or not over the 5 years.
+
 ```{r}
 #| eval: false # Do not evaluate this chunk
 #| echo: false # Do not show this chunk in the final rendered document
 
-# Try altogether first
+# Try both species together first
 m0 <- glmer(Germ.binom ~ 1 + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blue_19_23_trt_NE19rm)
 
+# ignore Add Year
 m0b <- glmer(Germ.binom ~ 1 + (1|Block/Plot/Corner), family = binomial, data = blue_19_23_trt_NE19rm)
 
+# just mean treatment
 m1 <- glmer(Germ.binom ~ mean_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blue_19_23_trt_NE19rm)
 
+# just variance treatment
 m2 <- glmer(Germ.binom ~ var_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blue_19_23_trt_NE19rm)
 
+# just Species
 m3 <- glmer(Germ.binom ~ Species + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blue_19_23_trt_NE19rm)
 
+# mean and variance treatments
 m4 <- glmer(Germ.binom ~ var_treatment + mean_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blue_19_23_trt_NE19rm)
 
+# interaction between mean and variance
 m5 <- glmer(Germ.binom ~ var_treatment + mean_treatment + mean_treatment*var_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blue_19_23_trt_NE19rm)
 
+# just Add Year as a fixed effect
 m6 <- glmer(Germ.binom ~ Add_Year + (1|Block/Plot/Corner), family = binomial, data = blue_19_23_trt_NE19rm)
 
-lrtest(m0,m6)
-lrtest(m0b,m6)
+# test each model against null model
+# lrtest(m0,m6)
+# lrtest(m0b,m6)
 ICtab(m0,m0b,m1,m2,m3,m4,m5,m6)
 VarCorr(m0)
-# Temporal and spatial heterogeneity explain a lot of the data
+```
 
-# No differences by treatments, not including species as a factor
+Temporal and spatial heterogeneity explain a lot of the data. Super not helpful to remove Add-Year as a random effect. Best models are m0, m1, m5, m2, m3, m4 (all very close and within 2 dAIC). Did not help to scale Add_year.
 
+No differences by treatments, not including species as a factor.
+
+Below, try models for each species.
+```{r}
 # try blue grama
 g0 <- glmer(Germ.binom ~ 1 + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = bluegrama)
 
@@ -1086,10 +1073,17 @@ g3 <- glmer(Germ.binom ~ var_treatment + mean_treatment + (1|Block/Plot/Corner) 
 
 g4 <- glmer(Germ.binom ~ var_treatment + mean_treatment + mean_treatment*var_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = bluegrama)
 
-lrtest(g0,g4)
+# test each model against null model
+# lrtest(g0,g4)
 ICtab(g0,g1,g2,g3,g4)
 VarCorr(g0)
+```
 
+Null model is just as good as any other model (no significant predictors).
+
+Try black grama below.
+
+```{r}
 # try black grama
 e0 <- glmer(Germ.binom ~ 1 + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blackgrama)
 
@@ -1101,39 +1095,196 @@ e3 <- glmer(Germ.binom ~ var_treatment + mean_treatment + (1|Block/Plot/Corner) 
 
 e4 <- glmer(Germ.binom ~ var_treatment + mean_treatment + mean_treatment*var_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blackgrama)
 
-lrtest(e0,e4)
+# test each model against null mode
+# lrtest(e0,e4)
 ICtab(e0,e1,e2,e3,e4)
 VarCorr(e0)
-
-
 ```
-
 
 Mean and variance treatments are not significant predictors of germination for blue or black grama. The null model (constant germination) was the best fit for the data at this time.
 
-Try including Year_added, monsoon rainfall, total precip, proportional precip (based on treatment), Quad_ID, mean_var.
+Next steps:
+Try including Monsoon rainfall, total annual precip.
 
-We care about Year in that it might (likely does) interact with the treatment.
+We care about Year in that it might interact with the treatment.
 
-Try limiting to year planted or year after. So each cohort is each rain year.
+Try limiting to year planted or year after. So each "Observation Year" includes the seeds planted that year and the ungerminated seeds from the year prior.
 
-Before doing this, skip to graphing
+## Year Cohort Model
 
+Create new variables with meteorological data and treatments. Make treatments numeric.
 
+```{r cohort rain year}
+head(bluebyyear)
 
-```{r new variables}
+# merge with treatments
+head(trts)
+blue_yr_trt <- left_join(bluebyyear,trts, by = join_by(plot))
+head(blue_yr_trt)
 
+blue_yr_trt <- blue_yr_trt %>% 
+  select(
+    Block,
+    plot,
+    Corner,
+    Species,
+    Row,
+    Column,
+    TP_ID,
+    Add_Year,
+    Obs_Date,
+    Obs_Year,
+    Germ.binom,
+    trial,
+    mean_treatment,
+    var_treatment_2019,
+    var_treatment_2020,
+    var_treatment_2021,
+    var_treatment_2022,
+    var_treatment
+  )
 
+# merge with precipitation (monsoon and total)
+year_pp <- met_00_23_50 %>%
+  filter(Year > 2018) %>% 
+  group_by(Year) %>% 
+  summarise(sum_pp = sum(Precipitation))
+
+year_mons_pp <- met_00_23_50 %>%
+  filter(Month > 5 & Month < 10 & Year > 2018) %>% 
+  group_by(Year) %>% 
+  summarise(sum_mons_pp = sum(Precipitation))
+
+# collapse Mean-Var variable (make loop or fxn)
+blue_yr_trt <- blue_yr_trt %>% 
+  mutate(
+    mv19 =
+      case_when(
+        mean_treatment == "ambient" & var_treatment_2019 == "ambient" ~ 0
+        , mean_treatment == "reduced" & var_treatment_2019 == "ambient" ~ -25
+        , mean_treatment == "ambient" & var_treatment_2019 == "increase" ~ 50
+        , mean_treatment == "reduced" & var_treatment_2019 == "increase" ~ 25
+        , mean_treatment == "ambient" & var_treatment_2019 == "decrease" ~ -50
+        , plot == 4|7|17|23|26 ~ -75 # for some reason the same conditional doesn't work, soft coded for progress but would love to figure out why it doesn't work, see below
+      )
+  )
+# which(blue_yr_trt$mean_treatment == "reduced" & blue_yr_trt$var_treatment_2019 == "decrease")
+# blue_yr_trt[which(blue_yr_trt$plot == 7), c("mean_treatment","var_treatment_2019")]
+
+unique(blue_yr_trt$mv19)
+
+# view(trts[,c("plot","mean_treatment","var_treatment_2020")])
+blue_yr_trt <- blue_yr_trt %>% 
+  mutate(
+    mv20 =
+      case_when(
+        mean_treatment == "ambient" & var_treatment_2020 == "ambient" ~ 0
+        , mean_treatment == "reduced" & var_treatment_2020 == "ambient" ~ -25
+        , mean_treatment == "ambient" & var_treatment_2020 == "increase" ~ 50
+        , mean_treatment == "reduced" & var_treatment_2020 == "increase" ~ 25
+        , mean_treatment == "ambient" & var_treatment_2020 == "decrease" ~ -50
+        , plot == 4|8|18|24|26 ~ -75 # for some reason the same conditional doesn't work, soft coded for progress but would love to figure out why it doesn't work
+      )
+  )
+unique(blue_yr_trt$mv20)
+
+# view(trts[,c("plot","mean_treatment","var_treatment_2021")])
+blue_yr_trt <- blue_yr_trt %>% 
+  mutate(
+    mv21 =
+      case_when(
+        mean_treatment == "ambient" & var_treatment_2021 == "ambient" ~ 0
+        , mean_treatment == "reduced" & var_treatment_2021 == "ambient" ~ -25
+        , mean_treatment == "ambient" & var_treatment_2021 == "increase" ~ 50
+        , mean_treatment == "reduced" & var_treatment_2021 == "increase" ~ 25
+        , mean_treatment == "ambient" & var_treatment_2021 == "decrease" ~ -50
+        , plot == 4|7|18|24|25 ~ -75 # for some reason the same conditional doesn't work, soft coded for progress but would love to figure out why it doesn't work
+      )
+  )
+unique(blue_yr_trt$mv21)
+
+# view(trts[,c("plot","mean_treatment","var_treatment_2022")])
+blue_yr_trt <- blue_yr_trt %>% 
+  mutate(
+    mv22 =
+      case_when(
+        mean_treatment == "ambient" & var_treatment_2022 == "ambient" ~ 0
+        , mean_treatment == "reduced" & var_treatment_2022 == "ambient" ~ -25
+        , mean_treatment == "ambient" & var_treatment_2022 == "increase" ~ 50
+        , mean_treatment == "reduced" & var_treatment_2022 == "increase" ~ 25
+        , mean_treatment == "ambient" & var_treatment_2022 == "decrease" ~ -50
+        , plot == 4|8|18|24|26 ~ -75 # for some reason the same conditional doesn't work, soft coded for progress but would love to figure out why it doesn't work
+      )
+  )
+unique(blue_yr_trt$mv22)
+
+# bring in total precip, mons_precip, and create proportional rain for monsoon and total based on treatment
+blue_yr_trt <- left_join(blue_yr_trt, year_pp, by = c("Obs_Year"="Year"))
+blue_yr_trt <- left_join(blue_yr_trt, year_mons_pp, by = c("Obs_Year"="Year"))
+
+##### LEFT OFF HERE #####
+# this doesn't work because -50% and +50% are the same
+blue_yr_trt$sum_pp_trt19 <- blue_yr_trt$sum_pp*(blue_yr_trt$mv19/100)
+
+# create Quad_ID
+# example = (1|plot.f/Quad_ID)
+
+# remove NE and 2019
+blue_yr_trt <- 
+  blue_yr_trt %>%  
+  filter(!(Add_Year == 2019 & Corner == "NE"))
+
+# separate dataset by species
+bluegrama <- 
+  blue_yr_trt %>% 
+  filter(Species == "BLUE")
+
+blackgrama <- 
+  blue_yr_trt %>% 
+  filter(Species == "BLACK")
 ```
 
+Try new models
 
+```{r}
+# Try both species together first
+m0 <- glmer(Germ.binom ~ 1 + (1|Block/plot/Corner), family = binomial, data = blue_yr_trt)
 
+m1 <- glmer(Germ.binom ~ 1 + (1|Block/plot/Corner) + (1|Obs_Year), family = binomial, data = blue_yr_trt)
+
+m2 <- glmer(Germ.binom ~ mean_treatment + (1|Block/plot/Corner) + (1|Obs_Year), family = binomial, data = blue_yr_trt)
+
+m3 <- glmer(Germ.binom ~ Obs_Year + (1|Block/plot/Corner), family = binomial, data = blue_yr_trt)
+
+m4 <- glmer(Germ.binom ~ var_treatment + (1|Block/plot/Corner) + (1|Obs_Year), family = binomial, data = blue_yr_trt)
+
+m5 <- glmer(Germ.binom ~ Species + (1|Block/plot/Corner) + (1|Obs_Year), family = binomial, data = blue_yr_trt)
+
+m6 <- glmer(Germ.binom ~ sum_pp + (1|Block/plot/Corner), family = binomial, data = blue_yr_trt)
+
+m7 <- glmer(Germ.binom ~ sum_mons_pp + (1|Block/plot/Corner), family = binomial, data = blue_yr_trt)
+
+m8 <- glmer(Germ.binom ~ sum_mons_pp*mean_treatment + (1|Block/plot/Corner), family = binomial, data = blue_yr_trt)
+
+m9 <- glmer(Germ.binom ~ sum_mons_pp*var_treatment + (1|Block/plot/Corner), family = binomial, data = blue_yr_trt)
+
+m10 <- glmer(Germ.binom ~ sum_pp*mean_treatment + (1|Block/plot/Corner), family = binomial, data = blue_yr_trt)
+
+m11 <- glmer(Germ.binom ~ sum_pp*var_treatment + (1|Block/plot/Corner), family = binomial, data = blue_yr_trt)
+
+lrtest(m0,m11)
+
+ICtab(m0,m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11)
+VarCorr(m0)
+```
+
+Models that include observation year, total year precipitation, or monsoon precipitation are strongest. Best models include Observation Year as a random effect. Need more work on this!
 
 ## Graph germination by year and treatments
 
-Graph it so two panels are the two mean treatments and -axis are variance treatments bar graphs of estimated proportion of germination by species and year. 
+Graph it so two panels are the two mean treatments and -axis are variance treatments bar graphs of estimated proportion of germination by species and year.
 
-
+Use original data (no observation year cohorts, Yead Added only). Prep data below.
 
 ```{r}
 #| warning: false
@@ -1149,20 +1300,15 @@ germ_summary_all <- blue_19_23_trt_NE19rm %>%
 
 ```
 
-
-
 Plot all years together.
-
 
 ```{r}
 ggplot(germ_summary_all, aes(x=var_treatment, y = avg_germ, group = Species, fill = Species, na.rm = TRUE)) + scale_fill_manual(values=c("black","cornflowerblue")) + geom_col(position = position_dodge()) + facet_grid(. ~ mean_treatment) + labs(x = "Variance Treatment", y = "Estimated Germination Probability") + theme_bw()
 ```
 
-
 Species functionally the same for all treatments, no major differences between treatments but lowest germination in reduced mean and ambient variance treatment.
 
 Break out each year.
-
 
 ```{r}
 germ_yr <- ggplot(germ_summary, aes(x=var_treatment, y = avg_germ, group = Species, fill = Species, na.rm = TRUE)) + scale_fill_manual(values=c("black","cornflowerblue")) + geom_col(position = position_dodge()) + facet_grid(Add_Year ~ mean_treatment) + labs(x = "Variance Treatment", y = "Estimated Germination Probability") + theme_bw()
@@ -1171,10 +1317,33 @@ germ_yr
 ggsave("GermxYear.jpg", germ_yr, width = 7, height = 12)
 ```
 
-
-
 High interannual variation in germination between species and treatments. Could be due to rainfall and temperature differences by year. Back to models!
 
+Try it using Observation Year cohorts.
+
+```{r}
+#| warning: false
+#| message: false
+
+blue_yr_trt$p_hat <- blue_yr_trt$Germ.binom/1
+blue_19_23_trt_NE19rm$p_hat <- blue_19_23_trt_NE19rm$Germ.binom/1
+
+germ_summary <- blue_yr_trt %>% 
+  group_by(Obs_Year, mean_treatment, var_treatment, Species) %>% summarize(avg_germ = mean(p_hat))
+
+germ_summary_all <- blue_19_23_trt_NE19rm %>% 
+  group_by(mean_treatment, var_treatment, Species) %>% summarize(avg_germ = mean(p_hat))
+
+```
+
+Graph by year.
+
+```{r}
+germ_yr <- ggplot(germ_summary, aes(x=var_treatment, y = avg_germ, group = Species, fill = Species, na.rm = TRUE)) + scale_fill_manual(values=c("black","cornflowerblue")) + geom_col(position = position_dodge()) + facet_grid(Obs_Year ~ mean_treatment) + labs(x = "Variance Treatment", y = "Estimated Germination Probability") + theme_bw()
+germ_yr
+
+ggsave("GermxObs_Year.jpg", germ_yr, width = 7, height = 12)
+```
 
 ## Model Soil Moisture Germination Events
 
@@ -1185,4 +1354,3 @@ High interannual variation in germination between species and treatments. Could 
 ## Characterize Survival (Pulse or Press)
 
 ## Legacy Model & Graph
-
