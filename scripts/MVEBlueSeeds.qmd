@@ -1242,15 +1242,6 @@ blue_yr_trt$Obs_Year_sc <- blue_yr_trt$Obs_Year - 2018
 blue_yr_trt$sum_pp_sc <- blue_yr_trt$sum_pp - 200
 blue_yr_trt$sum_mons_pp_sc <- blue_yr_trt$sum_mons_pp - 80
 
-
-# separate dataset by species
-bluegrama <- 
-  blue_yr_trt %>% 
-  filter(Species == "BLUE")
-
-blackgrama <- 
-  blue_yr_trt %>% 
-  filter(Species == "BLACK")
 ```
 
 Try scaling differently
@@ -1270,67 +1261,48 @@ blue_yr_trt$meanvar <- paste0(blue_yr_trt$mean_treatment,blue_yr_trt$var_treatme
 ```
 
 Try new models
-Try a different optimizer
-Try a fixed effects model only
+Try a different optimizer -- didn't work
+Try a fixed effects model only -- convergence failure went away
 Check for overdispersion
+
+Question: How does a changing climate mean and variance affect co-domininant grass germination?
 
 ```{r}
 # Try both species together first
+m0 <- glm(Germ.binom ~ 1, family = binomial, data = blue_yr_trt)
+m1 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc), family = binomial, data = blue_yr_trt)
+m2 <- glmer(Germ.binom ~ 1 + (1|Block), family = binomial, data = blue_yr_trt)
+m3 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc) + (1|Block), family = binomial, data = blue_yr_trt)
 
-m0 <- glmer(Germ.binom ~ 1 + (1|Block/plot/Corner), family = binomial, data = blue_yr_trt)
+mall <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment*sum_pp_sc + (1|Obs_Year_sc) + (1|Block), family = binomial, data = blue_yr_trt)
 
-m1 <- glmer(Germ.binom ~ 1 + (1|Block/plot/Corner) + (1|Obs_Year_sc), family = binomial, data = blue_yr_trt)
+mall2 <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment + (1|Obs_Year_sc) + (1|Block), family = binomial, data = blue_yr_trt)
 
-m2 <- glmer(Germ.binom ~ 1 + (1|Quad_ID) + (1|Obs_Year_sc), family = binomial, data = blue_yr_trt)
+mall3 <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment + (1|sum_pp_sc) + (1|Block), family = binomial, data = blue_yr_trt)
 
-m3 <- glmer(Germ.binom ~ 1 + (1|Quad_ID_ne_yr) + (1|Obs_Year_sc), family = binomial, data = blue_yr_trt)
+mall4 <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment*sum_pp_sc + (1|Block), family = binomial, data = blue_yr_trt)
 
-m4 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc), family = binomial, data = blue_yr_trt)
-
-m5 <- glmer(Germ.binom ~ 1 + (1|Quad_ID), family = binomial, data = blue_yr_trt)
-
-mall <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment*sum_pp_sc + (1|Obs_Year_sc) + (1|Block/plot/Corner), family = binomial, data = blue_yr_trt, control = glmerControl(optimizer = "bobyqa"))
-
-mall2 <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment*sum_pp_sc + (1|Block/plot/Corner), family = binomial, data = blue_yr_trt)
-
-mall3 <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment*sum_pp_sc_2 + (1|Block/plot/Corner) + (1|Obs_Year_sc), family = binomial, data = blue_yr_trt)
-
-mall4 <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment*sum_pp_sc + (1|Block/plot/Corner) + (1|Obs_Year_sc_2), family = binomial, data = blue_yr_trt)
-
-mall5 <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment*sum_pp_sc + (1|Quad_ID_ne_yr) + (1|Obs_Year_sc), family = binomial, data = blue_yr_trt)
-
-mall6 <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment*sum_pp_sc + (1|Quad_ID), family = binomial, data = blue_yr_trt, control = glmerControl(optimizer = "bobyqa"))
-summary(mall6)
-
-mall7 <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment*sum_pp_sc + (1|Obs_Year_sc), family = binomial, data = blue_yr_trt)
-
-mall8 <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment*sum_pp_sc + (1|Obs_Year_sc) + (1|Block), family = binomial, data = blue_yr_trt)
-
-mall9 <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment*sum_pp_sc + (1|Obs_Year_sc), family = binomial, data = blue_yr_trt)
-
-mall10 <- glmer(Germ.binom ~ Species*meanvar*sum_pp_sc + (1|Obs_Year_sc), family = binomial, data = blue_yr_trt)
-
-
-lrtest(m4,mall7)
-lrtest(m0,mall3)
-
-ICtab(m0,m1,m2,m3,m4,m5,mall,mall2, mall3, mall4,mall5,mall6,mall7)
+ICtab(m0,m1,m2,m3,mall,mall2,mall3,mall4)
 Anova(mall)
 summary(mall)
-vif(mall)
+mall
 
 # Check for overdispersion
+# deviance/residual df
+19462.676/44431 
 ```
 
-Model with a four way interaction between species, mean_treatment, var_treatment, and total annual precipitation. But this model fails to converge even after rescaling variable and many variable have variance inflation factors > 10. 
+Model with a four way interaction between species, mean_treatment, var_treatment, and total annual precipitation (scaled). This model fails to converge but not by much. Model also not overdispersed. Proceed with interpretations! 
 
-Try doing a model for each species. LEFT OFF HERE OVERWHELMED.
+Model shows that effect of climate treatments varies by species and is dependent on annual precipitation.
+
+RETURN HERE for model coefficients and estimations, predictions.
 
 ## Graph germination by year and treatments
 
 Graph it so two panels are the two mean treatments and -axis are variance treatments bar graphs of estimated proportion of germination by species and year.
 
-Use original data (no observation year cohorts, Yead Added only). Prep data below.
+Use original data (no observation year cohorts, Year Added only). Prep data below.
 
 ```{r}
 #| warning: false
@@ -1357,13 +1329,13 @@ Species functionally the same for all treatments, no major differences between t
 Break out each year.
 
 ```{r}
-germ_yr <- ggplot(germ_summary, aes(x=var_treatment, y = avg_germ, group = Species, fill = Species, na.rm = TRUE)) + scale_fill_manual(values=c("black","cornflowerblue")) + geom_col(position = position_dodge()) + facet_grid(Add_Year ~ mean_treatment) + labs(x = "Variance Treatment", y = "Estimated Germination Probability") + theme_bw()
+germ_yr <- ggplot(germ_summary, aes(x=var_treatment, y = avg_germ, group = Species, fill = Species, na.rm = TRUE)) + scale_fill_manual(values=c("black","cornflowerblue")) + geom_col(position = position_dodge()) + facet_grid(Add_Year ~ mean_treatment) + labs(title = "Germination of blue and black grama by Year Added Cohort", x = "Variance Treatment", y = "Estimated Germination Probability") + theme_bw()
 germ_yr
 
 ggsave("GermxYear.jpg", germ_yr, width = 7, height = 12)
 ```
 
-High interannual variation in germination between species and treatments. Could be due to rainfall and temperature differences by year. Back to models!
+High interannual variation in germination between species and treatments, dependent on rainfall. 
 
 Try it using Observation Year cohorts.
 
@@ -1382,7 +1354,7 @@ germ_summary_all <- blue_19_23_trt_NE19rm %>%
 
 ```
 
-Graph by year.
+Graph by Obs year.
 
 ```{r}
 germ_yr <- ggplot(germ_summary, aes(x=var_treatment, y = avg_germ, group = Species, fill = Species, na.rm = TRUE)) + scale_fill_manual(values=c("black","cornflowerblue")) + geom_col(position = position_dodge()) + facet_grid(Obs_Year ~ mean_treatment) + labs(x = "Variance Treatment", y = "Estimated Germination Probability") + theme_bw()
@@ -1390,6 +1362,9 @@ germ_yr
 
 ggsave("GermxObs_Year.jpg", germ_yr, width = 7, height = 12)
 ```
+- figure out how to pull and push from specific folders instead of all in scripts.
+- Figure out how to graph in a way that reflects 4 way interaction
+- first at least add total annual precipitation to each year
 
 ## Model Soil Moisture Germination Events
 
@@ -1398,16 +1373,32 @@ Isolate each Observation Year to the two (or three) events with the most germina
 ```{r}
 str(blue_yr_trt)
 
-germ_sum <- blue_yr_trt %>% 
+germ_sm_sum <- blue_yr_trt %>% 
   group_by(Obs_Date,Obs_Year) %>% 
   summarise(sum = sum(Germ.binom))
+# This shows the high germination event for each observation year
 
+blue_yr_trt_19_1 <- blue_yr_trt %>% 
+  filter(Germ.binom == 1 & Obs_Year == 2019)
+blue_yr_trt_20_1 <- blue_yr_trt %>% 
+  filter(Germ.binom == 1 & Obs_Year == 2020)
+blue_yr_trt_21_1 <- blue_yr_trt %>% 
+  filter(Germ.binom == 1 & Obs_Year == 2021)
+blue_yr_trt_22_1 <- blue_yr_trt %>% 
+  filter(Germ.binom == 1 & Obs_Year == 2022)
+blue_yr_trt_23_1 <- blue_yr_trt %>% 
+  filter(Germ.binom == 1 & Obs_Year == 2023)
 
-
-
+hist(blue_yr_trt_19_1$Obs_Date, "days")
+hist(blue_yr_trt_20_1$Obs_Date, "days")
+hist(blue_yr_trt_21_1$Obs_Date, "days")
+hist(blue_yr_trt_22_1$Obs_Date, "days")
+hist(blue_yr_trt_23_1$Obs_Date, "days")
 ```
 
+There's one date for each year with the most germination event and then 4/5 years have a smaller secondary event. 2021 has several aftershock events.
 
+You could get a string of dates with germination events and then filter the `blue_yr_trt` dataframe by those dates and keep the maximum for each year, that would be the easiest for calculating probability because the denominator is just obs year. But more robust would be top two germ events
 
 ## Graph Soil Moisture Germination Events
 
