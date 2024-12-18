@@ -29,6 +29,8 @@ Read in necessary packages.
 #| message: false
 #| warning: false
 
+install.packages("beepr")
+
 library(readr)
 library(dplyr)
 library(tidyr)
@@ -44,6 +46,7 @@ library(googlesheets4)
 library(lubridate)
 library(bbmle)
 library(lmtest)
+library(beepr)
 ```
 
 ## Clean and Wrangle Data
@@ -1234,6 +1237,12 @@ blue_yr_trt <-
   blue_yr_trt %>%  
   filter(!(Add_Year == 2019 & Corner == "NE"))
 
+# rescale Obs Year and precip
+blue_yr_trt$Obs_Year_sc <- blue_yr_trt$Obs_Year - 2018
+blue_yr_trt$sum_pp_sc <- blue_yr_trt$sum_pp - 200
+blue_yr_trt$sum_mons_pp_sc <- blue_yr_trt$sum_mons_pp - 80
+
+
 # separate dataset by species
 bluegrama <- 
   blue_yr_trt %>% 
@@ -1244,41 +1253,78 @@ blackgrama <-
   filter(Species == "BLACK")
 ```
 
+Try scaling differently
+Try simplifying random effect structure (limit to 1|Quad_ID and/or 1|Obs_Year)
+Try combining mean and variance treatment into one.
+
+```{r}
+blue_yr_trt$Obs_Year_sc_2 <- blue_yr_trt$Obs_Year - mean(blue_yr_trt$Obs_Year)
+blue_yr_trt$sum_pp_sc_2 <- blue_yr_trt$sum_pp - mean(blue_yr_trt$sum_pp)
+blue_yr_trt$sum_mons_pp_sc_2 <- blue_yr_trt$sum_mons_pp - mean(blue_yr_trt$sum_mons_pp)
+
+blue_yr_trt$Quad_ID <- paste0(blue_yr_trt$Add_Year,blue_yr_trt$plot,blue_yr_trt$Species,blue_yr_trt$Corner)
+
+blue_yr_trt$Quad_ID_ne_yr <- paste0(blue_yr_trt$plot,blue_yr_trt$Species,blue_yr_trt$Corner)
+
+blue_yr_trt$meanvar <- paste0(blue_yr_trt$mean_treatment,blue_yr_trt$var_treatment)
+```
+
 Try new models
+Try a different optimizer
+Try a fixed effects model only
+Check for overdispersion
 
 ```{r}
 # Try both species together first
+
 m0 <- glmer(Germ.binom ~ 1 + (1|Block/plot/Corner), family = binomial, data = blue_yr_trt)
 
-m1 <- glmer(Germ.binom ~ 1 + (1|Block/plot/Corner) + (1|Obs_Year), family = binomial, data = blue_yr_trt)
+m1 <- glmer(Germ.binom ~ 1 + (1|Block/plot/Corner) + (1|Obs_Year_sc), family = binomial, data = blue_yr_trt)
 
-m2 <- glmer(Germ.binom ~ mean_treatment + (1|Block/plot/Corner) + (1|Obs_Year), family = binomial, data = blue_yr_trt)
+m2 <- glmer(Germ.binom ~ 1 + (1|Quad_ID) + (1|Obs_Year_sc), family = binomial, data = blue_yr_trt)
 
-m3 <- glmer(Germ.binom ~ Obs_Year + (1|Block/plot/Corner), family = binomial, data = blue_yr_trt)
+m3 <- glmer(Germ.binom ~ 1 + (1|Quad_ID_ne_yr) + (1|Obs_Year_sc), family = binomial, data = blue_yr_trt)
 
-m4 <- glmer(Germ.binom ~ var_treatment + (1|Block/plot/Corner) + (1|Obs_Year), family = binomial, data = blue_yr_trt)
+m4 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc), family = binomial, data = blue_yr_trt)
 
-m5 <- glmer(Germ.binom ~ Species + (1|Block/plot/Corner) + (1|Obs_Year), family = binomial, data = blue_yr_trt)
+m5 <- glmer(Germ.binom ~ 1 + (1|Quad_ID), family = binomial, data = blue_yr_trt)
 
-m6 <- glmer(Germ.binom ~ sum_pp + (1|Block/plot/Corner), family = binomial, data = blue_yr_trt)
+mall <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment*sum_pp_sc + (1|Obs_Year_sc) + (1|Block/plot/Corner), family = binomial, data = blue_yr_trt, control = glmerControl(optimizer = "bobyqa"))
 
-m7 <- glmer(Germ.binom ~ sum_mons_pp + (1|Block/plot/Corner), family = binomial, data = blue_yr_trt)
+mall2 <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment*sum_pp_sc + (1|Block/plot/Corner), family = binomial, data = blue_yr_trt)
 
-m8 <- glmer(Germ.binom ~ sum_mons_pp*mean_treatment + (1|Block/plot/Corner), family = binomial, data = blue_yr_trt)
+mall3 <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment*sum_pp_sc_2 + (1|Block/plot/Corner) + (1|Obs_Year_sc), family = binomial, data = blue_yr_trt)
 
-m9 <- glmer(Germ.binom ~ sum_mons_pp*var_treatment + (1|Block/plot/Corner), family = binomial, data = blue_yr_trt)
+mall4 <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment*sum_pp_sc + (1|Block/plot/Corner) + (1|Obs_Year_sc_2), family = binomial, data = blue_yr_trt)
 
-m10 <- glmer(Germ.binom ~ sum_pp*mean_treatment + (1|Block/plot/Corner), family = binomial, data = blue_yr_trt)
+mall5 <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment*sum_pp_sc + (1|Quad_ID_ne_yr) + (1|Obs_Year_sc), family = binomial, data = blue_yr_trt)
 
-m11 <- glmer(Germ.binom ~ sum_pp*var_treatment + (1|Block/plot/Corner), family = binomial, data = blue_yr_trt)
+mall6 <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment*sum_pp_sc + (1|Quad_ID), family = binomial, data = blue_yr_trt, control = glmerControl(optimizer = "bobyqa"))
+summary(mall6)
 
-lrtest(m0,m11)
+mall7 <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment*sum_pp_sc + (1|Obs_Year_sc), family = binomial, data = blue_yr_trt)
 
-ICtab(m0,m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11)
-VarCorr(m0)
+mall8 <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment*sum_pp_sc + (1|Obs_Year_sc) + (1|Block), family = binomial, data = blue_yr_trt)
+
+mall9 <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment*sum_pp_sc + (1|Obs_Year_sc), family = binomial, data = blue_yr_trt)
+
+mall10 <- glmer(Germ.binom ~ Species*meanvar*sum_pp_sc + (1|Obs_Year_sc), family = binomial, data = blue_yr_trt)
+
+
+lrtest(m4,mall7)
+lrtest(m0,mall3)
+
+ICtab(m0,m1,m2,m3,m4,m5,mall,mall2, mall3, mall4,mall5,mall6,mall7)
+Anova(mall)
+summary(mall)
+vif(mall)
+
+# Check for overdispersion
 ```
 
-Models that include observation year, total year precipitation, or monsoon precipitation are strongest. Best models include Observation Year as a random effect. Need more work on this!
+Model with a four way interaction between species, mean_treatment, var_treatment, and total annual precipitation. But this model fails to converge even after rescaling variable and many variable have variance inflation factors > 10. 
+
+Try doing a model for each species. LEFT OFF HERE OVERWHELMED.
 
 ## Graph germination by year and treatments
 
@@ -1346,6 +1392,22 @@ ggsave("GermxObs_Year.jpg", germ_yr, width = 7, height = 12)
 ```
 
 ## Model Soil Moisture Germination Events
+
+Isolate each Observation Year to the two (or three) events with the most germination. The pair with soil moisture data from plots.
+
+```{r}
+str(blue_yr_trt)
+
+germ_sum <- blue_yr_trt %>% 
+  group_by(Obs_Date,Obs_Year) %>% 
+  summarise(sum = sum(Germ.binom))
+
+
+
+
+```
+
+
 
 ## Graph Soil Moisture Germination Events
 
