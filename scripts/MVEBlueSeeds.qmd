@@ -16,8 +16,8 @@ The Sevilleta Long Term Ecological Research (LTER) Program (Socorro, NM) rolled 
 3.  Create graph of typical climate for temperature and precipitation.
 4.  Find the best model for the germination data using year and mean and variance treatments as predictors
 5.  Graph germination by year, mean, and variance by species.
-6.  Find best model of survival by species, year, and mean and variance treatments. Or a model for each species. Graph.
-7.  Figure out the 1-3 events each year where 90-95% of germination occurs and isolate germination and soil moisture to those events and build a model to understand how soil moisture determines germination probability. Graph.
+6.  Figure out the 1-3 events each year where 90-95% of germination occurs and isolate germination and soil moisture to those events and build a model to understand how soil moisture determines germination probability. Graph.
+7.  Find best model of survival by species, year, and mean and variance treatments. Or a model for each species. Graph.
 8.  Characterize die off/survival. Is it gradual and consistent or happen in major events like germination. Graph?
 9.  Figure out how to test for legacy effects on germination and/or survival. Graph.
 
@@ -529,6 +529,187 @@ blue_y1_y2 <- blue_y1_y2 %>%
 write_csv(blue_y1_y2, "blue_year_cohorts.csv")
 ```
 
+Create a dataset limited to the major soil moisture germination events.
+Isolate each Observation Year to the two (or three) events with the most germination. Then pair with soil moisture data from plots.
+
+There's one date for each year with the most germination event and then 4/5 years have a smaller secondary event. 2021 has several aftershock events.
+
+You could get a string of dates with germination events and then filter the `blue_yr_trt` dataframe by those dates and keep the maximum for each year, that would be the easiest for calculating probability because the denominator is just obs year. But more robust would be top two germ events.
+
+```{r}
+#| warning: false
+#| eval: false
+
+str(blue_yr_trt)
+
+# This shows the high germination event for each observation year
+
+blue_yr_trt_19_1 <- blue_yr_trt %>% 
+  filter(Germ.binom == 1 & Obs_Year == 2019)
+blue_yr_trt_20_1 <- blue_yr_trt %>% 
+  filter(Germ.binom == 1 & Obs_Year == 2020)
+blue_yr_trt_21_1 <- blue_yr_trt %>% 
+  filter(Germ.binom == 1 & Obs_Year == 2021)
+blue_yr_trt_22_1 <- blue_yr_trt %>% 
+  filter(Germ.binom == 1 & Obs_Year == 2022)
+blue_yr_trt_23_1 <- blue_yr_trt %>% 
+  filter(Germ.binom == 1 & Obs_Year == 2023)
+
+hist(blue_yr_trt_19_1$Obs_Date, "days")
+hist(blue_yr_trt_20_1$Obs_Date, "days")
+hist(blue_yr_trt_21_1$Obs_Date, "days")
+hist(blue_yr_trt_22_1$Obs_Date, "days")
+hist(blue_yr_trt_23_1$Obs_Date, "days")
+
+# Create list of events
+germ_sm_sum <- blue_yr_trt %>% 
+  group_by(Obs_Date,Obs_Year) %>% 
+  summarise(sum = sum(Germ.binom))
+
+germ_sm_sum_yr <- blue_yr_trt %>% 
+  group_by(Obs_Year) %>% 
+  summarise(sumtotal = sum(Germ.binom))
+
+germ_sum_per <- left_join(germ_sm_sum, germ_sm_sum_yr, by = join_by(Obs_Year))
+germ_sum_per$percent_yr <- germ_sum_per$sum/germ_sum_per$sumtotal
+
+# A few ways to cut it.
+# The single biggest germ event
+# The n biggest events that add up to 95% of germination occurrence 
+# All events with over 1% of germs
+germ_percent_events <- germ_sum_per %>% 
+  filter(percent_yr > 0.05)
+nrow(germ_percent_events)
+
+germ_percent_events$event_num <- c(1:8)
+events <- germ_percent_events[,c(1,6)]
+
+# Figure out how to remove success germination TPs from following event
+
+# Use the long form, original raw data. limited to first two years
+str(blue_2yrs)
+
+# These are the key germination events
+events$Obs_Date
+
+# I need each Obs Date to include toothpicks that germinated for the first time on that day, and all other toothpicks that didn't germinate on that day and never have up to that point
+
+# remove TP_IDs that germinated before event 1
+germ1 <- blue_2yrs$TP_ID[which(blue_2yrs$Germ.binom == 1 & blue_2yrs$Obs_Date < events$Obs_Date[1])]
+
+# include all remaining toothpicks present for event 1
+event1 <- blue_2yrs %>% 
+  filter(Obs_Date == events$Obs_Date[1]) 
+event1 <- event1 %>% 
+  group_by(TP_ID) %>%
+  filter(!any(TP_ID %in% c(germ1))) %>%
+  ungroup()
+  
+# remove TP IDs that germinated before event 2
+germ2 <- blue_2yrs$TP_ID[which(blue_2yrs$Germ.binom == 1 & blue_2yrs$Obs_Date < events$Obs_Date[2])]
+# check your work
+length(unique(germ2))
+10505-length(unique(germ2))
+# include all remaining toothpicks present for event 2
+event2 <- blue_2yrs %>% 
+  filter(Obs_Date == events$Obs_Date[2]) 
+event2 <- event2 %>%   
+  group_by(TP_ID) %>%
+  filter(!any(TP_ID %in% c(germ2))) %>%
+  ungroup()
+
+# remove TP IDs that germinated before event 3
+germ3 <- unique(blue_2yrs$TP_ID[which(blue_2yrs$Germ.binom == 1 & blue_2yrs$Obs_Date < events$Obs_Date[3] & blue_2yrs$Obs_Year == 2021)])
+length(germ3)
+
+# include all remaining toothpicks present for event 3
+event3 <- blue_2yrs %>% 
+  filter(Obs_Date == events$Obs_Date[3]) 
+9776-length(germ3) # check your work
+event3 <- event3 %>%   
+  group_by(TP_ID) %>%
+  filter(!any(TP_ID %in% c(germ3))) %>%
+  ungroup()
+
+# remove TP IDs that germinated before event 4
+germ4 <- unique(blue_2yrs$TP_ID[which(blue_2yrs$Germ.binom == 1 & blue_2yrs$Obs_Date < events$Obs_Date[4] & blue_2yrs$Obs_Year == 2021)])
+length(germ4)
+
+# include all remaining toothpicks present for event 4
+event4 <- blue_2yrs %>% 
+  filter(Obs_Date == events$Obs_Date[4]) 
+9776-length(germ4) # check your work
+event4 <- event4 %>%   
+  group_by(TP_ID) %>%
+  filter(!any(TP_ID %in% c(germ4))) %>%
+  ungroup()
+
+# remove TP IDs that germinated before event 5
+germ5 <- unique(blue_2yrs$TP_ID[which(blue_2yrs$Germ.binom == 1 & blue_2yrs$Obs_Date < events$Obs_Date[5] & blue_2yrs$Obs_Year == 2022)])
+length(germ5)
+
+# include all remaining toothpicks present for event 4
+event5 <- blue_2yrs %>% 
+  filter(Obs_Date == events$Obs_Date[5]) 
+nrow(event5)-length(germ5) # check your work
+event5 <- event5 %>%   
+  group_by(TP_ID) %>%
+  filter(!any(TP_ID %in% c(germ5))) %>%
+  ungroup()
+
+# remove TP IDs that germinated before event 6
+germ6 <- unique(blue_2yrs$TP_ID[which(blue_2yrs$Germ.binom == 1 & blue_2yrs$Obs_Date < events$Obs_Date[6] & blue_2yrs$Obs_Year == 2022)])
+length(germ6)
+
+# include all remaining toothpicks present for event 6
+event6 <- blue_2yrs %>% 
+  filter(Obs_Date == events$Obs_Date[6]) 
+nrow(event6)-length(germ6) # check your work
+event6 <- event6 %>%   
+  group_by(TP_ID) %>%
+  filter(!any(TP_ID %in% c(germ6))) %>%
+  ungroup()
+
+# remove TP IDs that germinated before event 7
+germ7 <- unique(blue_2yrs$TP_ID[which(blue_2yrs$Germ.binom == 1 & blue_2yrs$Obs_Date < events$Obs_Date[7] & blue_2yrs$Obs_Year == 2023)])
+length(germ7)
+
+# include all remaining toothpicks present for event 7
+event7 <- blue_2yrs %>% 
+  filter(Obs_Date == events$Obs_Date[7]) 
+nrow(event7)-length(germ7) # check your work
+event7 <- event7 %>%   
+  group_by(TP_ID) %>%
+  filter(!any(TP_ID %in% c(germ7))) %>%
+  ungroup()
+
+# remove TP IDs that germinated before event 8
+germ8 <- unique(blue_2yrs$TP_ID[which(blue_2yrs$Germ.binom == 1 & blue_2yrs$Obs_Date < events$Obs_Date[8] & blue_2yrs$Obs_Year == 2023)])
+length(germ8)
+
+# include all remaining toothpicks present for event 7
+event8 <- blue_2yrs %>% 
+  filter(Obs_Date == events$Obs_Date[8]) 
+nrow(event8)-length(germ8) # check your work
+event8 <- event8 %>%   
+  group_by(TP_ID) %>%
+  filter(!any(TP_ID %in% c(germ8))) %>%
+  ungroup()
+
+
+sm_germ_events <- rbind(event1,
+      event2,
+      event3,
+      event4,
+      event5,
+      event6,
+      event7,
+      event8)
+
+write_csv(sm_germ_events, "germ_events_sm.csv")
+
+```
+
 ```{r treatment data hidden}
 #| eval: false # Do not evaluate this chunk
 
@@ -824,6 +1005,8 @@ blue_19_23 <- read_csv("germ_19_23.csv") # reduced to only first germ
 blue_19_23_long_raw <- read_csv("germ_19_23_long_raw.csv") # All binomial observations from first germ through survival
 
 bluebyyear <- read_csv("blue_year_cohorts.csv")
+
+germ_sm <- read_csv("germ_events_sm.csv")
 
 trts<-read.csv("meanvar_blue_treatments.csv")
 
@@ -1361,189 +1544,53 @@ ggsave("GermxObs_Year.jpg", germ_yr, width = 7, height = 12)
 
 ## Model Soil Moisture Germination Events
 
-Isolate each Observation Year to the two (or three) events with the most germination. Then pair with soil moisture data from plots.
+LEFT OFF HERE Model & Graph Soil Moisture Germination Events
 
 ```{r}
-str(blue_yr_trt)
+str(germ_sm)
+head(germ_sm)
+unique(germ_sm$Obs_Date)
 
-# This shows the high germination event for each observation year
+# Need to merge this data set with soil moisture and temperature metrics which are in their own years (sm_t_18-sm_t_23)
 
-blue_yr_trt_19_1 <- blue_yr_trt %>% 
-  filter(Germ.binom == 1 & Obs_Year == 2019)
-blue_yr_trt_20_1 <- blue_yr_trt %>% 
-  filter(Germ.binom == 1 & Obs_Year == 2020)
-blue_yr_trt_21_1 <- blue_yr_trt %>% 
-  filter(Germ.binom == 1 & Obs_Year == 2021)
-blue_yr_trt_22_1 <- blue_yr_trt %>% 
-  filter(Germ.binom == 1 & Obs_Year == 2022)
-blue_yr_trt_23_1 <- blue_yr_trt %>% 
-  filter(Germ.binom == 1 & Obs_Year == 2023)
+head(sm_t_18)
 
-hist(blue_yr_trt_19_1$Obs_Date, "days")
-hist(blue_yr_trt_20_1$Obs_Date, "days")
-hist(blue_yr_trt_21_1$Obs_Date, "days")
-hist(blue_yr_trt_22_1$Obs_Date, "days")
-hist(blue_yr_trt_23_1$Obs_Date, "days")
+# We can merge all soil moisture frames and then filter by event dates
+sm_t <- rbind(sm_t_18,
+      sm_t_19,
+      sm_t_20,
+      sm_t_21,
+      sm_t_22,
+      sm_t_23)
 
-# Create list of events
-germ_sm_sum <- blue_yr_trt %>% 
-  group_by(Obs_Date,Obs_Year) %>% 
-  summarise(sum = sum(Germ.binom))
+# Let's explore what the data looks like around a rain event
+# Because those are the germination events but not necessarily the rain events, which could have been two to four weeks before
 
-germ_sm_sum_yr <- blue_yr_trt %>% 
-  group_by(Obs_Year) %>% 
-  summarise(sumtotal = sum(Germ.binom))
+# Break out timestamp column into date and time
+head(sm_t$TIMESTAMP)
+sm_t$Date <- date(sm_t$TIMESTAMP)
+head(sm_t$Date)
 
-germ_sum_per <- left_join(germ_sm_sum, germ_sm_sum_yr, by = join_by(Obs_Year))
-germ_sum_per$percent_yr <- germ_sum_per$sum/germ_sum_per$sumtotal
+# Filter sm_t by each date and 14 days before and after. Graph soil moisture average per day for 28 days, with each germ event as it's own facet in a facet grid
 
-# A few ways to cut it.
-# The single biggest germ event
-# The n biggest events that add up to 95% of germination occurrence 
-# All events with over 1% of germs
-germ_percent_events <- germ_sum_per %>% 
-  filter(percent_yr > 0.05)
-nrow(germ_percent_events)
-
-germ_percent_events$event_num <- c(1:8)
-events <- germ_percent_events[,c(1,6)]
-
-# Figure out how to remove success germination TPs from following event
-```
-
-There's one date for each year with the most germination event and then 4/5 years have a smaller secondary event. 2021 has several aftershock events.
-
-You could get a string of dates with germination events and then filter the `blue_yr_trt` dataframe by those dates and keep the maximum for each year, that would be the easiest for calculating probability because the denominator is just obs year. But more robust would be top two germ events.
-
-```{r}
-# Use the long form, original raw data. limited to first two years
-str(blue_2yrs)
-
-# These are the key germination events
-events$Obs_Date
-
-# I need each Obs Date to include toothpicks that germinated for the first time on that day, and all other toothpicks that didn't germinate on that day and never have up to that point
-
-# remove TP_IDs that germinated before event 1
-germ1 <- blue_2yrs$TP_ID[which(blue_2yrs$Germ.binom == 1 & blue_2yrs$Obs_Date < events$Obs_Date[1])]
-
-# include all remaining toothpicks present for event 1
-event1 <- blue_2yrs %>% 
-  filter(Obs_Date == events$Obs_Date[1]) 
-event1 <- event1 %>% 
+## LEFT OFF HERE
+blue_Y2_filt <- blue_Y2 %>%
   group_by(TP_ID) %>%
-  filter(!any(TP_ID %in% c(germ1))) %>%
-  ungroup()
-  
-# remove TP IDs that germinated before event 2
-germ2 <- blue_2yrs$TP_ID[which(blue_2yrs$Germ.binom == 1 & blue_2yrs$Obs_Date < events$Obs_Date[2])]
-# check your work
-length(unique(germ2))
-10505-length(unique(germ2))
-# include all remaining toothpicks present for event 2
-event2 <- blue_2yrs %>% 
-  filter(Obs_Date == events$Obs_Date[2]) 
-event2 <- event2 %>%   
-  group_by(TP_ID) %>%
-  filter(!any(TP_ID %in% c(germ2))) %>%
-  ungroup()
-
-# remove TP IDs that germinated before event 3
-germ3 <- unique(blue_2yrs$TP_ID[which(blue_2yrs$Germ.binom == 1 & blue_2yrs$Obs_Date < events$Obs_Date[3] & blue_2yrs$Obs_Year == 2021)])
-length(germ3)
-
-# include all remaining toothpicks present for event 3
-event3 <- blue_2yrs %>% 
-  filter(Obs_Date == events$Obs_Date[3]) 
-9776-length(germ3) # check your work
-event3 <- event3 %>%   
-  group_by(TP_ID) %>%
-  filter(!any(TP_ID %in% c(germ3))) %>%
-  ungroup()
-
-# remove TP IDs that germinated before event 4
-germ4 <- unique(blue_2yrs$TP_ID[which(blue_2yrs$Germ.binom == 1 & blue_2yrs$Obs_Date < events$Obs_Date[4] & blue_2yrs$Obs_Year == 2021)])
-length(germ4)
-
-# include all remaining toothpicks present for event 4
-event4 <- blue_2yrs %>% 
-  filter(Obs_Date == events$Obs_Date[4]) 
-9776-length(germ4) # check your work
-event4 <- event4 %>%   
-  group_by(TP_ID) %>%
-  filter(!any(TP_ID %in% c(germ4))) %>%
-  ungroup()
-
-# remove TP IDs that germinated before event 5
-germ5 <- unique(blue_2yrs$TP_ID[which(blue_2yrs$Germ.binom == 1 & blue_2yrs$Obs_Date < events$Obs_Date[5] & blue_2yrs$Obs_Year == 2022)])
-length(germ5)
-
-# include all remaining toothpicks present for event 4
-event5 <- blue_2yrs %>% 
-  filter(Obs_Date == events$Obs_Date[5]) 
-nrow(event5)-length(germ5) # check your work
-event5 <- event5 %>%   
-  group_by(TP_ID) %>%
-  filter(!any(TP_ID %in% c(germ5))) %>%
-  ungroup()
-
-# remove TP IDs that germinated before event 6
-germ6 <- unique(blue_2yrs$TP_ID[which(blue_2yrs$Germ.binom == 1 & blue_2yrs$Obs_Date < events$Obs_Date[6] & blue_2yrs$Obs_Year == 2022)])
-length(germ6)
-
-# include all remaining toothpicks present for event 6
-event6 <- blue_2yrs %>% 
-  filter(Obs_Date == events$Obs_Date[6]) 
-nrow(event6)-length(germ6) # check your work
-event6 <- event6 %>%   
-  group_by(TP_ID) %>%
-  filter(!any(TP_ID %in% c(germ6))) %>%
-  ungroup()
-
-# remove TP IDs that germinated before event 7
-germ7 <- unique(blue_2yrs$TP_ID[which(blue_2yrs$Germ.binom == 1 & blue_2yrs$Obs_Date < events$Obs_Date[7] & blue_2yrs$Obs_Year == 2023)])
-length(germ7)
-
-# include all remaining toothpicks present for event 7
-event7 <- blue_2yrs %>% 
-  filter(Obs_Date == events$Obs_Date[7]) 
-nrow(event7)-length(germ7) # check your work
-event7 <- event7 %>%   
-  group_by(TP_ID) %>%
-  filter(!any(TP_ID %in% c(germ7))) %>%
-  ungroup()
-
-# remove TP IDs that germinated before event 8
-germ8 <- unique(blue_2yrs$TP_ID[which(blue_2yrs$Germ.binom == 1 & blue_2yrs$Obs_Date < events$Obs_Date[8] & blue_2yrs$Obs_Year == 2023)])
-length(germ8)
-
-# include all remaining toothpicks present for event 7
-event8 <- blue_2yrs %>% 
-  filter(Obs_Date == events$Obs_Date[8]) 
-nrow(event8)-length(germ8) # check your work
-event8 <- event8 %>%   
-  group_by(TP_ID) %>%
-  filter(!any(TP_ID %in% c(germ8))) %>%
+  filter(!any(TP_ID %in% c(germs))) %>%
   ungroup()
 
 
-sm_germ_events <- rbind(event1,
-      event2,
-      event3,
-      event4,
-      event5,
-      event6,
-      event7,
-      event8)
+# Filter met station data by each date and 14 days before and after. Graph rainfall total per day for 28 days, with each germ event as it's own facet in a facet grid
 
-write_csv(sm_germ_events, "germ_events_sm.csv")
+
+# Maybe we take the average soil moisture from the maximum soil moisture time to the germ date and the maximum leading up to it, and we see which is a better predictor of germination because drought plots might experience a similar maximum but not retain soil moisture, and the retention is actually the key to triggering mass germination. If this is true the average would be a better predictor. 
+
+
+# Create new column with just plot number
+
 
 ```
 
-^^ Move this to data creation section
-
-LEFT OFF HERE
-## Graph Soil Moisture Germination Events
 
 ## Model & Graph Survival
 
