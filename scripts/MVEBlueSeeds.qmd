@@ -1549,7 +1549,7 @@ LEFT OFF HERE Model & Graph Soil Moisture Germination Events
 ```{r}
 str(germ_sm)
 head(germ_sm)
-unique(germ_sm$Obs_Date)
+events <- as.Date(unique(germ_sm$Obs_Date))
 
 # Need to merge this data set with soil moisture and temperature metrics which are in their own years (sm_t_18-sm_t_23)
 
@@ -1571,17 +1571,229 @@ head(sm_t$TIMESTAMP)
 sm_t$Date <- date(sm_t$TIMESTAMP)
 head(sm_t$Date)
 
-# Filter sm_t by each date and 14 days before and after. Graph soil moisture average per day for 28 days, with each germ event as it's own facet in a facet grid
+# Filter sm_t by each date and 14 days before and after. 
+# (perfect opp for a loop)
 
-## LEFT OFF HERE
-blue_Y2_filt <- blue_Y2 %>%
-  group_by(TP_ID) %>%
-  filter(!any(TP_ID %in% c(germs))) %>%
+sm_t_event_1 <- sm_t %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[1]-15) & Date < (events[1]+15))) %>%
+  filter(sensor == "VWC" & depth == 12) %>% 
+  mutate(event = "event_1") %>% 
   ungroup()
+
+sm_event_sum_1 <- sm_t_event_1 %>% 
+  group_by(Date) %>% 
+  summarise(avg_sm = mean(value, na.rm = TRUE),
+            max_sm = max(value, na.rm = TRUE))
+
+ggplot(sm_event_sum_1, aes(x = Date, y = avg_sm)) +
+  geom_line()
+ggplot(sm_event_sum_1, aes(x = Date, y = max_sm)) +
+  geom_line()
+
+sm_t_event_2 <- sm_t %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[2]-14) & Date < (events[2]+14))) %>%
+  filter(sensor == "VWC" & depth == 12) %>% 
+  mutate(event = "event_2") %>% 
+  ungroup()
+unique(sm_t_event_2$Date)
+
+sm_event_sum_2 <- sm_t_event_2 %>% 
+  group_by(Date) %>% 
+  summarise(avg_sm = mean(value, na.rm = TRUE),
+            max_sm = max(value, na.rm = TRUE))
+
+ggplot(sm_event_sum_2, aes(x = Date, y = avg_sm)) +
+  geom_line()
+ggplot(sm_event_sum_2, aes(x = Date, y = max_sm)) +
+  geom_line()
+
+sm_t_event_3 <- sm_t %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[3]-14) & Date < (events[3]+14))) %>%
+  filter(sensor == "VWC" & depth == 12) %>% 
+  mutate(event = "event_3") %>% 
+  ungroup()
+unique(sm_t_event_3$Date)
+
+sm_event_sum_3 <- sm_t_event_3 %>% 
+  group_by(Date) %>% 
+  summarise(avg_sm = mean(value, na.rm = TRUE),
+            max_sm = max(value, na.rm = TRUE))
+
+ggplot(sm_event_sum_3, aes(x = Date, y = avg_sm)) +
+  geom_line()
+ggplot(sm_event_sum_3, aes(x = Date, y = max_sm)) +
+  geom_line()
+
+sm_t_event_4 <- sm_t %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[4]-14) & Date < (events[4]+14))) %>%
+  filter(sensor == "VWC" & depth == 12) %>% 
+  mutate(event = "event_4") %>% 
+  ungroup()
+unique(sm_t_event_4$Date)
+
+sm_event_sum_4 <- sm_t_event_4 %>% 
+  group_by(Date) %>% 
+  summarise(avg_sm = mean(value, na.rm = TRUE),
+            max_sm = max(value, na.rm = TRUE))
+
+ggplot(sm_event_sum_4, aes(x = Date, y = avg_sm)) +
+  geom_line()
+ggplot(sm_event_sum_4, aes(x = Date, y = max_sm)) +
+  geom_line()
+
+sm_t_event_5 <- sm_t %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[5]-14) & Date < (events[5]+14))) %>%
+  filter(sensor == "VWC" & depth == 12) %>% 
+  mutate(event = "event_5") %>% 
+  ungroup()
+unique(sm_t_event_5$Date)
+
+sm_event_sum_5 <- sm_t_event_5 %>% 
+  group_by(Date) %>% 
+  summarise(avg_sm = mean(value, na.rm = TRUE),
+            max_sm = max(value, na.rm = TRUE))
+
+ggplot(sm_event_sum_5, aes(x = Date, y = avg_sm)) +
+  geom_line()
+ggplot(sm_event_sum_5, aes(x = Date, y = max_sm)) +
+  geom_line()
+
+sm_t_event_6 <- sm_t %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[6]-14) & Date < (events[6]+14))) %>%
+  filter(sensor == "VWC" & depth == 12) %>% 
+  mutate(event = "event_6") %>% 
+  ungroup()
+unique(sm_t_event_6$Date)
+
+sm_event_sum_6 <- sm_t_event_6 %>% 
+  group_by(Date) %>% 
+  summarise(avg_sm = mean(value, na.rm = TRUE),
+            max_sm = max(value, na.rm = TRUE))
+
+ggplot(sm_event_sum_6, aes(x = Date, y = avg_sm)) +
+  geom_line()
+ggplot(sm_event_sum_6, aes(x = Date, y = max_sm)) +
+  geom_line()
+
+# Might need to go further back than 14 days
+
+# Soil moisture data ends at 2023-08-07 so only 6 dates
+# I wonder if we can actually predict germination form rainfall for the last two events
 
 
 # Filter met station data by each date and 14 days before and after. Graph rainfall total per day for 28 days, with each germ event as it's own facet in a facet grid
 
+summary(met_00_23_50)
+
+met_event_1 <- met_00_23_50 %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[1]-15) & Date < (events[1]+15))) %>%
+  ungroup()
+
+met_event_sum_1 <- met_event_1 %>% 
+  group_by(Date) %>% 
+  summarise(sum_pp = sum(Precipitation, na.rm = TRUE))
+
+ggplot(met_event_sum_1, aes(x = Date, y = sum_pp)) +
+  geom_line()
+
+# I want 6 graphs, with two axes, soil moisture one and precip on the other. Two lines are max and avg sm and one is total daily precip. And a vertical line at the Obs_Date and maximum either soil moisture or precip. Go back and go 20 days back and 4 days forward
+
+sm_t_event_2 <- sm_t %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[2]-14) & Date < (events[2]+14))) %>%
+  filter(sensor == "VWC" & depth == 12) %>% 
+  mutate(event = "event_2") %>% 
+  ungroup()
+unique(sm_t_event_2$Date)
+
+sm_event_sum_2 <- sm_t_event_2 %>% 
+  group_by(Date) %>% 
+  summarise(avg_sm = mean(value, na.rm = TRUE),
+            max_sm = max(value, na.rm = TRUE))
+
+ggplot(sm_event_sum_2, aes(x = Date, y = avg_sm)) +
+  geom_line()
+ggplot(sm_event_sum_2, aes(x = Date, y = max_sm)) +
+  geom_line()
+
+sm_t_event_3 <- sm_t %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[3]-14) & Date < (events[3]+14))) %>%
+  filter(sensor == "VWC" & depth == 12) %>% 
+  mutate(event = "event_3") %>% 
+  ungroup()
+unique(sm_t_event_3$Date)
+
+sm_event_sum_3 <- sm_t_event_3 %>% 
+  group_by(Date) %>% 
+  summarise(avg_sm = mean(value, na.rm = TRUE),
+            max_sm = max(value, na.rm = TRUE))
+
+ggplot(sm_event_sum_3, aes(x = Date, y = avg_sm)) +
+  geom_line()
+ggplot(sm_event_sum_3, aes(x = Date, y = max_sm)) +
+  geom_line()
+
+sm_t_event_4 <- sm_t %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[4]-14) & Date < (events[4]+14))) %>%
+  filter(sensor == "VWC" & depth == 12) %>% 
+  mutate(event = "event_4") %>% 
+  ungroup()
+unique(sm_t_event_4$Date)
+
+sm_event_sum_4 <- sm_t_event_4 %>% 
+  group_by(Date) %>% 
+  summarise(avg_sm = mean(value, na.rm = TRUE),
+            max_sm = max(value, na.rm = TRUE))
+
+ggplot(sm_event_sum_4, aes(x = Date, y = avg_sm)) +
+  geom_line()
+ggplot(sm_event_sum_4, aes(x = Date, y = max_sm)) +
+  geom_line()
+
+sm_t_event_5 <- sm_t %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[5]-14) & Date < (events[5]+14))) %>%
+  filter(sensor == "VWC" & depth == 12) %>% 
+  mutate(event = "event_5") %>% 
+  ungroup()
+unique(sm_t_event_5$Date)
+
+sm_event_sum_5 <- sm_t_event_5 %>% 
+  group_by(Date) %>% 
+  summarise(avg_sm = mean(value, na.rm = TRUE),
+            max_sm = max(value, na.rm = TRUE))
+
+ggplot(sm_event_sum_5, aes(x = Date, y = avg_sm)) +
+  geom_line()
+ggplot(sm_event_sum_5, aes(x = Date, y = max_sm)) +
+  geom_line()
+
+sm_t_event_6 <- sm_t %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[6]-14) & Date < (events[6]+14))) %>%
+  filter(sensor == "VWC" & depth == 12) %>% 
+  mutate(event = "event_6") %>% 
+  ungroup()
+unique(sm_t_event_6$Date)
+
+sm_event_sum_6 <- sm_t_event_6 %>% 
+  group_by(Date) %>% 
+  summarise(avg_sm = mean(value, na.rm = TRUE),
+            max_sm = max(value, na.rm = TRUE))
+
+ggplot(sm_event_sum_6, aes(x = Date, y = avg_sm)) +
+  geom_line()
+ggplot(sm_event_sum_6, aes(x = Date, y = max_sm)) +
+  geom_line()
 
 # Maybe we take the average soil moisture from the maximum soil moisture time to the germ date and the maximum leading up to it, and we see which is a better predictor of germination because drought plots might experience a similar maximum but not retain soil moisture, and the retention is actually the key to triggering mass germination. If this is true the average would be a better predictor. 
 
