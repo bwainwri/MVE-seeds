@@ -5,6 +5,8 @@ format: html
 editor: visual
 ---
 
+
+
 ## Background
 
 The Sevilleta Long Term Ecological Research (LTER) Program (Socorro, NM) rolled out a novel climate change experiment in 2019: the Mean-Variance Experiment (MVE). The experiment has been replicated in four ecosystems to date but the focus of this document is on the experimental infrastructure found in the Great Plains Grassland ecosystem, dominated by blue grama grass (*Bouteloua gracilis*). Hence Mean-Variance Blue or MVE Blue. The ecosystem is dominated by blue grama grass but the adjacent ecosystem, Chihuahuan Desert Grassland, is dominated by black grama grass (*Bouteloua eriopoda*). Great Plains Grassland extends northward throughout central North America while Chihuahuan Desert Grassland extends southward into Mexico. Thus, under a more arid climate, we would expect Chihuahuan Desert Grassland to expand it's range northward. The experimental infrastructure is set near the ecotone of these two ecosystems. More information on this experiment can be found here: <https://sevlter.unm.edu/mean-variance-experiment/>. To test the recruitment dynamics of these dominant plants under climate change, we added seeds of each species to the experimental plots from 2019-2023 and tracked their germination and survival biweekly during the growing season and monthly during the dormant season.
@@ -24,6 +26,8 @@ The Sevilleta Long Term Ecological Research (LTER) Program (Socorro, NM) rolled 
 ## Setup
 
 Read in necessary packages.
+
+
 
 ```{r}
 #| message: false
@@ -47,9 +51,13 @@ library(lmtest)
 library(beepr)
 ```
 
+
+
 ## Clean and Wrangle Data
 
 Bring in seed monitoring data for all five years, bring in keys, bring in soil moisture data, bring in climate data.
+
+
 
 ```{r seed census data hidden}
 #| eval: false # Do not evaluate this chunk
@@ -337,7 +345,11 @@ summary(blue_19_23_reduced)
 write_csv(blue_19_23_reduced, "germ_19_23.csv")
 ```
 
+
+
 Create an alternative dataset that preserves raw data.
+
+
 
 ```{r alternate long form germ}
 #| eval: false # Do not evaluate this chunk
@@ -422,7 +434,11 @@ write_csv(blue_19_23_long_raw, "germ_19_23_long_raw.csv")
 # use this for soil moisture
 ```
 
+
+
 Make a data frame that looks at the current year and past year cohorts for each monsoon season. Those will be the trials for probability. But first confirm that most germination happens in first two years.
+
+
 
 ```{r}
 
@@ -463,9 +479,13 @@ year_sum <- blue_years %>%
   summarise(percent = (sum(Germ.binom)/total)*100)
 ```
 
+
+
 75% of germinated seeds occur in their first year, 20% occur in second year, 4% in the third and 0.77% in 4th year.
 
 Sufficient evidence to reduce to first year and second year.
+
+
 
 ```{r reduce to y1 and y2}
 #| warning: false
@@ -527,11 +547,16 @@ blue_y1_y2 <- blue_y1_y2 %>%
 write_csv(blue_y1_y2, "blue_year_cohorts.csv")
 ```
 
-Create a dataset limited to the major soil moisture germination events. Isolate each Observation Year to the two (or three) events with the most germination. Then pair with soil moisture data from plots.
+
+
+Create a dataset limited to the major soil moisture germination events.
+Isolate each Observation Year to the two (or three) events with the most germination. Then pair with soil moisture data from plots.
 
 There's one date for each year with the most germination event and then 4/5 years have a smaller secondary event. 2021 has several aftershock events.
 
 You could get a string of dates with germination events and then filter the `blue_yr_trt` dataframe by those dates and keep the maximum for each year, that would be the easiest for calculating probability because the denominator is just obs year. But more robust would be top two germ events.
+
+
 
 ```{r}
 #| warning: false
@@ -990,9 +1015,13 @@ met_20_23_50 <- met_20_23 %>%
  write_csv(met_00_23_50, "met_50.csv")
 ```
 
+
+
 ## Read in Cleaned Data
 
 These are all the datasets cleaned above, this saves R time.
+
+
 
 ```{r}
 #| warning: false
@@ -1017,9 +1046,13 @@ sm_t_23 <- read_csv("MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2023.c
 met_00_23_50 <- read_csv("met_50.csv")
 ```
 
+
+
 ## Data Exploration
 
 Our data objects are 'blue_19_23', 'trts', 'sm_t_18':'sm_t_23', 'met_00_23_50','blue_19_23_long_raw','bluebyyear'
+
+
 
 ```{r}
 summary(blue_19_23)
@@ -1028,7 +1061,11 @@ summary(blue_19_23)
 sum(blue_19_23$Germ.binom, na.rm = TRUE)/(nrow(blue_19_23)-1)
 ```
 
+
+
 Overall germination rate of 13.4% across five years, both treatments, both species. Columns are: Plot, Corner, Species, Row, Column, TP_ID, Add_Year, Obs_Date, and Germ.binom.
+
+
 
 ```{r}
 summary(bluebyyear)
@@ -1046,27 +1083,41 @@ bluebyyear %>%
   summarise(germ_prob = sum(Germ.binom)/sum(trial))
 ```
 
+
+
 Highest germination rate in 2022 at 10%. Lowest in 2019 at 1%.
+
+
 
 ```{r}
 # str(trts)
 head(trts)
 ```
 
+
+
 Treatments for mean-variance blue. Variance treatments flipped at random from 2019-2022.
+
+
 
 ```{r}
 # summary(sm_t_20)
 head(sm_t_20)
 ```
 
+
+
 Sensor data for 18/30 plots at mean-variance blue. sensor_id contains sensor type (temperature or volumentric water content), plot, and sensor depth (12, 22, or 37 cm).
+
+
 
 ```{r}
 summary(met_00_23_50)
 # head(met_00_23_50)
 # str(met_00_23_50)
 ```
+
+
 
 Hourly climate data from Met Station 50, limited to date and time, temperature, and precipitation.
 
@@ -1075,6 +1126,8 @@ Hourly climate data from Met Station 50, limited to date and time, temperature, 
 The climate data are collected from meteorological stations at the Sevilleta NWR. These data come from met station 50, which is the nearest station to MVE Blue. Data began in 2000 and continues through 2023. Data is organized by date and time, temperature in celsius per hour, and minimum and maximum temperature for hour, total precipitation per hour in millimeters. I'm interested in the average range of temperatures for each season and the average annual and seasonal precipitation. Data comes from here(<https://portal.edirepository.org/nis/mapbrowse?packageid=knb-lter-sev.1.17>)
 
 I want a graph where the x-axis is days of the year and there are three lines, each with confidence bands: average daily precip, daily high temperature, daily low temperature.
+
+
 
 ```{r}
 #| message: false
@@ -1160,6 +1213,8 @@ ggsave("F1_MVEBlue_climate.jpg", clim_plot)
 # Change character of the line to just go to each point as a straight line
 ```
 
+
+
 Figure 1. Climate averages for Meteorological Station 50 near Mean-Variance Blue Experiment from 2000-2023. Purple dots represent total monthly precipitation in millimeters, averaged over 2000-2023. Turquoise dots represent monthly average daily minimum and maximum temperatures in Fahrenheit from 2000-2023. Shaded regions represent 95% confidence intervals.
 
 ## Simple model of germination using Year and Treatments
@@ -1167,6 +1222,8 @@ Figure 1. Climate averages for Meteorological Station 50 near Mean-Variance Blue
 Make a generalized linear mixed model with a binomial or bernoulli distribution and corner, plot, and block, and maybe Year as random effects. Possible fixed effects are species, mean treatment, variance treatment, Year, annual rainfall, or monsoon rainfall.
 
 You'll need to remove toothpicks in the NW corner in 2019 since those were planted among adult blue grama grass to test facilitation.
+
+
 
 ```{r}
 #| message: false
@@ -1199,7 +1256,11 @@ blackgrama <-
   filter(Species == "BLACK")
 ```
 
+
+
 Try generalized linear mixed effects models for the simplest dataset blue_19_23. This considers what year the seeds were planted but not necessarily the year they germinated. This is only the probability of whether a given seed germinated or not over the 5 years.
+
+
 
 ```{r}
 #| eval: false # Do not evaluate this chunk
@@ -1236,11 +1297,15 @@ ICtab(m0,m0b,m1,m2,m3,m4,m5,m6)
 VarCorr(m0)
 ```
 
+
+
 Temporal and spatial heterogeneity explain a lot of the data. Super not helpful to remove Add-Year as a random effect. Best models are m0, m1, m5, m2, m3, m4 (all very close and within 2 dAIC). Did not help to scale Add_year.
 
 No differences by treatments, not including species as a factor.
 
 Below, try models for each species.
+
+
 
 ```{r}
 #| eval: false # Do not evaluate this chunk
@@ -1261,9 +1326,13 @@ ICtab(g0,g1,g2,g3,g4)
 VarCorr(g0)
 ```
 
+
+
 Null model is just as good as any other model (no significant predictors).
 
 Try black grama below.
+
+
 
 ```{r}
 #| eval: false # Do not evaluate this chunk
@@ -1284,6 +1353,8 @@ ICtab(e0,e1,e2,e3,e4)
 VarCorr(e0)
 ```
 
+
+
 Mean and variance treatments are not significant predictors of germination for blue or black grama. The null model (constant germination) was the best fit for the data at this time.
 
 Next steps: Try including Monsoon rainfall, total annual precip.
@@ -1295,6 +1366,8 @@ Try limiting to year planted or year after. So each "Observation Year" includes 
 ## Year Cohort Model
 
 Create new variables with meteorological data and treatments. Make treatments numeric.
+
+
 
 ```{r cohort rain year}
 head(bluebyyear)
@@ -1423,7 +1496,11 @@ blue_yr_trt$sum_mons_pp_sc <- blue_yr_trt$sum_mons_pp - 80
 
 ```
 
+
+
 Try scaling differently Try simplifying random effect structure (limit to 1\|Quad_ID and/or 1\|Obs_Year) Try combining mean and variance treatment into one.
+
+
 
 ```{r}
 blue_yr_trt$Obs_Year_sc_2 <- blue_yr_trt$Obs_Year - mean(blue_yr_trt$Obs_Year)
@@ -1437,9 +1514,13 @@ blue_yr_trt$Quad_ID_ne_yr <- paste0(blue_yr_trt$plot,blue_yr_trt$Species,blue_yr
 blue_yr_trt$meanvar <- paste0(blue_yr_trt$mean_treatment,blue_yr_trt$var_treatment)
 ```
 
+
+
 Try new models Try a different optimizer -- didn't work Try a fixed effects model only -- convergence failure went away Check for overdispersion
 
 Question: How does a changing climate mean and variance affect co-domininant grass germination?
+
+
 
 ```{r}
 # Try both species together first
@@ -1466,6 +1547,8 @@ mall
 19462.676/44431 
 ```
 
+
+
 Model with a four way interaction between species, mean_treatment, var_treatment, and total annual precipitation (scaled). This model fails to converge but not by much. Model also not overdispersed. Proceed with interpretations!
 
 Model shows that effect of climate treatments varies by species and is dependent on annual precipitation.
@@ -1477,6 +1560,8 @@ RETURN HERE for model coefficients and estimations, predictions.
 Graph it so two panels are the two mean treatments and -axis are variance treatments bar graphs of estimated proportion of germination by species and year.
 
 Use original data (no observation year cohorts, Year Added only). Prep data below.
+
+
 
 ```{r}
 #| warning: false
@@ -1492,15 +1577,23 @@ germ_summary_all <- blue_19_23_trt_NE19rm %>%
 
 ```
 
+
+
 Plot all years together.
+
+
 
 ```{r}
 ggplot(germ_summary_all, aes(x=var_treatment, y = avg_germ, group = Species, fill = Species, na.rm = TRUE)) + scale_fill_manual(values=c("black","cornflowerblue")) + geom_col(position = position_dodge()) + facet_grid(. ~ mean_treatment) + labs(x = "Variance Treatment", y = "Estimated Germination Probability") + theme_bw()
 ```
 
+
+
 Species functionally the same for all treatments, no major differences between treatments but lowest germination in reduced mean and ambient variance treatment.
 
 Break out each year.
+
+
 
 ```{r}
 germ_yr <- ggplot(germ_summary, aes(x=var_treatment, y = avg_germ, group = Species, fill = Species, na.rm = TRUE)) + scale_fill_manual(values=c("black","cornflowerblue")) + geom_col(position = position_dodge()) + facet_grid(Add_Year ~ mean_treatment) + labs(title = "Germination of blue and black grama by Year Added Cohort", x = "Variance Treatment", y = "Estimated Germination Probability") + theme_bw()
@@ -1509,9 +1602,13 @@ germ_yr
 ggsave("GermxYear.jpg", germ_yr, width = 7, height = 12)
 ```
 
+
+
 High interannual variation in germination between species and treatments, dependent on rainfall.
 
 Try it using Observation Year cohorts.
+
+
 
 ```{r}
 #| warning: false
@@ -1528,7 +1625,11 @@ germ_summary_all <- blue_19_23_trt_NE19rm %>%
 
 ```
 
+
+
 Graph by Obs year.
+
+
 
 ```{r}
 germ_yr <- ggplot(germ_summary, aes(x=var_treatment, y = avg_germ, group = Species, fill = Species, na.rm = TRUE)) + scale_fill_manual(values=c("black","cornflowerblue")) + geom_col(position = position_dodge()) + facet_grid(Obs_Year ~ mean_treatment) + labs(x = "Variance Treatment", y = "Estimated Germination Probability") + theme_bw()
@@ -1537,13 +1638,17 @@ germ_yr
 ggsave("GermxObs_Year.jpg", germ_yr, width = 7, height = 12)
 ```
 
+
+
 -   figure out how to pull and push from specific folders instead of all in scripts.
 -   Figure out how to graph in a way that reflects 4 way interaction
 -   first at least add total annual precipitation to each year in figure
 
 ## Model Soil Moisture Germination Events
 
-### Visualize rain + soil moisture for events
+LEFT OFF HERE Model & Graph Soil Moisture Germination Events
+
+
 
 ```{r}
 str(germ_sm)
@@ -1585,6 +1690,11 @@ sm_event_sum_1 <- sm_t_event_1 %>%
   summarise(avg_sm = mean(value, na.rm = TRUE),
             max_sm = max(value, na.rm = TRUE))
 
+ggplot(sm_event_sum_1, aes(x = Date, y = avg_sm)) +
+  geom_line()
+ggplot(sm_event_sum_1, aes(x = Date, y = max_sm)) +
+  geom_line()
+
 sm_t_event_2 <- sm_t %>%
   group_by(Date) %>%
   filter(any(Date > (events[2]-28) & Date < (events[2]+2))) %>%
@@ -1597,6 +1707,11 @@ sm_event_sum_2 <- sm_t_event_2 %>%
   group_by(Date) %>% 
   summarise(avg_sm = mean(value, na.rm = TRUE),
             max_sm = max(value, na.rm = TRUE))
+
+ggplot(sm_event_sum_2, aes(x = Date, y = avg_sm)) +
+  geom_line()
+ggplot(sm_event_sum_2, aes(x = Date, y = max_sm)) +
+  geom_line()
 
 sm_t_event_3 <- sm_t %>%
   group_by(Date) %>%
@@ -1611,6 +1726,11 @@ sm_event_sum_3 <- sm_t_event_3 %>%
   summarise(avg_sm = mean(value, na.rm = TRUE),
             max_sm = max(value, na.rm = TRUE))
 
+ggplot(sm_event_sum_3, aes(x = Date, y = avg_sm)) +
+  geom_line()
+ggplot(sm_event_sum_3, aes(x = Date, y = max_sm)) +
+  geom_line()
+
 sm_t_event_4 <- sm_t %>%
   group_by(Date) %>%
   filter(any(Date > (events[4]-28) & Date < (events[4]+2))) %>%
@@ -1623,6 +1743,11 @@ sm_event_sum_4 <- sm_t_event_4 %>%
   group_by(Date) %>% 
   summarise(avg_sm = mean(value, na.rm = TRUE),
             max_sm = max(value, na.rm = TRUE))
+
+ggplot(sm_event_sum_4, aes(x = Date, y = avg_sm)) +
+  geom_line()
+ggplot(sm_event_sum_4, aes(x = Date, y = max_sm)) +
+  geom_line()
 
 sm_t_event_5 <- sm_t %>%
   group_by(Date) %>%
@@ -1637,6 +1762,11 @@ sm_event_sum_5 <- sm_t_event_5 %>%
   summarise(avg_sm = mean(value, na.rm = TRUE),
             max_sm = max(value, na.rm = TRUE))
 
+ggplot(sm_event_sum_5, aes(x = Date, y = avg_sm)) +
+  geom_line()
+ggplot(sm_event_sum_5, aes(x = Date, y = max_sm)) +
+  geom_line()
+
 sm_t_event_6 <- sm_t %>%
   group_by(Date) %>%
   filter(any(Date > (events[6]-28) & Date < (events[6]+2))) %>%
@@ -1650,8 +1780,16 @@ sm_event_sum_6 <- sm_t_event_6 %>%
   summarise(avg_sm = mean(value, na.rm = TRUE),
             max_sm = max(value, na.rm = TRUE))
 
+ggplot(sm_event_sum_6, aes(x = Date, y = avg_sm)) +
+  geom_line()
+ggplot(sm_event_sum_6, aes(x = Date, y = max_sm)) +
+  geom_line()
+
+# Might need to go further back than 14 days
+
 # Soil moisture data ends at 2023-08-07 so only 6 dates
 # I wonder if we can actually predict germination form rainfall for the last two events
+
 
 # Filter met station data by each date and 14 days before and after. Graph rainfall total per day for 28 days, with each germ event as it's own facet in a facet grid
 
@@ -1666,6 +1804,9 @@ met_event_sum_1 <- met_event_1 %>%
   group_by(Date) %>% 
   summarise(sum_pp = sum(Precipitation, na.rm = TRUE))
 
+ggplot(met_event_sum_1, aes(x = Date, y = sum_pp)) +
+  geom_line()
+
 met_event_2 <- met_00_23_50 %>%
   group_by(Date) %>%
   filter(any(Date > (events[2]-28) & Date < (events[2]+2))) %>%
@@ -1674,6 +1815,9 @@ met_event_2 <- met_00_23_50 %>%
 met_event_sum_2 <- met_event_2 %>% 
   group_by(Date) %>% 
   summarise(sum_pp = sum(Precipitation, na.rm = TRUE))
+
+ggplot(met_event_sum_2, aes(x = Date, y = sum_pp)) +
+  geom_line()
 
 met_event_3 <- met_00_23_50 %>%
   group_by(Date) %>%
@@ -1684,6 +1828,9 @@ met_event_sum_3 <- met_event_3 %>%
   group_by(Date) %>% 
   summarise(sum_pp = sum(Precipitation, na.rm = TRUE))
 
+ggplot(met_event_sum_3, aes(x = Date, y = sum_pp)) +
+  geom_line()
+
 met_event_4 <- met_00_23_50 %>%
   group_by(Date) %>%
   filter(any(Date > (events[4]-28) & Date < (events[4]+2))) %>%
@@ -1692,6 +1839,9 @@ met_event_4 <- met_00_23_50 %>%
 met_event_sum_4 <- met_event_4 %>% 
   group_by(Date) %>% 
   summarise(sum_pp = sum(Precipitation, na.rm = TRUE))
+
+ggplot(met_event_sum_4, aes(x = Date, y = sum_pp)) +
+  geom_line()
 
 met_event_5 <- met_00_23_50 %>%
   group_by(Date) %>%
@@ -1702,6 +1852,9 @@ met_event_sum_5 <- met_event_5 %>%
   group_by(Date) %>% 
   summarise(sum_pp = sum(Precipitation, na.rm = TRUE))
 
+ggplot(met_event_sum_5, aes(x = Date, y = sum_pp)) +
+  geom_line()
+
 met_event_6 <- met_00_23_50 %>%
   group_by(Date) %>%
   filter(any(Date > (events[6]-28) & Date < (events[6]+2))) %>%
@@ -1710,10 +1863,13 @@ met_event_6 <- met_00_23_50 %>%
 met_event_sum_6 <- met_event_6 %>% 
   group_by(Date) %>% 
   summarise(sum_pp = sum(Precipitation, na.rm = TRUE))
+
+ggplot(met_event_sum_6, aes(x = Date, y = sum_pp)) +
+  geom_line()
 ```
 
 ```{r}
-# I want 6 graphs, with two axes, soil moisture one and precip on the other. Two lines are max and avg sm and one is total daily precip. And a vertical line at the Obs_Date and maximum either soil moisture or precip. Go back and go 28 days back and 2 days forward
+# I want 6 graphs, with two axes, soil moisture one and precip on the other. Two lines are max and avg sm and one is total daily precip. And a vertical line at the Obs_Date and maximum either soil moisture or precip. Go back and go 20 days back and 4 days forward
 
 event1 <- left_join(sm_event_sum_1, met_event_sum_1, by = join_by(Date))
 event2 <- left_join(sm_event_sum_2, met_event_sum_2, by = join_by(Date))
@@ -1722,12 +1878,19 @@ event4 <- left_join(sm_event_sum_4, met_event_sum_4, by = join_by(Date))
 event5 <- left_join(sm_event_sum_5, met_event_sum_5, by = join_by(Date))
 event6 <- left_join(sm_event_sum_6, met_event_sum_6, by = join_by(Date))
 
+# Range for VWC
+max(event1$max_sm)
+min(event1$max_sm)
+
+max(event1$sum_pp)
+min(event1$sum_pp)
+
 # colorblind friendly colors
 colors <- viridis(3)
 
 # factor to multiply 1st y-axis
 coeff <- max(event6$sum_pp)/max(event6$max_sm)
-event6_plot <- ggplot(event6, aes(x = Date)) + 
+event5_plot <- ggplot(event6, aes(x = Date)) + 
   geom_point(aes(y = avg_sm), size = 1.5, color = colors[1]) +  
   geom_line(aes(y = avg_sm), size = 1.5, color = colors[1]) +
   geom_point(aes(y = max_sm), size = 1.5, color = colors[2]) +  
@@ -1756,88 +1919,16 @@ event6_plot
 ggsave("rain_event_6.jpg", event6_plot)
 ```
 
-Consider taking the average soil moisture from the maximum soil moisture time to the germ date and the maximum leading up to it, and we see which is a better predictor of germination because drought plots might experience a similar maximum but not retain soil moisture, and the retention is actually the key to triggering mass germination. If this is true the average would be a better predictor.
 
-### Create soil moisture variables and pair with germ data
+
+Maybe we take the average soil moisture from the maximum soil moisture time to the germ date and the maximum leading up to it, and we see which is a better predictor of germination because drought plots might experience a similar maximum but not retain soil moisture, and the retention is actually the key to triggering mass germination. If this is true the average would be a better predictor.
+
 Four measurements of soil moisture for model comparison:
 
-Maximum soil moisture in 28 days leading up to census date Average maximum soil moisture from date of maximum to census date Average soil moisture in 7 days leading up to census data Average maximum soil moisture in 7 days leading up to census date
-
-```{r}
-events
-head(sm_t)
-
-sm_t_event_1 <- sm_t %>%
-  group_by(Date) %>%
-  filter(any(Date > (events[1]-28) & Date < events[1])) %>%
-  filter(sensor == "VWC" & depth == 12) %>% 
-  mutate(event = "event_1",
-         Obs_Date = events[1]) %>% 
-  ungroup()
-
-sm_t_event_2 <- sm_t %>%
-  group_by(Date) %>%
-  filter(any(Date > (events[2]-28) & Date < events[2])) %>%
-  filter(sensor == "VWC" & depth == 12) %>% 
-  mutate(event = "event_2",
-         Obs_Date = events[2]) %>% 
-  ungroup()
-
-sm_t_event_3 <- sm_t %>%
-  group_by(Date) %>%
-  filter(any(Date > (events[3]-28) & Date < events[3])) %>%
-  filter(sensor == "VWC" & depth == 12) %>% 
-  mutate(event = "event_3",
-         Obs_Date = events[3]) %>% 
-  ungroup()
-
-sm_t_event_4 <- sm_t %>%
-  group_by(Date) %>%
-  filter(any(Date > (events[4]-28) & Date < events[4])) %>%
-  filter(sensor == "VWC" & depth == 12) %>% 
-  mutate(event = "event_4",
-         Obs_Date = events[4]) %>% 
-  ungroup()
-
-sm_t_event_5 <- sm_t %>%
-  group_by(Date) %>%
-  filter(any(Date > (events[5]-28) & Date < events[5])) %>%
-  filter(sensor == "VWC" & depth == 12) %>% 
-  mutate(event = "event_5",
-         Obs_Date = events[5]) %>% 
-  ungroup()
-
-sm_t_event_6 <- sm_t %>%
-  group_by(Date) %>%
-  filter(any(Date > (events[6]-28) & Date < events[6])) %>%
-  filter(sensor == "VWC" & depth == 12) %>% 
-  mutate(event = "event_6",
-         Obs_Date = events[6]) %>% 
-  ungroup()
-
-sm_events <- rbind(
-  sm_t_event_1,
-  sm_t_event_2,
-  sm_t_event_3,
-  sm_t_event_4,
-  sm_t_event_5,
-  sm_t_event_6
-)
-head(sm_events)
-
-sm_event_sum <- sm_events %>% 
-  group_by(Date, plot) %>% 
-  summarise(avg_sm = mean(value, na.rm = TRUE),
-            max_sm = max(value, na.rm = TRUE),
-            Obs_Date = mean(Obs_Date))
-
-# Separate plot column to just have number
-# Do average of maximums for Obs_date-7
-# average of maximums for Obs_Date-Maximum Date
-# True average of Obs_Date-7
-# Maximum on maximum date
-
-```
+Maximum soil moisture in 28 days leading up to census date
+Average maximum soil moisture from date of maximum to census date
+Average soil moisture in 7 days leading up to census data
+Average maximum soil moisture in 7 days leading up to census date
 
 
 ## Model & Graph Survival
@@ -1845,3 +1936,4 @@ sm_event_sum <- sm_events %>%
 ## Characterize Survival (Pulse or Press)
 
 ## Legacy Model & Graph
+
