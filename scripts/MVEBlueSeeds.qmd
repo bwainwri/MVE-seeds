@@ -1825,17 +1825,65 @@ sm_events <- rbind(
 )
 head(sm_events)
 
-sm_event_sum <- sm_events %>% 
-  group_by(Date, plot) %>% 
-  summarise(avg_sm = mean(value, na.rm = TRUE),
-            max_sm = max(value, na.rm = TRUE),
-            Obs_Date = mean(Obs_Date))
-
 # Separate plot column to just have number
+sm_events$Plot <- as.numeric(sub('.', '', sm_events$plot))
+
+met_day_sum <- met_00_23_50 %>%
+  group_by(Date) %>%
+  summarise(sum_day_pp = sum(Precipitation, na.rm = TRUE))
+
+sm_pp_events <- left_join(sm_events, met_day_sum, by = join_by(Date))
+
+sm_pp_events <- sm_pp_events %>% 
+  select(Date,
+         Obs_Date,
+         sum_day_pp) %>% 
+  distinct()
+
+sm_event_sum <- sm_events %>% 
+  group_by(Date, Plot) %>% 
+  summarise(avg_day_sm = mean(value, na.rm = TRUE),
+            max_day_sm = max(value, na.rm = TRUE),
+            Obs_Date = mean(Obs_Date),
+            sum_day_pp = mean(sum_day_pp))
+
 # Do average of maximums for Obs_date-7
-# average of maximums for Obs_Date-Maximum Date
+sm_event_avg_7_max <- sm_event_sum %>% 
+  group_by(Obs_Date, Plot) %>%
+  filter(any(Date > (Obs_Date-7) & Date < Obs_Date)) %>%
+  summarise(avg_7_max = mean(max_day_sm))
+
 # True average of Obs_Date-7
+sm_event_avg_7 <- sm_events %>% 
+  group_by(Obs_Date, Plot) %>% 
+  filter(any(Date > (Obs_Date-7) & Date < Obs_Date)) %>%
+  summarise(avg_7 = mean(value, na.rm = TRUE))
+
+sm_event_vars <- left_join(sm_event_avg_7_max, sm_event_avg_7, by = join_by(Obs_Date, Plot))
+
+# average of maximums for Obs_Date-Maximum Date
+pp_events_sum <- sm_pp_events %>% 
+  group_by(Obs_Date) %>% 
+  summarise(max_pp = max(sum_day_pp),
+            Mons_Date = Date[which(sum_day_pp == max(sum_day_pp))])
+
+sm_pp_event_sum <- left_join(sm_event_sum,pp_events_sum, by = join_by(Obs_Date))
+
+sm_event_avg_max_mons <- sm_pp_event_sum %>% 
+  group_by(Obs_Date,Plot) %>% 
+  filter(any(Date > (Obs_Date-Mons_Date) & Date < Obs_Date)) %>%
+  summarise(avg_mons_max = mean(max_day_sm, na.rm = TRUE))
+
+sm_event_vars_2 <- left_join(sm_event_vars, sm_event_avg_max_mons, by = join_by(Obs_Date, Plot))
+
 # Maximum on maximum date
+sm_event_max_mons <- sm_pp_event_sum %>% 
+  group_by(Obs_Date,Plot) %>% 
+  filter(any(Date > (Obs_Date-Mons_Date) & Date < Obs_Date)) %>%
+  summarise(mons_max = max(max_day_sm, na.rm = TRUE))
+
+## LEFT OFF HERE
+## Clean this up and retrace our steps because 7-05 date has really low soil moisture
 
 ```
 
