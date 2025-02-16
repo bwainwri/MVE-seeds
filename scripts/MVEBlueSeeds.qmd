@@ -707,520 +707,6 @@ write_csv(sm_germ_events, "germ_events_sm.csv")
 
 ```
 
-### Visualize rain + soil moisture for events
-
-```{r}
-str(germ_sm)
-head(germ_sm)
-events <- as.Date(unique(germ_sm$Obs_Date))
-
-# Need to merge this data set with soil moisture and temperature metrics which are in their own years (sm_t_18-sm_t_23)
-
-head(sm_t_18)
-
-# We can merge all soil moisture frames and then filter by event dates
-sm_t <- rbind(sm_t_18,
-      sm_t_19,
-      sm_t_20,
-      sm_t_21,
-      sm_t_22,
-      sm_t_23)
-
-# Let's explore what the data looks like around a rain event
-# Because those are the germination events but not necessarily the rain events, which could have been two to four weeks before
-
-# Break out timestamp column into date and time
-head(sm_t$TIMESTAMP)
-sm_t$Date <- date(sm_t$TIMESTAMP)
-head(sm_t$Date)
-
-# Filter sm_t by each date and 28 days before and two days after. 
-# (perfect opp for a loop)
-
-sm_t_event_1 <- sm_t %>%
-  group_by(Date) %>%
-  filter(any(Date > (events[1]-28) & Date < (events[1]+2))) %>%
-  filter(sensor == "VWC" & depth == 12) %>% 
-  mutate(event = "event_1") %>% 
-  ungroup()
-
-sm_event_sum_1 <- sm_t_event_1 %>% 
-  group_by(Date) %>% 
-  summarise(avg_sm = mean(value, na.rm = TRUE),
-            max_sm = max(value, na.rm = TRUE))
-
-sm_t_event_2 <- sm_t %>%
-  group_by(Date) %>%
-  filter(any(Date > (events[2]-28) & Date < (events[2]+2))) %>%
-  filter(sensor == "VWC" & depth == 12) %>% 
-  mutate(event = "event_2") %>% 
-  ungroup()
-unique(sm_t_event_2$Date)
-
-sm_event_sum_2 <- sm_t_event_2 %>% 
-  group_by(Date) %>% 
-  summarise(avg_sm = mean(value, na.rm = TRUE),
-            max_sm = max(value, na.rm = TRUE))
-
-sm_t_event_3 <- sm_t %>%
-  group_by(Date) %>%
-  filter(any(Date > (events[3]-28) & Date < (events[3]+2))) %>%
-  filter(sensor == "VWC" & depth == 12) %>% 
-  mutate(event = "event_3") %>% 
-  ungroup()
-unique(sm_t_event_3$Date)
-
-sm_event_sum_3 <- sm_t_event_3 %>% 
-  group_by(Date) %>% 
-  summarise(avg_sm = mean(value, na.rm = TRUE),
-            max_sm = max(value, na.rm = TRUE))
-
-sm_t_event_4 <- sm_t %>%
-  group_by(Date) %>%
-  filter(any(Date > (events[4]-28) & Date < (events[4]+2))) %>%
-  filter(sensor == "VWC" & depth == 12) %>% 
-  mutate(event = "event_4") %>% 
-  ungroup()
-unique(sm_t_event_4$Date)
-
-sm_event_sum_4 <- sm_t_event_4 %>% 
-  group_by(Date) %>% 
-  summarise(avg_sm = mean(value, na.rm = TRUE),
-            max_sm = max(value, na.rm = TRUE))
-
-sm_t_event_5 <- sm_t %>%
-  group_by(Date) %>%
-  filter(any(Date > (events[5]-28) & Date < (events[5]+2))) %>%
-  filter(sensor == "VWC" & depth == 12) %>% 
-  mutate(event = "event_5") %>% 
-  ungroup()
-unique(sm_t_event_5$Date)
-
-sm_event_sum_5 <- sm_t_event_5 %>% 
-  group_by(Date) %>% 
-  summarise(avg_sm = mean(value, na.rm = TRUE),
-            max_sm = max(value, na.rm = TRUE))
-
-sm_t_event_6 <- sm_t %>%
-  group_by(Date) %>%
-  filter(any(Date > (events[6]-28) & Date < (events[6]+2))) %>%
-  filter(sensor == "VWC" & depth == 12) %>% 
-  mutate(event = "event_6") %>% 
-  ungroup()
-unique(sm_t_event_6$Date)
-
-sm_event_sum_6 <- sm_t_event_6 %>% 
-  group_by(Date) %>% 
-  summarise(avg_sm = mean(value, na.rm = TRUE),
-            max_sm = max(value, na.rm = TRUE))
-
-# Soil moisture data ends at 2023-08-07 so only 6 dates
-# I wonder if we can actually predict germination form rainfall for the last two events
-
-# Filter met station data by each date and 14 days before and after. Graph rainfall total per day for 28 days, with each germ event as it's own facet in a facet grid
-
-summary(met_00_23_50)
-
-met_event_1 <- met_00_23_50 %>%
-  group_by(Date) %>%
-  filter(any(Date > (events[1]-28) & Date < (events[1]+2))) %>%
-  ungroup()
-
-met_event_sum_1 <- met_event_1 %>% 
-  group_by(Date) %>% 
-  summarise(sum_pp = sum(Precipitation, na.rm = TRUE))
-
-met_event_2 <- met_00_23_50 %>%
-  group_by(Date) %>%
-  filter(any(Date > (events[2]-28) & Date < (events[2]+2))) %>%
-  ungroup()
-
-met_event_sum_2 <- met_event_2 %>% 
-  group_by(Date) %>% 
-  summarise(sum_pp = sum(Precipitation, na.rm = TRUE))
-
-met_event_3 <- met_00_23_50 %>%
-  group_by(Date) %>%
-  filter(any(Date > (events[3]-28) & Date < (events[3]+2))) %>%
-  ungroup()
-
-met_event_sum_3 <- met_event_3 %>% 
-  group_by(Date) %>% 
-  summarise(sum_pp = sum(Precipitation, na.rm = TRUE))
-
-met_event_4 <- met_00_23_50 %>%
-  group_by(Date) %>%
-  filter(any(Date > (events[4]-28) & Date < (events[4]+2))) %>%
-  ungroup()
-
-met_event_sum_4 <- met_event_4 %>% 
-  group_by(Date) %>% 
-  summarise(sum_pp = sum(Precipitation, na.rm = TRUE))
-
-met_event_5 <- met_00_23_50 %>%
-  group_by(Date) %>%
-  filter(any(Date > (events[5]-28) & Date < (events[5]+2))) %>%
-  ungroup()
-
-met_event_sum_5 <- met_event_5 %>% 
-  group_by(Date) %>% 
-  summarise(sum_pp = sum(Precipitation, na.rm = TRUE))
-
-met_event_6 <- met_00_23_50 %>%
-  group_by(Date) %>%
-  filter(any(Date > (events[6]-28) & Date < (events[6]+2))) %>%
-  ungroup()
-
-met_event_sum_6 <- met_event_6 %>% 
-  group_by(Date) %>% 
-  summarise(sum_pp = sum(Precipitation, na.rm = TRUE))
-```
-
-```{r}
-# I want 6 graphs, with two axes, soil moisture one and precip on the other. Two lines are max and avg sm and one is total daily precip. And a vertical line at the Obs_Date and maximum either soil moisture or precip. Go back and go 28 days back and 2 days forward
-
-event1 <- left_join(sm_event_sum_1, met_event_sum_1, by = join_by(Date))
-event2 <- left_join(sm_event_sum_2, met_event_sum_2, by = join_by(Date))
-event3 <- left_join(sm_event_sum_3, met_event_sum_3, by = join_by(Date))
-event4 <- left_join(sm_event_sum_4, met_event_sum_4, by = join_by(Date))
-event5 <- left_join(sm_event_sum_5, met_event_sum_5, by = join_by(Date))
-event6 <- left_join(sm_event_sum_6, met_event_sum_6, by = join_by(Date))
-
-# colorblind friendly colors
-colors <- viridis(3)
-
-coeff <- max(event1$sum_pp)/max(event1$max_sm)
-event1_plot <- ggplot(event1, aes(x = Date)) + 
-  geom_point(aes(y = avg_sm), size = 1.5, color = colors[1]) +  
-  geom_line(aes(y = avg_sm), size = 1.5, color = colors[1]) +
-  geom_point(aes(y = max_sm), size = 1.5, color = colors[2]) +  
-  geom_line(aes(y = max_sm), size = 1.5, color = colors[2]) +
-  geom_point(aes(y = sum_pp/coeff), size = 1.5, color = colors[3]) +  
-  geom_line(aes(y = sum_pp/coeff), size = 1.5, color = colors[3]) +
-  geom_vline(xintercept = events[6]) +
-  #geom_line(aes(y = mean_pp), size = 1.5, color = '#00BFC4') + 
- # geom_line(aes(y = mean_max_t/coeff), size = 1.5, color = '#F8766D') +
-  #geom_line(aes(y = mean_min_t/coeff), size = 1.5, color = '#C77CFF') +
-  labs(
-    #title = "Monthly Climate Averages from 2000-2023 at Great Plains Grassland Meteorological Station",
-       x = "Date") +
-  theme_bw() +
-  theme(plot.title = element_text(size = 11),
-        axis.title.y = element_text(color = colors[1], size=9),
-        axis.title.y.right = element_text(color = colors[3], size=9),
-        axis.title.x = element_text(size = 9),
-        axis.text = element_text(size = 9)) +
-  scale_x_continuous(breaks=seq(0,13,by=1)) +
-  scale_y_continuous(
-    name = "Volumetric Water Content", # Features of the first axis
-    sec.axis = sec_axis( trans=~.*coeff, name="Daily Total Precipitation (mm)")) # Add 2nd axis & specify features
-event1_plot
-
-ggsave("rain_event_1.jpg", event1_plot)
-
-coeff <- max(event2$sum_pp)/max(event2$max_sm)
-event2_plot <- ggplot(event2, aes(x = Date)) + 
-  geom_point(aes(y = avg_sm), size = 1.5, color = colors[1]) +  
-  geom_line(aes(y = avg_sm), size = 1.5, color = colors[1]) +
-  geom_point(aes(y = max_sm), size = 1.5, color = colors[2]) +  
-  geom_line(aes(y = max_sm), size = 1.5, color = colors[2]) +
-  geom_point(aes(y = sum_pp/coeff), size = 1.5, color = colors[3]) +  
-  geom_line(aes(y = sum_pp/coeff), size = 1.5, color = colors[3]) +
-  geom_vline(xintercept = events[6]) +
-  #geom_line(aes(y = mean_pp), size = 1.5, color = '#00BFC4') + 
- # geom_line(aes(y = mean_max_t/coeff), size = 1.5, color = '#F8766D') +
-  #geom_line(aes(y = mean_min_t/coeff), size = 1.5, color = '#C77CFF') +
-  labs(
-    #title = "Monthly Climate Averages from 2000-2023 at Great Plains Grassland Meteorological Station",
-       x = "Date") +
-  theme_bw() +
-  theme(plot.title = element_text(size = 11),
-        axis.title.y = element_text(color = colors[1], size=9),
-        axis.title.y.right = element_text(color = colors[3], size=9),
-        axis.title.x = element_text(size = 9),
-        axis.text = element_text(size = 9)) +
-  scale_x_continuous(breaks=seq(0,13,by=1)) +
-  scale_y_continuous(
-    name = "Volumetric Water Content", # Features of the first axis
-    sec.axis = sec_axis( trans=~.*coeff, name="Daily Total Precipitation (mm)")) # Add 2nd axis & specify features
-event2_plot
-
-ggsave("rain_event_2.jpg", event2_plot)
-
-coeff <- max(event3$sum_pp)/max(event3$max_sm)
-event3_plot <- ggplot(event3, aes(x = Date)) + 
-  geom_point(aes(y = avg_sm), size = 1.5, color = colors[1]) +  
-  geom_line(aes(y = avg_sm), size = 1.5, color = colors[1]) +
-  geom_point(aes(y = max_sm), size = 1.5, color = colors[2]) +  
-  geom_line(aes(y = max_sm), size = 1.5, color = colors[2]) +
-  geom_point(aes(y = sum_pp/coeff), size = 1.5, color = colors[3]) +  
-  geom_line(aes(y = sum_pp/coeff), size = 1.5, color = colors[3]) +
-  geom_vline(xintercept = events[6]) +
-  #geom_line(aes(y = mean_pp), size = 1.5, color = '#00BFC4') + 
- # geom_line(aes(y = mean_max_t/coeff), size = 1.5, color = '#F8766D') +
-  #geom_line(aes(y = mean_min_t/coeff), size = 1.5, color = '#C77CFF') +
-  labs(
-    #title = "Monthly Climate Averages from 2000-2023 at Great Plains Grassland Meteorological Station",
-       x = "Date") +
-  theme_bw() +
-  theme(plot.title = element_text(size = 11),
-        axis.title.y = element_text(color = colors[1], size=9),
-        axis.title.y.right = element_text(color = colors[3], size=9),
-        axis.title.x = element_text(size = 9),
-        axis.text = element_text(size = 9)) +
-  scale_x_continuous(breaks=seq(0,13,by=1)) +
-  scale_y_continuous(
-    name = "Volumetric Water Content", # Features of the first axis
-    sec.axis = sec_axis( trans=~.*coeff, name="Daily Total Precipitation (mm)")) # Add 2nd axis & specify features
-event3_plot
-
-ggsave("rain_event_3.jpg", event3_plot)
-
-coeff <- max(event4$sum_pp)/max(event4$max_sm)
-event4_plot <- ggplot(event4, aes(x = Date)) + 
-  geom_point(aes(y = avg_sm), size = 1.5, color = colors[1]) +  
-  geom_line(aes(y = avg_sm), size = 1.5, color = colors[1]) +
-  geom_point(aes(y = max_sm), size = 1.5, color = colors[2]) +  
-  geom_line(aes(y = max_sm), size = 1.5, color = colors[2]) +
-  geom_point(aes(y = sum_pp/coeff), size = 1.5, color = colors[3]) +  
-  geom_line(aes(y = sum_pp/coeff), size = 1.5, color = colors[3]) +
-  geom_vline(xintercept = events[6]) +
-  #geom_line(aes(y = mean_pp), size = 1.5, color = '#00BFC4') + 
- # geom_line(aes(y = mean_max_t/coeff), size = 1.5, color = '#F8766D') +
-  #geom_line(aes(y = mean_min_t/coeff), size = 1.5, color = '#C77CFF') +
-  labs(
-    #title = "Monthly Climate Averages from 2000-2023 at Great Plains Grassland Meteorological Station",
-       x = "Date") +
-  theme_bw() +
-  theme(plot.title = element_text(size = 11),
-        axis.title.y = element_text(color = colors[1], size=9),
-        axis.title.y.right = element_text(color = colors[3], size=9),
-        axis.title.x = element_text(size = 9),
-        axis.text = element_text(size = 9)) +
-  scale_x_continuous(breaks=seq(0,13,by=1)) +
-  scale_y_continuous(
-    name = "Volumetric Water Content", # Features of the first axis
-    sec.axis = sec_axis( trans=~.*coeff, name="Daily Total Precipitation (mm)")) # Add 2nd axis & specify features
-event4_plot
-
-ggsave("rain_event_4.jpg", event4_plot)
-
-coeff <- max(event5$sum_pp)/max(event5$max_sm)
-event5_plot <- ggplot(event5, aes(x = Date)) + 
-  geom_point(aes(y = avg_sm), size = 1.5, color = colors[1]) +  
-  geom_line(aes(y = avg_sm), size = 1.5, color = colors[1]) +
-  geom_point(aes(y = max_sm), size = 1.5, color = colors[2]) +  
-  geom_line(aes(y = max_sm), size = 1.5, color = colors[2]) +
-  geom_point(aes(y = sum_pp/coeff), size = 1.5, color = colors[3]) +  
-  geom_line(aes(y = sum_pp/coeff), size = 1.5, color = colors[3]) +
-  geom_vline(xintercept = events[6]) +
-  #geom_line(aes(y = mean_pp), size = 1.5, color = '#00BFC4') + 
- # geom_line(aes(y = mean_max_t/coeff), size = 1.5, color = '#F8766D') +
-  #geom_line(aes(y = mean_min_t/coeff), size = 1.5, color = '#C77CFF') +
-  labs(
-    #title = "Monthly Climate Averages from 2000-2023 at Great Plains Grassland Meteorological Station",
-       x = "Date") +
-  theme_bw() +
-  theme(plot.title = element_text(size = 11),
-        axis.title.y = element_text(color = colors[1], size=9),
-        axis.title.y.right = element_text(color = colors[3], size=9),
-        axis.title.x = element_text(size = 9),
-        axis.text = element_text(size = 9)) +
-  scale_x_continuous(breaks=seq(0,13,by=1)) +
-  scale_y_continuous(
-    name = "Volumetric Water Content", # Features of the first axis
-    sec.axis = sec_axis( trans=~.*coeff, name="Daily Total Precipitation (mm)")) # Add 2nd axis & specify features
-event5_plot
-
-ggsave("rain_event_5.jpg", event5_plot)
-
-# factor to multiply 1st y-axis
-coeff <- max(event6$sum_pp)/max(event6$max_sm)
-event6_plot <- ggplot(event6, aes(x = Date)) + 
-  geom_point(aes(y = avg_sm), size = 1.5, color = colors[1]) +  
-  geom_line(aes(y = avg_sm), size = 1.5, color = colors[1]) +
-  geom_point(aes(y = max_sm), size = 1.5, color = colors[2]) +  
-  geom_line(aes(y = max_sm), size = 1.5, color = colors[2]) +
-  geom_point(aes(y = sum_pp/coeff), size = 1.5, color = colors[3]) +  
-  geom_line(aes(y = sum_pp/coeff), size = 1.5, color = colors[3]) +
-  geom_vline(xintercept = events[6]) +
-  #geom_line(aes(y = mean_pp), size = 1.5, color = '#00BFC4') + 
- # geom_line(aes(y = mean_max_t/coeff), size = 1.5, color = '#F8766D') +
-  #geom_line(aes(y = mean_min_t/coeff), size = 1.5, color = '#C77CFF') +
-  labs(
-    #title = "Monthly Climate Averages from 2000-2023 at Great Plains Grassland Meteorological Station",
-       x = "Date") +
-  theme_bw() +
-  theme(plot.title = element_text(size = 11),
-        axis.title.y = element_text(color = colors[1], size=9),
-        axis.title.y.right = element_text(color = colors[3], size=9),
-        axis.title.x = element_text(size = 9),
-        axis.text = element_text(size = 9)) +
-  scale_x_continuous(breaks=seq(0,13,by=1)) +
-  scale_y_continuous(
-    name = "Volumetric Water Content", # Features of the first axis
-    sec.axis = sec_axis( trans=~.*coeff, name="Daily Total Precipitation (mm)")) # Add 2nd axis & specify features
-event6_plot
-
-ggsave("rain_event_6.jpg", event6_plot)
-```
-
-
-Consider taking the average soil moisture from the maximum soil moisture time to the germ date and the maximum leading up to it, and we see which is a better predictor of germination because drought plots might experience a similar maximum but not retain soil moisture, and the retention is actually the key to triggering mass germination. If this is true the average would be a better predictor.
-
-### Create soil moisture variables and pair with germ data
-Four measurements of soil moisture for model comparison:
-
-Maximum soil moisture in 28 days leading up to census date Average maximum soil moisture from date of maximum to census date Average soil moisture in 7 days leading up to census data Average maximum soil moisture in 7 days leading up to census date
-
-```{r}
-events
-head(sm_t)
-
-sm_event_1 <- sm_t %>%
-  group_by(Date) %>%
-  filter(any(Date > (events[1]-28) & Date < events[1])) %>%
-  filter(sensor == "VWC" & depth == 12) %>% 
-  mutate(event = "event_1",
-         Obs_Date = events[1]) %>% 
-  ungroup()
-
-sm_event_2 <- sm_t %>%
-  group_by(Date) %>%
-  filter(any(Date > (events[2]-28) & Date < events[2])) %>%
-  filter(sensor == "VWC" & depth == 12) %>% 
-  mutate(event = "event_2",
-         Obs_Date = events[2]) %>% 
-  ungroup()
-
-sm_event_3 <- sm_t %>%
-  group_by(Date) %>%
-  filter(any(Date > (events[3]-28) & Date < events[3])) %>%
-  filter(sensor == "VWC" & depth == 12) %>% 
-  mutate(event = "event_3",
-         Obs_Date = events[3]) %>% 
-  ungroup()
-
-sm_event_4 <- sm_t %>%
-  group_by(Date) %>%
-  filter(any(Date > (events[4]-28) & Date < events[4])) %>%
-  filter(sensor == "VWC" & depth == 12) %>% 
-  mutate(event = "event_4",
-         Obs_Date = events[4]) %>% 
-  ungroup()
-
-sm_event_5 <- sm_t %>%
-  group_by(Date) %>%
-  filter(any(Date > (events[5]-28) & Date < events[5])) %>%
-  filter(sensor == "VWC" & depth == 12) %>% 
-  mutate(event = "event_5",
-         Obs_Date = events[5]) %>% 
-  ungroup()
-
-sm_event_6 <- sm_t %>%
-  group_by(Date) %>%
-  filter(any(Date > (events[6]-28) & Date < events[6])) %>%
-  filter(sensor == "VWC" & depth == 12) %>% 
-  mutate(event = "event_6",
-         Obs_Date = events[6]) %>% 
-  ungroup()
-
-sm_events <- rbind(
-  sm_event_1,
-  sm_event_2,
-  sm_event_3,
-  sm_event_4,
-  sm_event_5,
-  sm_event_6
-)
-# Separate plot column to just have number
-sm_events$Plot <- as.numeric(sub('.', '', sm_events$plot))
-
-head(sm_events)
-unique(sm_events$value)
-```
-
-
-```{r}
-unique(met_00_23_50$Precipitation)
-met_day_sum <- met_00_23_50 %>%
-  group_by(Date) %>%
-  summarise(sum_day_pp = sum(Precipitation, na.rm = TRUE))
-
-unique(sm_events$Obs_Date)
-
-sm_pp_events <- left_join(sm_events, met_day_sum, by = join_by(Date))
-summary(sm_pp_events)
-max(sm_pp_events$value, na.rm = TRUE)
-unique(sm_pp_events$Obs_Date)
-
-nanas <- sm_pp_events[which(is.na(sm_pp_events$value) == TRUE),]
-summary(nanas)
-table(nanas$Plot,nanas$Date)
-
-# remove all rows with NA in the "value" column
-sm_pp_events_narm <- sm_pp_events[!is.na(sm_pp_events$value),]
-unique(sm_pp_events_narm$Obs_Date)
-
-sm_event_sum <- sm_pp_events_narm %>% 
-  group_by(Date, Plot) %>% 
-  mutate(avg_day_sm = mean(value, na.rm = TRUE),
-            max_day_sm = max(value, na.rm = TRUE),
-            Obs_Date = Obs_Date,
-            sum_day_pp = sum_day_pp) %>% 
-  select(Date,
-         Obs_Date,
-         Plot,
-         sum_day_pp,
-         avg_day_sm,
-         max_day_sm) %>% 
-  distinct()
-head(sm_event_sum)
-summary(sm_event_sum)
-unique(sm_event_sum$Obs_Date)
-
-# Do average of maximums for Obs_date-7
-sm_event_avg_7_max <- sm_event_sum %>% 
-  group_by(Obs_Date, Plot) %>%
-  filter(any(Date > (Obs_Date-7) & Date < Obs_Date)) %>%
-  summarise(avg_7_max = mean(max_day_sm))
-
-# True average of Obs_Date-7
-sm_event_avg_7 <- sm_events %>% 
-  group_by(Obs_Date, Plot) %>% 
-  filter(any(Date > (Obs_Date-7) & Date < Obs_Date)) %>%
-  summarise(avg_7 = mean(value, na.rm = TRUE))
-
-sm_event_vars <- full_join(sm_event_avg_7_max, sm_event_avg_7, by = join_by(Obs_Date, Plot))
-
-# average of maximums for Obs_Date-Maximum Date
-pp_events_sum <- sm_pp_events_narm %>% 
-  group_by(Obs_Date) %>% 
-  summarise(max_pp = max(sum_day_pp),
-            Mons_Date = Date[which(sum_day_pp == max(sum_day_pp))])
-
-sm_pp_event_sum <- left_join(sm_event_sum,pp_events_sum, by = join_by(Obs_Date))
-
-sm_event_avg_max_mons <- sm_pp_event_sum %>% 
-  group_by(Obs_Date,Plot) %>% 
-  filter(any(Date > (Obs_Date-Mons_Date) & Date < Obs_Date)) %>%
-  summarise(avg_mons_max = mean(max_day_sm, na.rm = TRUE))
-
-sm_event_vars_2 <- full_join(sm_event_vars, sm_event_avg_max_mons, by = join_by(Obs_Date, Plot))
-
-# Maximum on maximum date
-sm_event_max_mons <- sm_pp_event_sum %>% 
-  group_by(Obs_Date,Plot) %>% 
-  filter(any(Date > (Obs_Date-Mons_Date) & Date < Obs_Date)) %>%
-  summarise(mons_max = max(max_day_sm, na.rm = TRUE))
-
-## 7-5 is fixed!
-sm_event_vars_3 <- full_join(sm_event_vars_2, sm_event_max_mons, by = join_by(Obs_Date, Plot))
-
-write_csv(sm_event_vars_3, "sm_event_vars.csv")
-
-```
-
 ```{r treatment data hidden}
 #| eval: false # Do not evaluate this chunk
 
@@ -1528,9 +1014,536 @@ sm_t_21 <- read_csv("MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2021.c
 sm_t_22 <- read_csv("MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2022.csv")
 sm_t_23 <- read_csv("MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2023.csv")
 
-sm_event_vars <- read_csv("sm_event_vars.csv")
-
 met_00_23_50 <- read_csv("met_50.csv")
+```
+
+### Visualize rain + soil moisture for events
+
+```{r}
+#| warning: false
+#| eval: false
+
+str(germ_sm)
+head(germ_sm)
+events <- as.Date(unique(germ_sm$Obs_Date))
+
+# Need to merge this data set with soil moisture and temperature metrics which are in their own years (sm_t_18-sm_t_23)
+
+head(sm_t_18)
+
+# We can merge all soil moisture frames and then filter by event dates
+sm_t <- rbind(sm_t_18,
+      sm_t_19,
+      sm_t_20,
+      sm_t_21,
+      sm_t_22,
+      sm_t_23)
+
+# Let's explore what the data looks like around a rain event
+# Because those are the germination events but not necessarily the rain events, which could have been two to four weeks before
+
+# Break out timestamp column into date and time
+head(sm_t$TIMESTAMP)
+sm_t$Date <- date(sm_t$TIMESTAMP)
+head(sm_t$Date)
+
+# Filter sm_t by each date and 28 days before and two days after. 
+# (perfect opp for a loop)
+
+sm_t_event_1 <- sm_t %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[1]-28) & Date < (events[1]+2))) %>%
+  filter(sensor == "VWC" & depth == 12) %>% 
+  mutate(event = "event_1") %>% 
+  ungroup()
+
+sm_event_sum_1 <- sm_t_event_1 %>% 
+  group_by(Date) %>% 
+  summarise(avg_sm = mean(value, na.rm = TRUE),
+            max_sm = max(value, na.rm = TRUE))
+
+sm_t_event_2 <- sm_t %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[2]-28) & Date < (events[2]+2))) %>%
+  filter(sensor == "VWC" & depth == 12) %>% 
+  mutate(event = "event_2") %>% 
+  ungroup()
+unique(sm_t_event_2$Date)
+
+sm_event_sum_2 <- sm_t_event_2 %>% 
+  group_by(Date) %>% 
+  summarise(avg_sm = mean(value, na.rm = TRUE),
+            max_sm = max(value, na.rm = TRUE))
+
+sm_t_event_3 <- sm_t %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[3]-28) & Date < (events[3]+2))) %>%
+  filter(sensor == "VWC" & depth == 12) %>% 
+  mutate(event = "event_3") %>% 
+  ungroup()
+unique(sm_t_event_3$Date)
+
+sm_event_sum_3 <- sm_t_event_3 %>% 
+  group_by(Date) %>% 
+  summarise(avg_sm = mean(value, na.rm = TRUE),
+            max_sm = max(value, na.rm = TRUE))
+
+sm_t_event_4 <- sm_t %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[4]-28) & Date < (events[4]+2))) %>%
+  filter(sensor == "VWC" & depth == 12) %>% 
+  mutate(event = "event_4") %>% 
+  ungroup()
+unique(sm_t_event_4$Date)
+
+sm_event_sum_4 <- sm_t_event_4 %>% 
+  group_by(Date) %>% 
+  summarise(avg_sm = mean(value, na.rm = TRUE),
+            max_sm = max(value, na.rm = TRUE))
+
+sm_t_event_5 <- sm_t %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[5]-28) & Date < (events[5]+2))) %>%
+  filter(sensor == "VWC" & depth == 12) %>% 
+  mutate(event = "event_5") %>% 
+  ungroup()
+unique(sm_t_event_5$Date)
+
+sm_event_sum_5 <- sm_t_event_5 %>% 
+  group_by(Date) %>% 
+  summarise(avg_sm = mean(value, na.rm = TRUE),
+            max_sm = max(value, na.rm = TRUE))
+
+sm_t_event_6 <- sm_t %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[6]-28) & Date < (events[6]+2))) %>%
+  filter(sensor == "VWC" & depth == 12) %>% 
+  mutate(event = "event_6") %>% 
+  ungroup()
+unique(sm_t_event_6$Date)
+
+sm_event_sum_6 <- sm_t_event_6 %>% 
+  group_by(Date) %>% 
+  summarise(avg_sm = mean(value, na.rm = TRUE),
+            max_sm = max(value, na.rm = TRUE))
+
+# Soil moisture data ends at 2023-08-07 so only 6 dates
+# I wonder if we can actually predict germination form rainfall for the last two events
+
+# Filter met station data by each date and 14 days before and after. Graph rainfall total per day for 28 days, with each germ event as it's own facet in a facet grid
+
+summary(met_00_23_50)
+
+met_event_1 <- met_00_23_50 %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[1]-28) & Date < (events[1]+2))) %>%
+  ungroup()
+
+met_event_sum_1 <- met_event_1 %>% 
+  group_by(Date) %>% 
+  summarise(sum_pp = sum(Precipitation, na.rm = TRUE))
+
+met_event_2 <- met_00_23_50 %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[2]-28) & Date < (events[2]+2))) %>%
+  ungroup()
+
+met_event_sum_2 <- met_event_2 %>% 
+  group_by(Date) %>% 
+  summarise(sum_pp = sum(Precipitation, na.rm = TRUE))
+
+met_event_3 <- met_00_23_50 %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[3]-28) & Date < (events[3]+2))) %>%
+  ungroup()
+
+met_event_sum_3 <- met_event_3 %>% 
+  group_by(Date) %>% 
+  summarise(sum_pp = sum(Precipitation, na.rm = TRUE))
+
+met_event_4 <- met_00_23_50 %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[4]-28) & Date < (events[4]+2))) %>%
+  ungroup()
+
+met_event_sum_4 <- met_event_4 %>% 
+  group_by(Date) %>% 
+  summarise(sum_pp = sum(Precipitation, na.rm = TRUE))
+
+met_event_5 <- met_00_23_50 %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[5]-28) & Date < (events[5]+2))) %>%
+  ungroup()
+
+met_event_sum_5 <- met_event_5 %>% 
+  group_by(Date) %>% 
+  summarise(sum_pp = sum(Precipitation, na.rm = TRUE))
+
+met_event_6 <- met_00_23_50 %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[6]-28) & Date < (events[6]+2))) %>%
+  ungroup()
+
+met_event_sum_6 <- met_event_6 %>% 
+  group_by(Date) %>% 
+  summarise(sum_pp = sum(Precipitation, na.rm = TRUE))
+```
+
+```{r}
+#| eval: false
+
+# I want 6 graphs, with two axes, soil moisture one and precip on the other. Two lines are max and avg sm and one is total daily precip. And a vertical line at the Obs_Date and maximum either soil moisture or precip. Go back and go 28 days back and 2 days forward
+
+event1 <- left_join(sm_event_sum_1, met_event_sum_1, by = join_by(Date))
+event2 <- left_join(sm_event_sum_2, met_event_sum_2, by = join_by(Date))
+event3 <- left_join(sm_event_sum_3, met_event_sum_3, by = join_by(Date))
+event4 <- left_join(sm_event_sum_4, met_event_sum_4, by = join_by(Date))
+event5 <- left_join(sm_event_sum_5, met_event_sum_5, by = join_by(Date))
+event6 <- left_join(sm_event_sum_6, met_event_sum_6, by = join_by(Date))
+
+# colorblind friendly colors
+colors <- viridis(3)
+
+coeff <- max(event1$sum_pp)/max(event1$max_sm)
+event1_plot <- ggplot(event1, aes(x = Date)) + 
+  geom_point(aes(y = avg_sm), size = 1.5, color = colors[1]) +  
+  geom_line(aes(y = avg_sm), size = 1.5, color = colors[1]) +
+  geom_point(aes(y = max_sm), size = 1.5, color = colors[2]) +  
+  geom_line(aes(y = max_sm), size = 1.5, color = colors[2]) +
+  geom_point(aes(y = sum_pp/coeff), size = 1.5, color = colors[3]) +  
+  geom_line(aes(y = sum_pp/coeff), size = 1.5, color = colors[3]) +
+  geom_vline(xintercept = events[1]) +
+  #geom_line(aes(y = mean_pp), size = 1.5, color = '#00BFC4') + 
+ # geom_line(aes(y = mean_max_t/coeff), size = 1.5, color = '#F8766D') +
+  #geom_line(aes(y = mean_min_t/coeff), size = 1.5, color = '#C77CFF') +
+  labs(
+    #title = "Monthly Climate Averages from 2000-2023 at Great Plains Grassland Meteorological Station",
+       x = "Date") +
+  theme_bw() +
+  theme(plot.title = element_text(size = 11),
+        axis.title.y = element_text(color = colors[1], size=9),
+        axis.title.y.right = element_text(color = colors[3], size=9),
+        axis.title.x = element_text(size = 9),
+        axis.text = element_text(size = 9)) +
+  scale_x_continuous(breaks=seq(0,13,by=1)) +
+  scale_y_continuous(
+    name = "Volumetric Water Content", # Features of the first axis
+    sec.axis = sec_axis( trans=~.*coeff, name="Daily Total Precipitation (mm)")) # Add 2nd axis & specify features
+event1_plot
+
+ggsave("rain_event_1.jpg", event1_plot)
+
+coeff <- max(event2$sum_pp)/max(event2$max_sm)
+event2_plot <- ggplot(event2, aes(x = Date)) + 
+  geom_point(aes(y = avg_sm), size = 1.5, color = colors[1]) +  
+  geom_line(aes(y = avg_sm), size = 1.5, color = colors[1]) +
+  geom_point(aes(y = max_sm), size = 1.5, color = colors[2]) +  
+  geom_line(aes(y = max_sm), size = 1.5, color = colors[2]) +
+  geom_point(aes(y = sum_pp/coeff), size = 1.5, color = colors[3]) +  
+  geom_line(aes(y = sum_pp/coeff), size = 1.5, color = colors[3]) +
+  geom_vline(xintercept = events[2]) +
+  #geom_line(aes(y = mean_pp), size = 1.5, color = '#00BFC4') + 
+ # geom_line(aes(y = mean_max_t/coeff), size = 1.5, color = '#F8766D') +
+  #geom_line(aes(y = mean_min_t/coeff), size = 1.5, color = '#C77CFF') +
+  labs(
+    #title = "Monthly Climate Averages from 2000-2023 at Great Plains Grassland Meteorological Station",
+       x = "Date") +
+  theme_bw() +
+  theme(plot.title = element_text(size = 11),
+        axis.title.y = element_text(color = colors[1], size=9),
+        axis.title.y.right = element_text(color = colors[3], size=9),
+        axis.title.x = element_text(size = 9),
+        axis.text = element_text(size = 9)) +
+  scale_x_continuous(breaks=seq(0,13,by=1)) +
+  scale_y_continuous(
+    name = "Volumetric Water Content", # Features of the first axis
+    sec.axis = sec_axis( trans=~.*coeff, name="Daily Total Precipitation (mm)")) # Add 2nd axis & specify features
+event2_plot
+
+ggsave("rain_event_2.jpg", event2_plot)
+
+coeff <- max(event3$sum_pp)/max(event3$max_sm)
+event3_plot <- ggplot(event3, aes(x = Date)) + 
+  geom_point(aes(y = avg_sm), size = 1.5, color = colors[1]) +  
+  geom_line(aes(y = avg_sm), size = 1.5, color = colors[1]) +
+  geom_point(aes(y = max_sm), size = 1.5, color = colors[2]) +  
+  geom_line(aes(y = max_sm), size = 1.5, color = colors[2]) +
+  geom_point(aes(y = sum_pp/coeff), size = 1.5, color = colors[3]) +  
+  geom_line(aes(y = sum_pp/coeff), size = 1.5, color = colors[3]) +
+  geom_vline(xintercept = events[3]) +
+  #geom_line(aes(y = mean_pp), size = 1.5, color = '#00BFC4') + 
+ # geom_line(aes(y = mean_max_t/coeff), size = 1.5, color = '#F8766D') +
+  #geom_line(aes(y = mean_min_t/coeff), size = 1.5, color = '#C77CFF') +
+  labs(
+    #title = "Monthly Climate Averages from 2000-2023 at Great Plains Grassland Meteorological Station",
+       x = "Date") +
+  theme_bw() +
+  theme(plot.title = element_text(size = 11),
+        axis.title.y = element_text(color = colors[1], size=9),
+        axis.title.y.right = element_text(color = colors[3], size=9),
+        axis.title.x = element_text(size = 9),
+        axis.text = element_text(size = 9)) +
+  scale_x_continuous(breaks=seq(0,13,by=1)) +
+  scale_y_continuous(
+    name = "Volumetric Water Content", # Features of the first axis
+    sec.axis = sec_axis( trans=~.*coeff, name="Daily Total Precipitation (mm)")) # Add 2nd axis & specify features
+event3_plot
+
+ggsave("rain_event_3.jpg", event3_plot)
+
+coeff <- max(event4$sum_pp)/max(event4$max_sm)
+event4_plot <- ggplot(event4, aes(x = Date)) + 
+  geom_point(aes(y = avg_sm), size = 1.5, color = colors[1]) +  
+  geom_line(aes(y = avg_sm), size = 1.5, color = colors[1]) +
+  geom_point(aes(y = max_sm), size = 1.5, color = colors[2]) +  
+  geom_line(aes(y = max_sm), size = 1.5, color = colors[2]) +
+  geom_point(aes(y = sum_pp/coeff), size = 1.5, color = colors[3]) +  
+  geom_line(aes(y = sum_pp/coeff), size = 1.5, color = colors[3]) +
+  geom_vline(xintercept = events[4]) +
+  #geom_line(aes(y = mean_pp), size = 1.5, color = '#00BFC4') + 
+ # geom_line(aes(y = mean_max_t/coeff), size = 1.5, color = '#F8766D') +
+  #geom_line(aes(y = mean_min_t/coeff), size = 1.5, color = '#C77CFF') +
+  labs(
+    #title = "Monthly Climate Averages from 2000-2023 at Great Plains Grassland Meteorological Station",
+       x = "Date") +
+  theme_bw() +
+  theme(plot.title = element_text(size = 11),
+        axis.title.y = element_text(color = colors[1], size=9),
+        axis.title.y.right = element_text(color = colors[3], size=9),
+        axis.title.x = element_text(size = 9),
+        axis.text = element_text(size = 9)) +
+  scale_x_continuous(breaks=seq(0,13,by=1)) +
+  scale_y_continuous(
+    name = "Volumetric Water Content", # Features of the first axis
+    sec.axis = sec_axis( trans=~.*coeff, name="Daily Total Precipitation (mm)")) # Add 2nd axis & specify features
+event4_plot
+
+ggsave("rain_event_4.jpg", event4_plot)
+
+coeff <- max(event5$sum_pp)/max(event5$max_sm)
+event5_plot <- ggplot(event5, aes(x = Date)) + 
+  geom_point(aes(y = avg_sm), size = 1.5, color = colors[1]) +  
+  geom_line(aes(y = avg_sm), size = 1.5, color = colors[1]) +
+  geom_point(aes(y = max_sm), size = 1.5, color = colors[2]) +  
+  geom_line(aes(y = max_sm), size = 1.5, color = colors[2]) +
+  geom_point(aes(y = sum_pp/coeff), size = 1.5, color = colors[3]) +  
+  geom_line(aes(y = sum_pp/coeff), size = 1.5, color = colors[3]) +
+  geom_vline(xintercept = events[5]) +
+  #geom_line(aes(y = mean_pp), size = 1.5, color = '#00BFC4') + 
+ # geom_line(aes(y = mean_max_t/coeff), size = 1.5, color = '#F8766D') +
+  #geom_line(aes(y = mean_min_t/coeff), size = 1.5, color = '#C77CFF') +
+  labs(
+    #title = "Monthly Climate Averages from 2000-2023 at Great Plains Grassland Meteorological Station",
+       x = "Date") +
+  theme_bw() +
+  theme(plot.title = element_text(size = 11),
+        axis.title.y = element_text(color = colors[1], size=9),
+        axis.title.y.right = element_text(color = colors[3], size=9),
+        axis.title.x = element_text(size = 9),
+        axis.text = element_text(size = 9)) +
+  scale_x_continuous(breaks=seq(0,13,by=1)) +
+  scale_y_continuous(
+    name = "Volumetric Water Content", # Features of the first axis
+    sec.axis = sec_axis( trans=~.*coeff, name="Daily Total Precipitation (mm)")) # Add 2nd axis & specify features
+event5_plot
+
+ggsave("rain_event_5.jpg", event5_plot)
+
+# factor to multiply 1st y-axis
+coeff <- max(event6$sum_pp)/max(event6$max_sm)
+event6_plot <- ggplot(event6, aes(x = Date)) + 
+  geom_point(aes(y = avg_sm), size = 1.5, color = colors[1]) +  
+  geom_line(aes(y = avg_sm), size = 1.5, color = colors[1]) +
+  geom_point(aes(y = max_sm), size = 1.5, color = colors[2]) +  
+  geom_line(aes(y = max_sm), size = 1.5, color = colors[2]) +
+  geom_point(aes(y = sum_pp/coeff), size = 1.5, color = colors[3]) +  
+  geom_line(aes(y = sum_pp/coeff), size = 1.5, color = colors[3]) +
+  geom_vline(xintercept = events[6]) +
+  #geom_line(aes(y = mean_pp), size = 1.5, color = '#00BFC4') + 
+ # geom_line(aes(y = mean_max_t/coeff), size = 1.5, color = '#F8766D') +
+  #geom_line(aes(y = mean_min_t/coeff), size = 1.5, color = '#C77CFF') +
+  labs(
+    #title = "Monthly Climate Averages from 2000-2023 at Great Plains Grassland Meteorological Station",
+       x = "Date") +
+  theme_bw() +
+  theme(plot.title = element_text(size = 11),
+        axis.title.y = element_text(color = colors[1], size=9),
+        axis.title.y.right = element_text(color = colors[3], size=9),
+        axis.title.x = element_text(size = 9),
+        axis.text = element_text(size = 9)) +
+  scale_x_continuous(breaks=seq(0,13,by=1)) +
+  scale_y_continuous(
+    name = "Volumetric Water Content", # Features of the first axis
+    sec.axis = sec_axis( trans=~.*coeff, name="Daily Total Precipitation (mm)")) # Add 2nd axis & specify features
+event6_plot
+
+ggsave("rain_event_6.jpg", event6_plot)
+
+# graphs are severely off, investigate
+```
+
+Consider taking the average soil moisture from the maximum soil moisture time to the germ date and the maximum leading up to it, and we see which is a better predictor of germination because drought plots might experience a similar maximum but not retain soil moisture, and the retention is actually the key to triggering mass germination. If this is true the average would be a better predictor.
+
+### Create soil moisture variables
+Four measurements of soil moisture for model comparison:
+
+Maximum soil moisture in 28 days leading up to census date Average maximum soil moisture from date of maximum to census date Average soil moisture in 7 days leading up to census data Average maximum soil moisture in 7 days leading up to census date
+
+```{r}
+#| eval: false
+
+events
+head(sm_t)
+
+sm_event_1 <- sm_t %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[1]-28) & Date < events[1])) %>%
+  filter(sensor == "VWC" & depth == 12) %>% 
+  mutate(event = "event_1",
+         Obs_Date = events[1]) %>% 
+  ungroup()
+
+sm_event_2 <- sm_t %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[2]-28) & Date < events[2])) %>%
+  filter(sensor == "VWC" & depth == 12) %>% 
+  mutate(event = "event_2",
+         Obs_Date = events[2]) %>% 
+  ungroup()
+
+sm_event_3 <- sm_t %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[3]-28) & Date < events[3])) %>%
+  filter(sensor == "VWC" & depth == 12) %>% 
+  mutate(event = "event_3",
+         Obs_Date = events[3]) %>% 
+  ungroup()
+
+sm_event_4 <- sm_t %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[4]-28) & Date < events[4])) %>%
+  filter(sensor == "VWC" & depth == 12) %>% 
+  mutate(event = "event_4",
+         Obs_Date = events[4]) %>% 
+  ungroup()
+
+sm_event_5 <- sm_t %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[5]-28) & Date < events[5])) %>%
+  filter(sensor == "VWC" & depth == 12) %>% 
+  mutate(event = "event_5",
+         Obs_Date = events[5]) %>% 
+  ungroup()
+
+sm_event_6 <- sm_t %>%
+  group_by(Date) %>%
+  filter(any(Date > (events[6]-28) & Date < events[6])) %>%
+  filter(sensor == "VWC" & depth == 12) %>% 
+  mutate(event = "event_6",
+         Obs_Date = events[6]) %>% 
+  ungroup()
+
+sm_events <- rbind(
+  sm_event_1,
+  sm_event_2,
+  sm_event_3,
+  sm_event_4,
+  sm_event_5,
+  sm_event_6
+)
+# Separate plot column to just have number
+sm_events$Plot <- as.numeric(sub('.', '', sm_events$plot))
+
+head(sm_events)
+unique(sm_events$value)
+```
+
+```{r}
+#| eval: false
+
+unique(met_00_23_50$Precipitation)
+met_day_sum <- met_00_23_50 %>%
+  group_by(Date) %>%
+  summarise(sum_day_pp = sum(Precipitation, na.rm = TRUE))
+
+unique(sm_events$Obs_Date)
+
+sm_pp_events <- left_join(sm_events, met_day_sum, by = join_by(Date))
+summary(sm_pp_events)
+max(sm_pp_events$value, na.rm = TRUE)
+unique(sm_pp_events$Obs_Date)
+
+nanas <- sm_pp_events[which(is.na(sm_pp_events$value) == TRUE),]
+summary(nanas)
+table(nanas$Plot,nanas$Date)
+
+# remove all rows with NA in the "value" column
+sm_pp_events_narm <- sm_pp_events[!is.na(sm_pp_events$value),]
+unique(sm_pp_events_narm$Obs_Date)
+
+sm_event_sum <- sm_pp_events_narm %>% 
+  group_by(Date, Plot) %>% 
+  mutate(avg_day_sm = mean(value, na.rm = TRUE),
+            max_day_sm = max(value, na.rm = TRUE),
+            Obs_Date = Obs_Date,
+            sum_day_pp = sum_day_pp) %>% 
+  select(Date,
+         Obs_Date,
+         Plot,
+         sum_day_pp,
+         avg_day_sm,
+         max_day_sm) %>% 
+  distinct()
+head(sm_event_sum)
+summary(sm_event_sum)
+unique(sm_event_sum$Obs_Date)
+
+# Do average of maximums for Obs_date-7
+sm_event_avg_7_max <- sm_event_sum %>% 
+  group_by(Obs_Date, Plot) %>%
+  filter(any(Date > (Obs_Date-7) & Date < Obs_Date)) %>%
+  summarise(avg_7_max = mean(max_day_sm))
+
+# True average of Obs_Date-7
+sm_event_avg_7 <- sm_events %>% 
+  group_by(Obs_Date, Plot) %>% 
+  filter(any(Date > (Obs_Date-7) & Date < Obs_Date)) %>%
+  summarise(avg_7 = mean(value, na.rm = TRUE))
+
+sm_event_vars <- full_join(sm_event_avg_7_max, sm_event_avg_7, by = join_by(Obs_Date, Plot))
+
+# average of maximums for Obs_Date-Maximum Date
+pp_events_sum <- sm_pp_events_narm %>% 
+  group_by(Obs_Date) %>% 
+  summarise(max_pp = max(sum_day_pp),
+            Mons_Date = Date[which(sum_day_pp == max(sum_day_pp))])
+
+sm_pp_event_sum <- left_join(sm_event_sum,pp_events_sum, by = join_by(Obs_Date))
+
+sm_event_avg_max_mons <- sm_pp_event_sum %>% 
+  group_by(Obs_Date,Plot) %>% 
+  filter(any(Date > (Obs_Date-Mons_Date) & Date < Obs_Date)) %>%
+  summarise(avg_mons_max = mean(max_day_sm, na.rm = TRUE))
+
+sm_event_vars_2 <- full_join(sm_event_vars, sm_event_avg_max_mons, by = join_by(Obs_Date, Plot))
+
+# Maximum on maximum date
+sm_event_max_mons <- sm_pp_event_sum %>% 
+  group_by(Obs_Date,Plot) %>% 
+  filter(any(Date > (Obs_Date-Mons_Date) & Date < Obs_Date)) %>%
+  summarise(mons_max = max(max_day_sm, na.rm = TRUE))
+
+## 7-5 is fixed!
+sm_event_vars_3 <- full_join(sm_event_vars_2, sm_event_max_mons, by = join_by(Obs_Date, Plot))
+
+write_csv(sm_event_vars_3, "sm_event_vars.csv")
+
+```
+
+```{r}
+#| warning: false
+
+sm_event_vars <- read_csv("sm_event_vars.csv")
 ```
 
 ## Data Exploration
@@ -1585,6 +1598,21 @@ summary(met_00_23_50)
 ```
 
 Hourly climate data from Met Station 50, limited to date and time, temperature, and precipitation.
+
+Below are soil moisture averages leading up to census dates and germination data from major census events.
+
+```{r}
+str(sm_event_vars)
+summary(sm_event_vars)
+# avg_7_max is the average of daily maximums in the 7 days leading up to the census date
+# avg_7 is the true average of soil moisture in the 7 days leading up to the census date
+# avg_mons_max is the average of daily maximum soil moisture from the date of the largest monsoon event in the month prior leading up to the germination event
+# mons_max is the maximum soil moisture after the monsoon event
+
+str(germ_sm)
+summary(germ_sm)
+```
+
 
 ## Characterize and Graph Climate
 
@@ -2057,7 +2085,94 @@ ggsave("GermxObs_Year.jpg", germ_yr, width = 7, height = 12)
 -   Figure out how to graph in a way that reflects 4 way interaction
 -   first at least add total annual precipitation to each year in figure
 
-## Model Soil Moisture Germination Events
+## Model & Graph Soil Moisture Germination Events
+
+```{r}
+# Merge germination data from major soil moisture events with soil moisture data from major events, join by Obs_Date and Plot
+str(sm_event_vars)
+str(germ_sm)
+
+
+germ_sm_df <- left_join(sm_event_vars, germ_sm, by = join_by(Plot == Plot, Obs_Date == Obs_Date))
+```
+
+```{r}
+germ_sm_df$Obs_Year_sc <- germ_sm_df$Obs_Year - 2018
+summary(germ_sm_df)
+
+germ_sm_df_narm <- germ_sm_df[which(complete.cases(germ_sm_df) == TRUE),]
+
+# bring in Block
+germ_sm_df <- left_join(germ_sm_df, trts, by=join_by(Plot))
+```
+
+
+```{r}
+m0 <- glm(Germ.binom ~ 1, family = binomial, data = germ_sm_df_narm)
+m1 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc), family = binomial, data = germ_sm_df_narm)
+m2 <- glmer(Germ.binom ~ 1 + (1|Block), family = binomial, data = germ_sm_df_narm)
+m3 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc) + (1|Block), family = binomial, data = germ_sm_df_narm)
+
+m_max_7 <- glmer(Germ.binom ~ avg_7_max + (1|Obs_Year_sc) + (1|Block), family = binomial, data = germ_sm_df_narm)
+
+m_sp <- glmer(Germ.binom ~ Species + (1|Obs_Year_sc) + (1|Block), family = binomial, data = germ_sm_df_narm)
+
+m_avg_7 <- glmer(Germ.binom ~ avg_7 + (1|Obs_Year_sc) + (1|Block), family = binomial, data = germ_sm_df_narm)
+
+m_mons_avg <- glmer(Germ.binom ~ avg_mons_max + (1|Obs_Year_sc) + (1|Block), family = binomial, data = germ_sm_df_narm)
+
+m_mons_max <- glmer(Germ.binom ~ mons_max + (1|Obs_Year_sc) + (1|Block), family = binomial, data = germ_sm_df_narm)
+
+ICtab(m0,m1,m2,m3,m_max_7,m_sp,m_avg_7,m_mons_avg,m_mons_max)
+lrtest(m_mons_max, m3)
+Anova(m_mons_max)
+summary(m_mons_max)
+#mall
+
+# Check for overdispersion
+# deviance/residual df
+10314.2/27751 
+```
+
+Model using the maximum soil moisture from monsoon event is best model so far. Now tinker with Species and random effects.
+
+```{r}
+m3 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc) + (1|Block), family = binomial, data = germ_sm_df_narm)
+
+m_mons_max <- glmer(Germ.binom ~ mons_max + (1|Obs_Year_sc) + (1|Block), family = binomial, data = germ_sm_df_narm)
+
+m_mons_max_sp <- glmer(Germ.binom ~ mons_max + Species + (1|Obs_Year_sc) + (1|Block), family = binomial, data = germ_sm_df_narm)
+
+m_mons_max_x_sp <- glmer(Germ.binom ~ mons_max*Species + (1|Obs_Year_sc) + (1|Block), family = binomial, data = germ_sm_df_narm)
+
+
+ICtab(m3,m_mons_max,m_mons_max_sp,m_mons_max_x_sp)
+#lrtest(m_mons_max, m3)
+Anova(m_mons_max_x_sp)
+summary(m_mons_max_x_sp)
+#mall
+
+# Check for overdispersion
+# deviance/residual df
+# 10314.2/27751 
+```
+
+The models with maximum soil moisture and species, additive and interactive are functionally equal in model fit.
+
+How do we determine which one? 
+
+I'm drawn to interactive effect because it makes more ecological sense. But species and species x soil moisture actually aren't significant.
+
+Go back and do treatment comparisons.
+
+What might a graph look like? Scatter plot with linear regression lines. Dots are proportion of germination and x-axis is soil moisture. Differentiated by species. Try that out. Go back and look at eco statistics notes.
+
+```{r}
+
+
+
+```
+
 
 ## Model & Graph Survival
 
