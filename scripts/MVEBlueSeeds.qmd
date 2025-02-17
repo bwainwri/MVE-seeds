@@ -2103,7 +2103,7 @@ summary(germ_sm_df)
 germ_sm_df_narm <- germ_sm_df[which(complete.cases(germ_sm_df) == TRUE),]
 
 # bring in Block
-germ_sm_df <- left_join(germ_sm_df, trts, by=join_by(Plot))
+germ_sm_df_narm <- left_join(germ_sm_df_narm, trts, by=join_by(Plot))
 ```
 
 
@@ -2163,13 +2163,41 @@ How do we determine which one?
 
 I'm drawn to interactive effect because it makes more ecological sense. But species and species x soil moisture actually aren't significant.
 
-Go back and do treatment comparisons.
+Go back and do treatment comparisons and find coefficients
 
 What might a graph look like? Scatter plot with linear regression lines. Dots are proportion of germination and x-axis is soil moisture. Differentiated by species. Try that out. Go back and look at eco statistics notes.
 
 ```{r}
+germ_sm_df_narm$trial <- 1
 
+germ_summary_sm <- germ_sm_df_narm %>% 
+  group_by(Plot, Obs_Date, Species) %>% 
+  mutate(germ_prop = sum(Germ.binom)/sum(trial)) %>% 
+  select(Plot,
+         Obs_Date,
+         Species,
+         mons_max,
+         germ_prop) %>% 
+  distinct()
+```
 
+```{r}
+germ_sm_plot <- ggplot(data = germ_summary_sm, aes(x = mons_max, y = germ_prop, color = Species)) + # assign data to x- and y-axes
+  geom_point(alpha = 0.5) +    # plot it with a scatterplot, pick color of the points
+  geom_smooth(method = 'lm', fill = NA, linewidth = 0.75) +
+  labs(x = "Soil Moisture Maximum (VWC)",    # x-axis label
+       y = "Germination Proportion") + 
+  scale_color_manual(values=c("black","cornflowerblue")) + 
+  theme_bw()
+germ_sm_plot
+
+ggsave("germ_sm_plot.jpg",germ_sm_plot)
+# investigate variance of each species,
+# try to graph with actual predicted values or coefficients
+
+# Could also look at paired proportion data for same events and categorize how many times Black won versus blue
+
+# is temperature the deciding factor? Because we could hypothesize that warmer temps could swing the favor to black grama
 
 ```
 
