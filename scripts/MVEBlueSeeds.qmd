@@ -990,6 +990,89 @@ met_20_23_50 <- met_20_23 %>%
  write_csv(met_00_23_50, "met_50.csv")
 ```
 
+```{r}
+str(blue_19_23_long_raw)
+head(blue_19_23_long_raw)
+
+# need a new dataset taking the first date of germination and first date of zero
+
+# could start by filtering only those TPs that germinated at all
+
+TPs <- unique(blue_19_23_long_raw$TP_ID)
+
+TP_list <- blue_19_23_long_raw %>% 
+  filter(Germ.binom == 1)
+
+TP_list <- unique(TP_list$TP_ID)
+
+str(TP_list)
+
+blue_19_23_surv <- blue_19_23_long_raw %>%
+  group_by(TP_ID) %>%
+  filter(any(TP_ID %in% c(TP_list))) %>% 
+  ungroup()
+```
+
+```{r}
+# Check that these accurately represent the last day of the survey for each cohort:
+
+max_dates <- blue_19_23_long_raw %>% 
+  group_by(Add_Year) %>% 
+  summarise(max_date = max(Obs_Date))
+
+max_dates[which(max_dates$Add_Year == 2019),2]
+
+last_2019 <- max_dates[which(max_dates$Add_Year == 2019),2]
+last_2020 <- max_dates[which(max_dates$Add_Year == 2020),2]
+last_2021 <- max_dates[which(max_dates$Add_Year == 2021),2]
+last_2022 <- max_dates[which(max_dates$Add_Year == 2022),2]
+last_2023 <- max_dates[which(max_dates$Add_Year == 2023),2]
+
+surv <- blue_19_23_surv %>%
+  group_by(TP_ID) %>%
+  subset(Germ.binom>0) %>%
+  mutate(Species = Species,
+          Add_Year = Add_Year,
+          Plot = Plot,
+          Corner = Corner,
+          TP_ID = as.factor(TP_ID),
+          Germ.binom = 1,
+          Germ_date = min(Obs_Date),
+          Last_Obs = max(Obs_Date),
+          Death_date = max(Obs_Date)+7,
+          Surv_days =
+            as.numeric(difftime((max(Obs_Date)+7),
+                                min(Obs_Date),
+                                units = "days")),
+          Status = 1
+  ) %>%
+  # specify if death was observed (status 1) 
+  # or survival time was censored (status 0), seedling still alive at last census
+  mutate(Status=
+           case_when(
+             Add_Year == 2020 & Last_Obs == last_2020 ~ 0,
+             Add_Year == 2021 & Last_Obs == last_2021 ~ 0,
+             Add_Year == 2022 & Last_Obs == last_2022 ~ 0,
+             Add_Year == 2023 & Last_Obs == last_2023 ~ 0,
+             .default = 1
+           )) %>%
+  select(TP_ID,
+         Add_Year,
+         Plot,
+         Species,
+         Germ_date,
+         Last_Obs,
+         Death_date,
+         Surv_days,
+         Status) %>% 
+  distinct()
+
+summary(surv)
+
+write_csv(surv, "surv_19_23.csv")
+
+```
+
 ## Read in Cleaned Data
 
 These are all the datasets cleaned above, this saves R time.
@@ -1004,6 +1087,8 @@ blue_19_23_long_raw <- read_csv("germ_19_23_long_raw.csv") # All binomial observ
 bluebyyear <- read_csv("blue_year_cohorts.csv")
 
 germ_sm <- read_csv("germ_events_sm.csv")
+
+surv <- read_csv("surv_19_23.csv")
 
 trts<-read.csv("meanvar_blue_treatments.csv")
 
@@ -1385,6 +1470,7 @@ ggsave("rain_event_6.jpg", event6_plot)
 Consider taking the average soil moisture from the maximum soil moisture time to the germ date and the maximum leading up to it, and we see which is a better predictor of germination because drought plots might experience a similar maximum but not retain soil moisture, and the retention is actually the key to triggering mass germination. If this is true the average would be a better predictor.
 
 ### Create soil moisture variables
+
 Four measurements of soil moisture for model comparison:
 
 Maximum soil moisture in 28 days leading up to census date Average maximum soil moisture from date of maximum to census date Average soil moisture in 7 days leading up to census data Average maximum soil moisture in 7 days leading up to census date
@@ -1612,7 +1698,6 @@ summary(sm_event_vars)
 str(germ_sm)
 summary(germ_sm)
 ```
-
 
 ## Characterize and Graph Climate
 
@@ -2106,7 +2191,6 @@ germ_sm_df_narm <- germ_sm_df[which(complete.cases(germ_sm_df) == TRUE),]
 germ_sm_df_narm <- left_join(germ_sm_df_narm, trts, by=join_by(Plot))
 ```
 
-
 ```{r}
 m0 <- glm(Germ.binom ~ 1, family = binomial, data = germ_sm_df_narm)
 m1 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc), family = binomial, data = germ_sm_df_narm)
@@ -2159,7 +2243,7 @@ summary(m_mons_max_x_sp)
 
 The models with maximum soil moisture and species, additive and interactive are functionally equal in model fit.
 
-How do we determine which one? 
+How do we determine which one?
 
 I'm drawn to interactive effect because it makes more ecological sense. But species and species x soil moisture actually aren't significant.
 
@@ -2201,8 +2285,8 @@ ggsave("germ_sm_plot.jpg",germ_sm_plot)
 
 ```
 
-
 ## Model & Graph Survival
+
 
 ## Characterize Survival (Pulse or Press)
 
