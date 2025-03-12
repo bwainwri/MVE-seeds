@@ -45,6 +45,9 @@ library(lubridate)
 library(bbmle)
 library(lmtest)
 library(beepr)
+library(survival)
+# install.packages("ggsurvfit")
+library(ggsurvfit)
 ```
 
 ## Clean and Wrangle Data
@@ -991,6 +994,7 @@ met_20_23_50 <- met_20_23 %>%
 ```
 
 ```{r}
+#| eval: false
 str(blue_19_23_long_raw)
 head(blue_19_23_long_raw)
 
@@ -1014,6 +1018,7 @@ blue_19_23_surv <- blue_19_23_long_raw %>%
 ```
 
 ```{r}
+#| eval: false
 # Check that these accurately represent the last day of the survey for each cohort:
 
 max_dates <- blue_19_23_long_raw %>% 
@@ -2170,7 +2175,7 @@ ggsave("GermxObs_Year.jpg", germ_yr, width = 7, height = 12)
 -   Figure out how to graph in a way that reflects 4 way interaction
 -   first at least add total annual precipitation to each year in figure
 
-## Model & Graph Soil Moisture Germination Events
+## Soil Moisture Model & GraphGermination Events
 
 ```{r}
 # Merge germination data from major soil moisture events with soil moisture data from major events, join by Obs_Date and Plot
@@ -2285,7 +2290,175 @@ ggsave("germ_sm_plot.jpg",germ_sm_plot)
 
 ```
 
-## Model & Graph Survival
+## Survival Model & Graph
+
+```{r}
+head(surv)
+str(surv)
+summary(surv)
+# Plants that are two years old, I'm not confident they died or just stopped being monitored
+
+s1 <- survfit(Surv(Surv_days, Status) ~ 1, data = surv)
+str(s1)
+
+survfit2(Surv(Surv_days, Status) ~ Species, data = surv) %>% 
+  ggsurvfit() +
+  labs(
+    x = "Days",
+    y = "Overall survival probability"
+  ) + 
+  add_confidence_interval() +
+  add_risktable()
+
+summary(survfit(Surv(Surv_days, Status) ~ Species, data = surv), times = 365.25)
+
+survfit(Surv(Surv_days, Status) ~ Species, data = surv)
+
+survdiff(Surv(Surv_days, Status) ~ Species, data = surv)
+
+coxph(Surv(Surv_days, Status) ~ Species, data = surv)
+```
+We find that bue grama has slightly higher probability of survival after one year at 20.1% while black grama's probability of survival after 1 year is 18.7%.
+
+Median survival time is 51 days for Black grama and 50 days for Blue, this corresponds to a survival probability of 50%.
+
+There is no significant difference in overall survival according to species with a p-value of 0.8.
+
+Try doing it by treatment or Add_Year or Death_Year. Need to add treatment back in
+
+```{r}
+survfit2(Surv(Surv_days, Status) ~ Add_Year, data = surv) %>% 
+  ggsurvfit() +
+  labs(
+    x = "Days",
+    y = "Overall survival probability"
+  ) + 
+  add_confidence_interval()
+
+summary(survfit(Surv(Surv_days, Status) ~ Add_Year, data = surv), times = 365.25)
+
+survfit(Surv(Surv_days, Status) ~ Add_Year, data = surv)
+
+survdiff(Surv(Surv_days, Status) ~ Add_Year, data = surv)
+
+coxph(Surv(Surv_days, Status) ~ Add_Year, data = surv)
+```
+Significant differences in survival among Add_Year.
+
+Try treatments and then combos.
+
+```{r}
+head(surv)
+head(trts)
+trts$Plot <- trts$plot
+
+surv_trt <- left_join(surv,trts,by=join_by(Plot))
+
+survfit2(Surv(Surv_days, Status) ~ mean_treatment, data = surv_trt) %>% 
+  ggsurvfit() +
+  labs(
+    x = "Days",
+    y = "Overall survival probability"
+  ) + 
+  add_confidence_interval()
+
+summary(survfit(Surv(Surv_days, Status) ~ mean_treatment, data = surv_trt), times = 365.25)
+
+survfit(Surv(Surv_days, Status) ~ mean_treatment, data = surv_trt)
+
+survdiff(Surv(Surv_days, Status) ~ mean_treatment, data = surv_trt)
+
+coxph(Surv(Surv_days, Status) ~ mean_treatment, data = surv_trt)
+
+survfit2(Surv(Surv_days, Status) ~ var_treatment, data = surv_trt) %>% 
+  ggsurvfit() +
+  labs(
+    x = "Days",
+    y = "Overall survival probability"
+  ) + 
+  add_confidence_interval()
+
+summary(survfit(Surv(Surv_days, Status) ~ var_treatment, data = surv_trt), times = 365.25)
+
+survfit(Surv(Surv_days, Status) ~ var_treatment, data = surv_trt)
+
+survdiff(Surv(Surv_days, Status) ~ var_treatment, data = surv_trt)
+
+coxph(Surv(Surv_days, Status) ~ var_treatment, data = surv_trt)
+
+```
+Var treatment is significant, mean is not. 
+
+```{r}
+# Cox model with all explanatory variables
+cox_model <- coxph(Surv(Surv_days, Status) ~ Species + mean_treatment + var_treatment + Add_Year, data = surv_trt)
+summary(cox_model)
+
+library(survival)
+#install.packages("survminer")
+library(survminer)
+# Kaplan-Meier for categorical explanatory variable
+km_model <- survfit(Surv(Surv_days, Status) ~ Species, data = surv_trt)
+ggsurvplot(km_model, data = surv_trt)
+
+# Test proportional hazards assumption
+cox.zph(cox_model)
+
+# Drop Add_Year because it violates assumptions
+
+cox_model <- coxph(Surv(Surv_days, Status) ~ Species + mean_treatment + var_treatment, data = surv_trt)
+summary(cox_model)
+
+
+step_model <- step(cox_model)
+summary(step_model)
+
+# Cox model with interaction between var1 and var2
+cox_model <- coxph(Surv(Surv_days, Status) ~ var_treatment * mean_treatment, data = surv_trt)
+
+# Model summary
+summary(cox_model)
+
+# Stepwise selection
+step_model <- step(cox_model)
+summary(step_model)
+
+```
+
+Overall best model seems to be the one with var_treatment*mean_treatment.
+
+Try graphing using predicitve values and then by faceting with two facets of mean and each line is variance.
+```{r}
+str(surv_trt)
+# Create new data for predicting survival curves with the interaction between var1 and var2
+new_data <- expand.grid(
+  var_treatment = levels(as.factor(surv_trt$var_treatment)),  # Levels of the first categorical variable
+  mean_treatment = levels(as.factor(surv_trt$mean_treatment))   # Levels of the second categorical variable
+)
+
+# Compute the predicted survival curves for each combination of var1 and var2
+predicted_surv <- survfit(cox_model, newdata = new_data)
+
+# Plot the survival curves
+ggsurvplot(predicted_surv, data = new_data,
+           pval = TRUE,                    # Add p-value for the log-rank test
+           legend.title = "Combination of var1 and var2",
+           palette = "Set1",               # Custom color palette
+           xlab = "Time", ylab = "Survival Probability", 
+           title = "Survival Curves by Interaction of var1 and var2")
+
+surv_trt$mean_var <- paste(surv_trt$mean_treatment,surv_trt$var_treatment,sep = "_")
+
+survfit2(Surv(Surv_days, Status) ~ mean_var, data = surv_trt) %>% 
+  ggsurvfit() +
+  labs(
+    x = "Days",
+    y = "Overall survival probability"
+  ) + 
+  add_confidence_interval()
+
+
+```
 
 
 ## Characterize Survival (Pulse or Press)
