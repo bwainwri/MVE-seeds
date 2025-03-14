@@ -2464,3 +2464,11 @@ survfit2(Surv(Surv_days, Status) ~ mean_var, data = surv_trt) %>%
 ## Characterize Survival (Pulse or Press)
 
 ## Legacy Model & Graph
+
+A couple options:
+- use the treatment spreadsheet to attach percentages for each plot in each year. Then multiply the percentage by that years rainfall or monsoon rainfall. Quantify the change in rainfall from year-1 to year and use that to model germination. It's a little brief, legacy should really be longer. Maybe there's a way to add strength of drought using accumulated drought years. Consider jsut whiplash years.
+- use actual spring cover data to show that pre-existing cover conditions or decline in cover and drought relief provide conditions for germination. So cover + calculated rainfall in the model, the lower the cover and higher the rainfall the better the germination
+- 
+
+
+
