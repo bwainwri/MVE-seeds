@@ -57,7 +57,7 @@ Bring in seed monitoring data for all five years, bring in keys, bring in soil m
 ```{r seed census data hidden}
 #| eval: false # Do not evaluate this chunk
 
-print("Dont run this code")
+# print("Dont run this code")
 # bring in each year of data (2019-2023, 5 years total)
 
 # De-authorize googlesheets to bypass log-in
@@ -1764,14 +1764,14 @@ coeff <- 2
 
 clim_plot <- ggplot(clim_sum_3, aes(x = Month)) + 
   geom_point(aes(y = mean_pp), size = 1.5, color = colors[1]) +  
-  geom_smooth(aes(y = mean_pp), size = 1.5, color = colors[1]) +
+  # geom_smooth(aes(y = mean_pp), size = 1.5, color = colors[1]) +
   geom_point(aes(y = mean_max_t/coeff), size = 1.5, color = colors[2]) +  
-  geom_smooth(aes(y = mean_max_t/coeff), size = 1.5, color = colors[2]) +
+  #geom_smooth(aes(y = mean_max_t/coeff), size = 1.5, color = colors[2]) +
   geom_point(aes(y = mean_min_t/coeff), size = 1.5, color = colors[2]) +  
-  geom_smooth(aes(y = mean_min_t/coeff), size = 1.5, color = colors[2]) +
-  #geom_line(aes(y = mean_pp), size = 1.5, color = '#00BFC4') + 
- # geom_line(aes(y = mean_max_t/coeff), size = 1.5, color = '#F8766D') +
-  #geom_line(aes(y = mean_min_t/coeff), size = 1.5, color = '#C77CFF') +
+  # geom_smooth(aes(y = mean_min_t/coeff), size = 1.5, color = colors[2]) +
+  geom_line(aes(y = mean_pp), size = 1.5, color = colors[1]) + 
+  geom_line(aes(y = mean_max_t/coeff), size = 1.5, color = colors[2]) +
+  geom_line(aes(y = mean_min_t/coeff), size = 1.5, color = colors[2]) +
   labs(
     #title = "Monthly Climate Averages from 2000-2023 at Great Plains Grassland Meteorological Station",
        x = "Month") +
@@ -1781,7 +1781,12 @@ clim_plot <- ggplot(clim_sum_3, aes(x = Month)) +
         axis.title.y.right = element_text(color = colors[2], size=9),
         axis.title.x = element_text(size = 9),
         axis.text = element_text(size = 9)) +
-  scale_x_continuous(breaks=seq(0,13,by=1)) +
+  scale_x_continuous(
+    breaks = seq_along(month.name), 
+    labels = month.name
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 55, hjust = 1)) +
   scale_y_continuous(
     name = "Average Monthly Total Precipitation (mm)", # Features of the first axis
     sec.axis = sec_axis( trans=~.*coeff, name="Average Daily Temperature High and Low (F)")) # Add 2nd axis & specify features
@@ -1789,12 +1794,10 @@ clim_plot
 
 ggsave("F1_MVEBlue_climate.jpg", clim_plot)
 
-# Replace month numbers with month names
-# investigate rogue June precipitation
-# Change character of the line to just go to each point as a straight line
+# Consider adding 95% confidence interval around line
 ```
 
-Figure 1. Climate averages for Meteorological Station 50 near Mean-Variance Blue Experiment from 2000-2023. Purple dots represent total monthly precipitation in millimeters, averaged over 2000-2023. Turquoise dots represent monthly average daily minimum and maximum temperatures in Fahrenheit from 2000-2023. Shaded regions represent 95% confidence intervals.
+Figure 1. Climate averages for Meteorological Station 50 near Mean-Variance Blue Experiment from 2000-2023. Purple dots represent total monthly precipitation in millimeters, averaged over 2000-2023. Turquoise dots represent monthly average daily minimum and maximum temperatures in Fahrenheit from 2000-2023.
 
 ## Simple model of germination using Year and Treatments
 
@@ -2090,7 +2093,15 @@ mall3 <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment + (1|sum_pp_sc)
 
 mall4 <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment*sum_pp_sc + (1|Block), family = binomial, data = blue_yr_trt)
 
-ICtab(m0,m1,m2,m3,mall,mall2,mall3,mall4)
+mall5 <- glmer(Germ.binom ~ mean_treatment*var_treatment*sum_pp_sc + (1|Obs_Year_sc) + (1|Block), family = binomial, data = blue_yr_trt)
+
+m_pp <- glmer(Germ.binom ~ sum_pp_sc + (1|Block), family = binomial, data = blue_yr_trt)
+
+mall6 <- glmer(Germ.binom ~ mean_treatment*sum_pp_sc + (1|Obs_Year_sc) + (1|Block), family = binomial, data = blue_yr_trt)
+
+mall7 <- glmer(Germ.binom ~ var_treatment*sum_pp_sc + (1|Obs_Year_sc) + (1|Block), family = binomial, data = blue_yr_trt)
+
+ICtab(m0,m1,m2,m3,mall,mall2,mall3,mall4, mall5, m_pp, mall6, mall7)
 Anova(mall)
 summary(mall)
 mall
@@ -2100,7 +2111,7 @@ mall
 19462.676/44431 
 ```
 
-Model with a four way interaction between species, mean_treatment, var_treatment, and total annual precipitation (scaled). This model fails to converge but not by much. Model also not overdispersed. Proceed with interpretations!
+Model with a four way interaction between species, mean_treatment, var_treatment, and total annual precipitation (scaled). This model fails to converge but not by much. Model also not overdispersed. Proceed with interpretations! Model with three way interaction between mean variance and sum_pp is next best. 
 
 Model shows that effect of climate treatments varies by species and is dependent on annual precipitation.
 
