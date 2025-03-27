@@ -2085,37 +2085,57 @@ m1 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc), family = binomial, data = blue_yr_
 m2 <- glmer(Germ.binom ~ 1 + (1|Block), family = binomial, data = blue_yr_trt)
 m3 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc) + (1|Block), family = binomial, data = blue_yr_trt)
 
-mall <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment*sum_pp_sc + (1|Obs_Year_sc) + (1|Block), family = binomial, data = blue_yr_trt)
+mall <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment*sum_pp_sc + (1|Block), family = binomial, data = blue_yr_trt)
 
 mall2 <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment + (1|Obs_Year_sc) + (1|Block), family = binomial, data = blue_yr_trt)
 
 mall3 <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment + (1|sum_pp_sc) + (1|Block), family = binomial, data = blue_yr_trt)
 
-mall4 <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment*sum_pp_sc + (1|Block), family = binomial, data = blue_yr_trt)
-
-mall5 <- glmer(Germ.binom ~ mean_treatment*var_treatment*sum_pp_sc + (1|Obs_Year_sc) + (1|Block), family = binomial, data = blue_yr_trt)
+mall5 <- glmer(Germ.binom ~ mean_treatment*var_treatment*sum_pp_sc + (1|Block), family = binomial, data = blue_yr_trt)
 
 m_pp <- glmer(Germ.binom ~ sum_pp_sc + (1|Block), family = binomial, data = blue_yr_trt)
 
-mall6 <- glmer(Germ.binom ~ mean_treatment*sum_pp_sc + (1|Obs_Year_sc) + (1|Block), family = binomial, data = blue_yr_trt)
+mall6 <- glmer(Germ.binom ~ mean_treatment*sum_pp_sc + (1|Block), family = binomial, data = blue_yr_trt)
 
-mall7 <- glmer(Germ.binom ~ var_treatment*sum_pp_sc + (1|Obs_Year_sc) + (1|Block), family = binomial, data = blue_yr_trt)
+mall7 <- glmer(Germ.binom ~ var_treatment*sum_pp_sc + (1|Block), family = binomial, data = blue_yr_trt)
 
-ICtab(m0,m1,m2,m3,mall,mall2,mall3,mall4, mall5, m_pp, mall6, mall7)
-Anova(mall)
-summary(mall)
-mall
+mall8 <- glmer(Germ.binom ~ var_treatment*mean_treatment + (1|sum_pp_sc) + (1|Block), family = binomial, data = blue_yr_trt)
+
+mall9 <- glmer(Germ.binom ~ var_treatment*mean_treatment + (1|Obs_Year_sc) + (1|Block), family = binomial, data = blue_yr_trt)
+
+ICtab(m0,m1,m2,m3,mall,mall2,mall3, mall5, m_pp, mall6, mall7, mall8, mall9)
+summary(mall8)
+#mall
 
 # Check for overdispersion
 # deviance/residual df
-19462.676/44431 
+19536.0/44443 
 ```
 
-Model with a four way interaction between species, mean_treatment, var_treatment, and total annual precipitation (scaled). This model fails to converge but not by much. Model also not overdispersed. Proceed with interpretations! Model with three way interaction between mean variance and sum_pp is next best. 
-
-Model shows that effect of climate treatments varies by species and is dependent on annual precipitation.
+Best model is one with an interactive effect of mean and variance treatment with block and year (either precip or year) as random effects.
 
 RETURN HERE for model coefficients and estimations, predictions.
+Lecture 16 of EVE 198
+
+```{r}
+Anova(mall8)
+Anova(mall9)
+
+summary(mall8)
+summary(mall9)
+
+mall9a <- glmer(Germ.binom ~ var_treatment*mean_treatment + (1|Obs_Year_sc) + (1|Block), family = binomial, data = blue_yr_trt)
+
+mall9b <- glmer(Germ.binom ~ 0 + var_treatment:mean_treatment + (1|Obs_Year_sc) + (1|Block), family = binomial, data = blue_yr_trt)
+
+fixef(mall9b)
+Anova(mall9)
+coef(mall9)
+
+# Need to figure out emmeans, predicted values, coef and back transforming
+
+```
+
 
 ## Graph germination by year and treatments
 
@@ -2183,7 +2203,6 @@ ggsave("GermxObs_Year.jpg", germ_yr, width = 7, height = 12)
 ```
 
 -   figure out how to pull and push from specific folders instead of all in scripts.
--   Figure out how to graph in a way that reflects 4 way interaction
 -   first at least add total annual precipitation to each year in figure
 
 ## Soil Moisture Model & GraphGermination Events
