@@ -2508,9 +2508,9 @@ Change in prior year cover year April cover - year -1 April cover
 
 Create variables
 
-Mean-Variance Ocvoer and Height: https://portal.edirepository.org/nis/mapbrowse?packageid=knb-lter-sev.349.1
+Mean-Variance Cover and Height: https://portal.edirepository.org/nis/mapbrowse?packageid=knb-lter-sev.349.1
 
-Mean_Vriance Biomass: https://portal.edirepository.org/nis/mapbrowse?packageid=knb-lter-sev.350.1
+Mean_Variance Biomass: https://portal.edirepository.org/nis/mapbrowse?packageid=knb-lter-sev.350.1
 
 ```{r}
 head(met_00_23_50)
@@ -2518,7 +2518,152 @@ head(trts)
 head(bluebyyear) # has year and year + 1 germination data
 head(blue_yr_trt) # current year and past year germ + treatments and precip
 
-#Change in rainfall year - year -1 (ex: 2020-2019)
+## Change in rainfall year - year -1 (ex: 2020-2019)
+# Use blue_yr_trt to calculate year - year -1 rainfall
+# subset blue_yr_trt for rainfall
+blue_pp_difs <- blue_yr_trt %>% 
+  select(
+    plot,
+    Obs_Year,
+    sum_pp,
+    sum_mons_pp,
+    mv19,
+    mv20,
+    mv21,
+    mv22
+  )
+
+# Go back and update mve treatment with 2023
+str(blue_pp_difs)
+blue_pp_difs <-
+  blue_pp_difs %>%
+  mutate(
+    mvfactor19 =
+      case_when(
+        mv19 == -75 ~ 0.25
+        , mv19 == -50 ~ 0.5
+        , mv19 == -25 ~ 0.75
+        , mv19 == 0 ~ 1
+        , mv19 == 25 ~ 1.25
+        , mv19 == 50 ~ 1.5
+      )
+  )
+
+blue_pp_difs <-
+  blue_pp_difs %>%
+  mutate(
+    mvfactor20 =
+      case_when(
+        mv20 == -75 ~ 0.25
+        , mv20 == -50 ~ 0.5
+        , mv20 == -25 ~ 0.75
+        , mv20 == 0 ~ 1
+        , mv20 == 25 ~ 1.25
+        , mv20 == 50 ~ 1.5
+      )
+  )
+
+blue_pp_difs <-
+  blue_pp_difs %>%
+  mutate(
+    mvfactor21 =
+      case_when(
+        mv21 == -75 ~ 0.25
+        , mv21 == -50 ~ 0.5
+        , mv21 == -25 ~ 0.75
+        , mv21 == 0 ~ 1
+        , mv21 == 25 ~ 1.25
+        , mv21 == 50 ~ 1.5
+      )
+  )
+
+blue_pp_difs <-
+  blue_pp_difs %>%
+  mutate(
+    mvfactor22 =
+      case_when(
+        mv22 == -75 ~ 0.25
+        , mv22 == -50 ~ 0.5
+        , mv22 == -25 ~ 0.75
+        , mv22 == 0 ~ 1
+        , mv22 == 25 ~ 1.25
+        , mv22 == 50 ~ 1.5
+      )
+  )
+
+blue_pp_19 <- 
+  blue_pp_difs %>% 
+  select(
+    plot,
+    Obs_Year,
+    sum_pp,
+    sum_mons_pp,
+    mvfactor19
+  ) %>% 
+  filter(
+    Obs_Year == 2019
+  ) %>% 
+  mutate(
+  prop_pp_19 = sum_pp*mvfactor19,
+  prop_mons_pp_19 = sum_mons_pp*mvfactor19)
+
+blue_pp_20 <- 
+  blue_pp_difs %>% 
+  select(
+    plot,
+    Obs_Year,
+    sum_pp,
+    sum_mons_pp,
+    mvfactor20
+  ) %>% 
+  filter(
+    Obs_Year == 2020
+  ) %>% 
+  mutate(
+  prop_pp_20 = sum_pp*mvfactor20,
+  prop_mons_pp_20 = sum_mons_pp*mvfactor20)
+
+blue_pp_21 <- 
+  blue_pp_difs %>% 
+  select(
+    plot,
+    Obs_Year,
+    sum_pp,
+    sum_mons_pp,
+    mvfactor21
+  ) %>% 
+  filter(
+    Obs_Year == 2021
+  ) %>% 
+  mutate(
+  prop_pp_21 = sum_pp*mvfactor21,
+  prop_mons_pp_21 = sum_mons_pp*mvfactor21)
+
+blue_pp_22 <- 
+  blue_pp_difs %>% 
+  select(
+    plot,
+    Obs_Year,
+    sum_pp,
+    sum_mons_pp,
+    mvfactor22
+  ) %>% 
+  filter(
+    Obs_Year == 2022
+  ) %>% 
+  mutate(
+  prop_pp_22 = sum_pp*mvfactor22,
+  prop_mons_pp_22 = sum_mons_pp*mvfactor22)
+
+# take out duplicates
+
+# regroup and come back
+
+# merge by plot, make a wide frame for subtractions then subset and cast
+
+blue_pp_1 <- full_join(blue_pp_19,blue_pp_20, by = join_by(plot))
+blue_pp_2 <- full_join(blue_pp_1,blue_pp_21, by = join_by(plot))
+
 #Whiplash Y/N
 #April cover
 #Current rainfall
