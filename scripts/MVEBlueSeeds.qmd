@@ -1095,7 +1095,7 @@ germ_sm <- read_csv("germ_events_sm.csv")
 
 surv <- read_csv("surv_19_23.csv")
 
-trts<-read.csv("meanvar_blue_treatments.csv")
+trts<-read.csv("MVE_treatments_allsites_2023.csv")
 
 sm_t_18 <- read_csv("MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2018.csv")
 sm_t_19 <- read_csv("MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2019.csv")
@@ -1843,28 +1843,28 @@ Try generalized linear mixed effects models for the simplest dataset blue_19_23.
 #| echo: false # Do not show this chunk in the final rendered document
 
 # Try both species together first
-m0 <- glmer(Germ.binom ~ 1 + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blue_19_23_trt_NE19rm)
+m0 <- glmer(Germ.binom ~ 1 + (1|block/Plot/Corner) + (1|Add_Year), family = binomial, data = blue_19_23_trt_NE19rm)
 
 # ignore Add Year
-m0b <- glmer(Germ.binom ~ 1 + (1|Block/Plot/Corner), family = binomial, data = blue_19_23_trt_NE19rm)
+m0b <- glmer(Germ.binom ~ 1 + (1|block/Plot/Corner), family = binomial, data = blue_19_23_trt_NE19rm)
 
 # just mean treatment
-m1 <- glmer(Germ.binom ~ mean_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blue_19_23_trt_NE19rm)
+m1 <- glmer(Germ.binom ~ mean_treatment + (1|block/Plot/Corner) + (1|Add_Year), family = binomial, data = blue_19_23_trt_NE19rm)
 
 # just variance treatment
-m2 <- glmer(Germ.binom ~ var_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blue_19_23_trt_NE19rm)
+m2 <- glmer(Germ.binom ~ var_treatment + (1|block/Plot/Corner) + (1|Add_Year), family = binomial, data = blue_19_23_trt_NE19rm)
 
 # just Species
-m3 <- glmer(Germ.binom ~ Species + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blue_19_23_trt_NE19rm)
+m3 <- glmer(Germ.binom ~ Species + (1|block/Plot/Corner) + (1|Add_Year), family = binomial, data = blue_19_23_trt_NE19rm)
 
 # mean and variance treatments
-m4 <- glmer(Germ.binom ~ var_treatment + mean_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blue_19_23_trt_NE19rm)
+m4 <- glmer(Germ.binom ~ var_treatment + mean_treatment + (1|block/Plot/Corner) + (1|Add_Year), family = binomial, data = blue_19_23_trt_NE19rm)
 
 # interaction between mean and variance
-m5 <- glmer(Germ.binom ~ var_treatment + mean_treatment + mean_treatment*var_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blue_19_23_trt_NE19rm)
+m5 <- glmer(Germ.binom ~ var_treatment + mean_treatment + mean_treatment*var_treatment + (1|block/Plot/Corner) + (1|Add_Year), family = binomial, data = blue_19_23_trt_NE19rm)
 
 # just Add Year as a fixed effect
-m6 <- glmer(Germ.binom ~ Add_Year + (1|Block/Plot/Corner), family = binomial, data = blue_19_23_trt_NE19rm)
+m6 <- glmer(Germ.binom ~ Add_Year + (1|block/Plot/Corner), family = binomial, data = blue_19_23_trt_NE19rm)
 
 # test each model against null model
 # lrtest(m0,m6)
@@ -1882,15 +1882,15 @@ Below, try models for each species.
 ```{r}
 #| eval: false # Do not evaluate this chunk
 # try blue grama
-g0 <- glmer(Germ.binom ~ 1 + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = bluegrama)
+g0 <- glmer(Germ.binom ~ 1 + (1|block/Plot/Corner) + (1|Add_Year), family = binomial, data = bluegrama)
 
-g1 <- glmer(Germ.binom ~ mean_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = bluegrama)
+g1 <- glmer(Germ.binom ~ mean_treatment + (1|block/Plot/Corner) + (1|Add_Year), family = binomial, data = bluegrama)
 
-g2 <- glmer(Germ.binom ~ var_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = bluegrama)
+g2 <- glmer(Germ.binom ~ var_treatment + (1|block/Plot/Corner) + (1|Add_Year), family = binomial, data = bluegrama)
 
-g3 <- glmer(Germ.binom ~ var_treatment + mean_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = bluegrama)
+g3 <- glmer(Germ.binom ~ var_treatment + mean_treatment + (1|block/Plot/Corner) + (1|Add_Year), family = binomial, data = bluegrama)
 
-g4 <- glmer(Germ.binom ~ var_treatment + mean_treatment + mean_treatment*var_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = bluegrama)
+g4 <- glmer(Germ.binom ~ var_treatment + mean_treatment + mean_treatment*var_treatment + (1|block/Plot/Corner) + (1|Add_Year), family = binomial, data = bluegrama)
 
 # test each model against null model
 # lrtest(g0,g4)
@@ -1905,15 +1905,15 @@ Try black grama below.
 ```{r}
 #| eval: false # Do not evaluate this chunk
 # try black grama
-e0 <- glmer(Germ.binom ~ 1 + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blackgrama)
+e0 <- glmer(Germ.binom ~ 1 + (1|block/Plot/Corner) + (1|Add_Year), family = binomial, data = blackgrama)
 
-e1 <- glmer(Germ.binom ~ mean_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blackgrama)
+e1 <- glmer(Germ.binom ~ mean_treatment + (1|block/Plot/Corner) + (1|Add_Year), family = binomial, data = blackgrama)
 
-e2 <- glmer(Germ.binom ~ var_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blackgrama)
+e2 <- glmer(Germ.binom ~ var_treatment + (1|block/Plot/Corner) + (1|Add_Year), family = binomial, data = blackgrama)
 
-e3 <- glmer(Germ.binom ~ var_treatment + mean_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blackgrama)
+e3 <- glmer(Germ.binom ~ var_treatment + mean_treatment + (1|block/Plot/Corner) + (1|Add_Year), family = binomial, data = blackgrama)
 
-e4 <- glmer(Germ.binom ~ var_treatment + mean_treatment + mean_treatment*var_treatment + (1|Block/Plot/Corner) + (1|Add_Year), family = binomial, data = blackgrama)
+e4 <- glmer(Germ.binom ~ var_treatment + mean_treatment + mean_treatment*var_treatment + (1|block/Plot/Corner) + (1|Add_Year), family = binomial, data = blackgrama)
 
 # test each model against null mode
 # lrtest(e0,e4)
@@ -1943,7 +1943,7 @@ head(blue_yr_trt)
 
 blue_yr_trt <- blue_yr_trt %>% 
   select(
-    Block,
+    block,
     plot,
     Corner,
     Species,
@@ -1960,6 +1960,7 @@ blue_yr_trt <- blue_yr_trt %>%
     var_treatment_2020,
     var_treatment_2021,
     var_treatment_2022,
+    var_treatment_2023,
     var_treatment
   )
 
@@ -1984,7 +1985,8 @@ blue_yr_trt <- blue_yr_trt %>%
         , mean_treatment == "ambient" & var_treatment_2019 == "increase" ~ 50
         , mean_treatment == "reduced" & var_treatment_2019 == "increase" ~ 25
         , mean_treatment == "ambient" & var_treatment_2019 == "decrease" ~ -50
-        , plot == 4|7|17|23|26 ~ -75 # for some reason the same conditional doesn't work, soft coded for progress but would love to figure out why it doesn't work, see below
+        , plot == 4|7|17|23|26 ~ -75
+       # for some reason the same conditional doesn't work, soft coded for progress but would love to figure out why it doesn't work, see below
       )
   )
 # which(blue_yr_trt$mean_treatment == "reduced" & blue_yr_trt$var_treatment_2019 == "decrease")
@@ -2037,6 +2039,20 @@ blue_yr_trt <- blue_yr_trt %>%
   )
 unique(blue_yr_trt$mv22)
 
+blue_yr_trt <- blue_yr_trt %>% 
+  mutate(
+    mv23 =
+      case_when(
+        mean_treatment == "ambient" & var_treatment_2023 == "ambient" ~ 0
+        , mean_treatment == "reduced" & var_treatment_2023 == "ambient" ~ -25
+        , mean_treatment == "ambient" & var_treatment_2023 == "increase" ~ 50
+        , mean_treatment == "reduced" & var_treatment_2023 == "increase" ~ 25
+        , mean_treatment == "ambient" & var_treatment_2023 == "decrease" ~ -50
+        , plot == 5|8|17|24|25 ~ -75 # for some reason the same conditional doesn't work, soft coded for progress but would love to figure out why it doesn't work
+      )
+  )
+unique(blue_yr_trt$mv23)
+
 # bring in total precip, mons_precip, and create proportional rain for monsoon and total based on treatment
 blue_yr_trt <- left_join(blue_yr_trt, year_pp, by = c("Obs_Year"="Year"))
 blue_yr_trt <- left_join(blue_yr_trt, year_mons_pp, by = c("Obs_Year"="Year"))
@@ -2082,26 +2098,26 @@ Question: How does a changing climate mean and variance affect co-domininant gra
 # Try both species together first
 m0 <- glm(Germ.binom ~ 1, family = binomial, data = blue_yr_trt)
 m1 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc), family = binomial, data = blue_yr_trt)
-m2 <- glmer(Germ.binom ~ 1 + (1|Block), family = binomial, data = blue_yr_trt)
-m3 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc) + (1|Block), family = binomial, data = blue_yr_trt)
+m2 <- glmer(Germ.binom ~ 1 + (1|block), family = binomial, data = blue_yr_trt)
+m3 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc) + (1|block), family = binomial, data = blue_yr_trt)
 
-mall <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment*sum_pp_sc + (1|Block), family = binomial, data = blue_yr_trt)
+mall <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment*sum_pp_sc + (1|block), family = binomial, data = blue_yr_trt)
 
-mall2 <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment + (1|Obs_Year_sc) + (1|Block), family = binomial, data = blue_yr_trt)
+mall2 <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment + (1|Obs_Year_sc) + (1|block), family = binomial, data = blue_yr_trt)
 
-mall3 <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment + (1|sum_pp_sc) + (1|Block), family = binomial, data = blue_yr_trt)
+mall3 <- glmer(Germ.binom ~ Species*mean_treatment*var_treatment + (1|sum_pp_sc) + (1|block), family = binomial, data = blue_yr_trt)
 
-mall5 <- glmer(Germ.binom ~ mean_treatment*var_treatment*sum_pp_sc + (1|Block), family = binomial, data = blue_yr_trt)
+mall5 <- glmer(Germ.binom ~ mean_treatment*var_treatment*sum_pp_sc + (1|block), family = binomial, data = blue_yr_trt)
 
-m_pp <- glmer(Germ.binom ~ sum_pp_sc + (1|Block), family = binomial, data = blue_yr_trt)
+m_pp <- glmer(Germ.binom ~ sum_pp_sc + (1|block), family = binomial, data = blue_yr_trt)
 
-mall6 <- glmer(Germ.binom ~ mean_treatment*sum_pp_sc + (1|Block), family = binomial, data = blue_yr_trt)
+mall6 <- glmer(Germ.binom ~ mean_treatment*sum_pp_sc + (1|block), family = binomial, data = blue_yr_trt)
 
-mall7 <- glmer(Germ.binom ~ var_treatment*sum_pp_sc + (1|Block), family = binomial, data = blue_yr_trt)
+mall7 <- glmer(Germ.binom ~ var_treatment*sum_pp_sc + (1|block), family = binomial, data = blue_yr_trt)
 
-mall8 <- glmer(Germ.binom ~ var_treatment*mean_treatment + (1|sum_pp_sc) + (1|Block), family = binomial, data = blue_yr_trt)
+mall8 <- glmer(Germ.binom ~ var_treatment*mean_treatment + (1|sum_pp_sc) + (1|block), family = binomial, data = blue_yr_trt)
 
-mall9 <- glmer(Germ.binom ~ var_treatment*mean_treatment + (1|Obs_Year_sc) + (1|Block), family = binomial, data = blue_yr_trt)
+mall9 <- glmer(Germ.binom ~ var_treatment*mean_treatment + (1|Obs_Year_sc) + (1|block), family = binomial, data = blue_yr_trt)
 
 ICtab(m0,m1,m2,m3,mall,mall2,mall3, mall5, m_pp, mall6, mall7, mall8, mall9)
 summary(mall8)
@@ -2124,9 +2140,9 @@ Anova(mall9)
 summary(mall8)
 summary(mall9)
 
-mall9a <- glmer(Germ.binom ~ var_treatment*mean_treatment + (1|Obs_Year_sc) + (1|Block), family = binomial, data = blue_yr_trt)
+mall9a <- glmer(Germ.binom ~ var_treatment*mean_treatment + (1|Obs_Year_sc) + (1|block), family = binomial, data = blue_yr_trt)
 
-mall9b <- glmer(Germ.binom ~ 0 + var_treatment:mean_treatment + (1|Obs_Year_sc) + (1|Block), family = binomial, data = blue_yr_trt)
+mall9b <- glmer(Germ.binom ~ 0 + var_treatment:mean_treatment + (1|Obs_Year_sc) + (1|block), family = binomial, data = blue_yr_trt)
 
 fixef(mall9b)
 Anova(mall9)
@@ -2222,25 +2238,25 @@ summary(germ_sm_df)
 
 germ_sm_df_narm <- germ_sm_df[which(complete.cases(germ_sm_df) == TRUE),]
 
-# bring in Block
+# bring in block
 germ_sm_df_narm <- left_join(germ_sm_df_narm, trts, by=join_by(Plot))
 ```
 
 ```{r}
 m0 <- glm(Germ.binom ~ 1, family = binomial, data = germ_sm_df_narm)
 m1 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc), family = binomial, data = germ_sm_df_narm)
-m2 <- glmer(Germ.binom ~ 1 + (1|Block), family = binomial, data = germ_sm_df_narm)
-m3 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc) + (1|Block), family = binomial, data = germ_sm_df_narm)
+m2 <- glmer(Germ.binom ~ 1 + (1|block), family = binomial, data = germ_sm_df_narm)
+m3 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
 
-m_max_7 <- glmer(Germ.binom ~ avg_7_max + (1|Obs_Year_sc) + (1|Block), family = binomial, data = germ_sm_df_narm)
+m_max_7 <- glmer(Germ.binom ~ avg_7_max + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
 
-m_sp <- glmer(Germ.binom ~ Species + (1|Obs_Year_sc) + (1|Block), family = binomial, data = germ_sm_df_narm)
+m_sp <- glmer(Germ.binom ~ Species + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
 
-m_avg_7 <- glmer(Germ.binom ~ avg_7 + (1|Obs_Year_sc) + (1|Block), family = binomial, data = germ_sm_df_narm)
+m_avg_7 <- glmer(Germ.binom ~ avg_7 + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
 
-m_mons_avg <- glmer(Germ.binom ~ avg_mons_max + (1|Obs_Year_sc) + (1|Block), family = binomial, data = germ_sm_df_narm)
+m_mons_avg <- glmer(Germ.binom ~ avg_mons_max + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
 
-m_mons_max <- glmer(Germ.binom ~ mons_max + (1|Obs_Year_sc) + (1|Block), family = binomial, data = germ_sm_df_narm)
+m_mons_max <- glmer(Germ.binom ~ mons_max + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
 
 ICtab(m0,m1,m2,m3,m_max_7,m_sp,m_avg_7,m_mons_avg,m_mons_max)
 lrtest(m_mons_max, m3)
@@ -2256,13 +2272,13 @@ summary(m_mons_max)
 Model using the maximum soil moisture from monsoon event is best model so far. Now tinker with Species and random effects.
 
 ```{r}
-m3 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc) + (1|Block), family = binomial, data = germ_sm_df_narm)
+m3 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
 
-m_mons_max <- glmer(Germ.binom ~ mons_max + (1|Obs_Year_sc) + (1|Block), family = binomial, data = germ_sm_df_narm)
+m_mons_max <- glmer(Germ.binom ~ mons_max + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
 
-m_mons_max_sp <- glmer(Germ.binom ~ mons_max + Species + (1|Obs_Year_sc) + (1|Block), family = binomial, data = germ_sm_df_narm)
+m_mons_max_sp <- glmer(Germ.binom ~ mons_max + Species + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
 
-m_mons_max_x_sp <- glmer(Germ.binom ~ mons_max*Species + (1|Obs_Year_sc) + (1|Block), family = binomial, data = germ_sm_df_narm)
+m_mons_max_x_sp <- glmer(Germ.binom ~ mons_max*Species + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
 
 
 ICtab(m3,m_mons_max,m_mons_max_sp,m_mons_max_x_sp)
@@ -2530,7 +2546,8 @@ blue_pp_difs <- blue_yr_trt %>%
     mv19,
     mv20,
     mv21,
-    mv22
+    mv22,
+    mv23
   )
 
 # Go back and update mve treatment with 2023
@@ -2591,6 +2608,20 @@ blue_pp_difs <-
       )
   )
 
+blue_pp_difs <-
+  blue_pp_difs %>%
+  mutate(
+    mvfactor23 =
+      case_when(
+        mv23 == -75 ~ 0.25
+        , mv23 == -50 ~ 0.5
+        , mv23 == -25 ~ 0.75
+        , mv23 == 0 ~ 1
+        , mv23 == 25 ~ 1.25
+        , mv23 == 50 ~ 1.5
+      )
+  )
+
 blue_pp_19 <- 
   blue_pp_difs %>% 
   select(
@@ -2605,7 +2636,13 @@ blue_pp_19 <-
   ) %>% 
   mutate(
   prop_pp_19 = sum_pp*mvfactor19,
-  prop_mons_pp_19 = sum_mons_pp*mvfactor19)
+  prop_mons_pp_19 = sum_mons_pp*mvfactor19) %>% 
+  select(
+    plot,
+    prop_pp_19,
+    prop_mons_pp_19
+  ) %>% 
+  distinct()
 
 blue_pp_20 <- 
   blue_pp_difs %>% 
@@ -2621,7 +2658,13 @@ blue_pp_20 <-
   ) %>% 
   mutate(
   prop_pp_20 = sum_pp*mvfactor20,
-  prop_mons_pp_20 = sum_mons_pp*mvfactor20)
+  prop_mons_pp_20 = sum_mons_pp*mvfactor20) %>% 
+  select(
+    plot,
+    prop_pp_20,
+    prop_mons_pp_20
+  ) %>% 
+  distinct()
 
 blue_pp_21 <- 
   blue_pp_difs %>% 
@@ -2637,7 +2680,13 @@ blue_pp_21 <-
   ) %>% 
   mutate(
   prop_pp_21 = sum_pp*mvfactor21,
-  prop_mons_pp_21 = sum_mons_pp*mvfactor21)
+  prop_mons_pp_21 = sum_mons_pp*mvfactor21) %>% 
+  select(
+    plot,
+    prop_pp_21,
+    prop_mons_pp_21
+  ) %>% 
+  distinct()
 
 blue_pp_22 <- 
   blue_pp_difs %>% 
@@ -2653,18 +2702,56 @@ blue_pp_22 <-
   ) %>% 
   mutate(
   prop_pp_22 = sum_pp*mvfactor22,
-  prop_mons_pp_22 = sum_mons_pp*mvfactor22)
+  prop_mons_pp_22 = sum_mons_pp*mvfactor22) %>% 
+  select(
+    plot,
+    prop_pp_22,
+    prop_mons_pp_22
+  ) %>% 
+  distinct()
 
-# take out duplicates
-
-# regroup and come back
+blue_pp_23 <- 
+  blue_pp_difs %>% 
+  select(
+    plot,
+    Obs_Year,
+    sum_pp,
+    sum_mons_pp,
+    mvfactor23
+  ) %>% 
+  filter(
+    Obs_Year == 2023
+  ) %>% 
+  mutate(
+  prop_pp_23 = sum_pp*mvfactor23,
+  prop_mons_pp_23 = sum_mons_pp*mvfactor23) %>% 
+  select(
+    plot,
+    prop_pp_23,
+    prop_mons_pp_23
+  ) %>% 
+  distinct()
 
 # merge by plot, make a wide frame for subtractions then subset and cast
+blue_pp_1 <- full_join(blue_pp_19,blue_pp_20, by=join_by(plot))
+blue_pp_2 <- full_join(blue_pp_1,blue_pp_21, by=join_by(plot))
+blue_pp_3 <- full_join(blue_pp_2,blue_pp_22, by=join_by(plot))
+blue_pp <- full_join(blue_pp_3,blue_pp_23, by=join_by(plot))
 
-blue_pp_1 <- full_join(blue_pp_19,blue_pp_20, by = join_by(plot))
-blue_pp_2 <- full_join(blue_pp_1,blue_pp_21, by = join_by(plot))
+blue_pp <- blue_pp %>% 
+  mutate(
+      pp_20_19 = prop_pp_20-prop_pp_19
+    , pp_21_20 = prop_pp_21-prop_pp_20
+    , pp_22_21 = prop_pp_22-prop_pp_21
+    , pp_23_22 = prop_pp_23-prop_pp_22
+    , pp_mons_20_19 = prop_pp_20-prop_pp_19
+    , pp_mons_21_20 = prop_pp_21-prop_pp_20
+    , pp_mons_22_21 = prop_pp_22-prop_pp_21
+    , pp_mons_23_22 = prop_pp_23-prop_pp_22
+  )
 
-#Whiplash Y/N
+# pivot_longer and then assign Obs_Year and join with blue_yr_trt
+
 #April cover
 #Current rainfall
 #Species
