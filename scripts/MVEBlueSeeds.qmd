@@ -2749,10 +2749,84 @@ blue_pp <- blue_pp %>%
     , pp_mons_22_21 = prop_pp_22-prop_pp_21
     , pp_mons_23_22 = prop_pp_23-prop_pp_22
   )
+str(blue_pp)
+
+# separate mons dif and total pp dif into their own datasets and make longer and add years, then merge with master
+blue_pp_total_difs <- blue_pp %>% 
+  select(
+    plot,
+    pp_20_19,
+    pp_21_20,
+    pp_22_21,
+    pp_23_22
+  ) %>% 
+  pivot_longer(cols=c(pp_20_19,
+    pp_21_20,
+    pp_22_21,
+    pp_23_22),
+    names_to = "year_dif",
+    values_to = "pp_dif") %>% 
+  mutate(
+    Obs_Year = 
+    case_when(
+      year_dif == "pp_20_19" ~ 2020,
+      year_dif == "pp_21_20" ~ 2021,
+      year_dif == "pp_22_21" ~ 2022,
+      year_dif == "pp_23_22" ~ 2023
+    )
+  ) %>% 
+  mutate(
+    whiplash_total = 
+      case_when(
+        pp_dif > 0 ~ "drier prior",
+        pp_dif < 0 ~ "wetter prior"
+      )
+  ) %>% 
+  select(-"year_dif")
+
+blue_pp_mons_difs <- blue_pp %>% 
+  select(
+    plot,
+    pp_mons_20_19,
+    pp_mons_21_20,
+    pp_mons_22_21,
+    pp_mons_23_22
+  ) %>% 
+  pivot_longer(cols=c(pp_mons_20_19,
+    pp_mons_21_20,
+    pp_mons_22_21,
+    pp_mons_23_22),
+    names_to = "year_dif",
+    values_to = "pp_mons_dif") %>% 
+  mutate(
+    Obs_Year = 
+    case_when(
+      year_dif == "pp_mons_20_19" ~ 2020,
+      year_dif == "pp_mons_21_20" ~ 2021,
+      year_dif == "pp_mons_22_21" ~ 2022,
+      year_dif == "pp_mons_23_22" ~ 2023
+    )
+  ) %>% 
+  mutate(
+    whiplash_mons = 
+      case_when(
+        pp_mons_dif > 0 ~ "drier prior",
+        pp_mons_dif < 0 ~ "wetter prior"
+      )
+  ) %>% 
+  select(-"year_dif")
 
 # pivot_longer and then assign Obs_Year and join with blue_yr_trt
+pp_difs <- left_join(blue_pp_total_difs, blue_pp_mons_difs, by = c("plot","Obs_Year"))
 
-#April cover
+blue_yr_trt_ppdifs <- left_join(blue_yr_trt, pp_difs, by = c("plot","Obs_Year"))
+# didn't work, all NAs
+## LEFT OFF HERE ##
+
+# var-treatment2019 are the treatments that went from Oct 2019-Oct 2020 -- need to confirm
+
+
+#April (August) cover
 #Current rainfall
 #Species
 #Change in prior year cover year April cover - year -1 April cover
