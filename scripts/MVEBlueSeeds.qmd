@@ -2537,7 +2537,7 @@ head(blue_yr_trt) # current year and past year germ + treatments and precip
 ## Change in rainfall year - year -1 (ex: 2020-2019)
 # Use blue_yr_trt to calculate year - year -1 rainfall
 # subset blue_yr_trt for rainfall
-blue_pp_difs <- blue_yr_trt %>% 
+blue_pp_dif <- blue_yr_trt %>% 
   select(
     plot,
     Obs_Year,
@@ -2549,6 +2549,31 @@ blue_pp_difs <- blue_yr_trt %>%
     mv22,
     mv23
   )
+
+# create a compatible dataframe for 2018, which includes all thirty plots
+met_sum_18<- met_00_23_50 %>%
+  filter(Year == 2018) %>% 
+  summarise(
+    sum_pp = sum(Precipitation, na.rm = TRUE)) %>% 
+  distinct()
+
+met_mons_18 <- met_00_23_50 %>%
+  filter(Month > 5 & Month < 10 & Year == 2018) %>% 
+  summarise(
+    sum_mons_pp = sum(Precipitation))
+
+
+pp_18 <- data.frame(plot = 1:30
+           ,Obs_Year = 2018
+           , sum_pp = met_sum_18
+           , sum_mons_pp = met_mons_18
+           , mv19 = 0
+           , mv20 = 0
+           , mv21 = 0
+           , mv22 = 0
+           , mv23 = 0
+           )
+blue_pp_difs <- rbind(pp_18, blue_pp_dif)
 
 # Go back and update mve treatment with 2023
 str(blue_pp_difs)
@@ -2621,6 +2646,28 @@ blue_pp_difs <-
         , mv23 == 50 ~ 1.5
       )
   )
+
+blue_pp_18 <- 
+  blue_pp_difs %>% 
+  select(
+    plot,
+    Obs_Year,
+    sum_pp,
+    sum_mons_pp,
+    mvfactor19
+  ) %>% 
+  filter(
+    Obs_Year == 2018
+  ) %>% 
+  mutate(
+  prop_pp_18 = sum_pp*mvfactor19, #mvfactor is 1 dor 2018
+  prop_mons_pp_18 = sum_mons_pp*mvfactor19) %>% 
+  select(
+    plot,
+    prop_pp_18,
+    prop_mons_pp_18
+  ) %>% 
+  distinct()
 
 blue_pp_19 <- 
   blue_pp_difs %>% 
@@ -2733,21 +2780,24 @@ blue_pp_23 <-
   distinct()
 
 # merge by plot, make a wide frame for subtractions then subset and cast
-blue_pp_1 <- full_join(blue_pp_19,blue_pp_20, by=join_by(plot))
+blue_pp_0 <- full_join(blue_pp_18,blue_pp_19, by=join_by(plot))
+blue_pp_1 <- full_join(blue_pp_0,blue_pp_20, by=join_by(plot))
 blue_pp_2 <- full_join(blue_pp_1,blue_pp_21, by=join_by(plot))
 blue_pp_3 <- full_join(blue_pp_2,blue_pp_22, by=join_by(plot))
 blue_pp <- full_join(blue_pp_3,blue_pp_23, by=join_by(plot))
 
 blue_pp <- blue_pp %>% 
   mutate(
-      pp_20_19 = prop_pp_20-prop_pp_19
+      pp_19_18 = prop_pp_19-prop_pp_18
+    , pp_20_19 = prop_pp_20-prop_pp_19
     , pp_21_20 = prop_pp_21-prop_pp_20
     , pp_22_21 = prop_pp_22-prop_pp_21
     , pp_23_22 = prop_pp_23-prop_pp_22
-    , pp_mons_20_19 = prop_pp_20-prop_pp_19
-    , pp_mons_21_20 = prop_pp_21-prop_pp_20
-    , pp_mons_22_21 = prop_pp_22-prop_pp_21
-    , pp_mons_23_22 = prop_pp_23-prop_pp_22
+    , pp_mons_19_18 = prop_mons_pp_19-prop_mons_pp_18
+    , pp_mons_20_19 = prop_mons_pp_20-prop_mons_pp_19
+    , pp_mons_21_20 = prop_mons_pp_21-prop_mons_pp_20
+    , pp_mons_22_21 = prop_mons_pp_22-prop_mons_pp_21
+    , pp_mons_23_22 = prop_mons_pp_23-prop_mons_pp_22
   )
 str(blue_pp)
 
@@ -2755,12 +2805,15 @@ str(blue_pp)
 blue_pp_total_difs <- blue_pp %>% 
   select(
     plot,
+    pp_19_18,
     pp_20_19,
     pp_21_20,
     pp_22_21,
     pp_23_22
   ) %>% 
-  pivot_longer(cols=c(pp_20_19,
+  pivot_longer(cols=c(
+    pp_19_18,
+    pp_20_19,
     pp_21_20,
     pp_22_21,
     pp_23_22),
@@ -2769,6 +2822,7 @@ blue_pp_total_difs <- blue_pp %>%
   mutate(
     Obs_Year = 
     case_when(
+      year_dif == "pp_19_18" ~ 2019,
       year_dif == "pp_20_19" ~ 2020,
       year_dif == "pp_21_20" ~ 2021,
       year_dif == "pp_22_21" ~ 2022,
@@ -2787,12 +2841,15 @@ blue_pp_total_difs <- blue_pp %>%
 blue_pp_mons_difs <- blue_pp %>% 
   select(
     plot,
+    pp_mons_19_18,
     pp_mons_20_19,
     pp_mons_21_20,
     pp_mons_22_21,
     pp_mons_23_22
   ) %>% 
-  pivot_longer(cols=c(pp_mons_20_19,
+  pivot_longer(cols=c(
+    pp_mons_19_18,
+    pp_mons_20_19,
     pp_mons_21_20,
     pp_mons_22_21,
     pp_mons_23_22),
@@ -2801,6 +2858,7 @@ blue_pp_mons_difs <- blue_pp %>%
   mutate(
     Obs_Year = 
     case_when(
+      year_dif == "pp_mons_19_18" ~ 2019,
       year_dif == "pp_mons_20_19" ~ 2020,
       year_dif == "pp_mons_21_20" ~ 2021,
       year_dif == "pp_mons_22_21" ~ 2022,
@@ -2820,16 +2878,92 @@ blue_pp_mons_difs <- blue_pp %>%
 pp_difs <- left_join(blue_pp_total_difs, blue_pp_mons_difs, by = c("plot","Obs_Year"))
 
 blue_yr_trt_ppdifs <- left_join(blue_yr_trt, pp_difs, by = c("plot","Obs_Year"))
-# didn't work, all NAs
-## LEFT OFF HERE ##
+str(blue_yr_trt)
+str(pp_difs)
+unique(pp_difs$plot)
 
-# var-treatment2019 are the treatments that went from Oct 2019-Oct 2020 -- need to confirm
+# maybe sneak peak at a graph?
+germ_sum <- blue_yr_trt_ppdifs %>% 
+  group_by(plot, Obs_Date, Species) %>% 
+  mutate(germ_prop = sum(Germ.binom)/sum(trial)) %>% 
+  select(plot,
+         Obs_Date,
+         Species,
+         pp_mons_dif,
+         germ_prop) %>% 
+  distinct()
+
+germ_leg_plot <- ggplot(data = germ_sum, aes(x = pp_mons_dif, y = germ_prop, color = Species)) + # assign data to x- and y-axes
+  geom_point(alpha = 0.5) +    # plot it with a scatterplot, pick color of the points
+  geom_smooth(method = 'lm', fill = NA, linewidth = 0.75) +
+  labs(x = "Difference in precipitation",    # x-axis label
+       y = "Germination Proportion") + 
+  scale_color_manual(values=c("black","cornflowerblue")) + 
+  theme_bw()
+germ_leg_plot
+
+# both decline with previous pp_dif and pp_mons_dif which is crazy. If the prior year was wetter than the current year, estimated probability of germination is higher.
+
+germ_sum <- blue_yr_trt_ppdifs %>% 
+  group_by(plot, Obs_Year, Species) %>% 
+  mutate(germ_prop = sum(Germ.binom)/sum(trial)) %>% 
+  select(plot,
+         Obs_Year,
+         Species,
+         whiplash_total,
+         germ_prop) %>% 
+  distinct()
+
+ggplot(germ_sum, aes(x=whiplash_total, y = germ_prop, group = Species, fill = Species, na.rm = TRUE)) + scale_fill_manual(values=c("black","cornflowerblue")) + geom_col(position = position_dodge()) +
+labs(x = "Whiplash", y = "Estimated Germination Probability") + theme_bw()
 
 
-#April (August) cover
-#Current rainfall
-#Species
-#Change in prior year cover year April cover - year -1 April cover
+# April (August?) cover and/or biomass
+cover <- read.csv("sev349_mean_variance_quad_cover_height.csv")
+biomass <- read.csv("sevnnn_mean_variance_biomass.csv")
+
+cover_sum_Apr <- cover %>% 
+  filter(
+    site == "meanvar_blue" & season == 2
+  ) %>% group_by(plot, quad, year, season, collection_date) %>% 
+  summarise(cover_total = sum(cover)) %>% 
+  group_by(plot, year, season, collection_date) %>% # values across quads look pretty similar most of the time, average across quads
+  summarise(cover_avg = mean(cover_total)) %>% 
+  mutate(
+    Obs_Year = year
+  )
+
+# Either low cover in April, low cover August prior
+# merge with blue yr trt
+blue_yr_trt_cover <- left_join(blue_yr_trt, cover_sum_Apr, by = c("plot","Obs_Year"))
+
+# need to make a august version and do it for biomass and see what is the best predictor
+# I think the treatment years are off because this doesn't make sense
+
+# maybe sneak peak at a graph?
+germ_sum <- blue_yr_trt_cover %>% 
+  group_by(plot, Obs_Date, Species) %>% 
+  mutate(germ_prop = sum(Germ.binom)/sum(trial)) %>% 
+  select(plot,
+         Obs_Date,
+         Species,
+         cover_avg,
+         germ_prop) %>% 
+  distinct()
+
+germ_cov_plot <- ggplot(data = germ_sum, aes(x = cover_avg, y = germ_prop, color = Species)) + # assign data to x- and y-axes
+  geom_point(alpha = 0.5) +    # plot it with a scatterplot, pick color of the points
+  geom_smooth(method = 'lm', fill = NA, linewidth = 0.75) +
+  labs(x = "Veg Cover",    # x-axis label
+       y = "Germination Proportion") + 
+  scale_color_manual(values=c("black","cornflowerblue")) + 
+  theme_bw()
+germ_cov_plot
+### Lower veg cover == higher germ
+
+# Current rainfall
+# Species
+# Change in prior year cover year April cover - year -1 April cover
 
 
 ```
