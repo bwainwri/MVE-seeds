@@ -56,8 +56,8 @@ Bring in seed monitoring data for all five years, bring in keys, bring in soil m
 
 ```{r seed census data hidden}
 #| eval: false # Do not evaluate this chunk
+# This reduces computing power -- a lot of carpentry happens here. This way we don't have to do it every time we run the code
 
-# print("Dont run this code")
 # bring in each year of data (2019-2023, 5 years total)
 
 # De-authorize googlesheets to bypass log-in
@@ -483,7 +483,9 @@ blue_2yrs <- blue_19_23_long_raw %>%
   filter(year(Obs_Date) < Add_Year+2)
 
 # check your work
-which(blue_2yrs$Add_Year == 2023 & year(blue_2yrs$Obs_Date) > 2024)
+which(blue_2yrs$Add_Year == 2020 & year(blue_2yrs$Obs_Date) > 2022)
+# should be integer(0)
+
 
 blue_2yrs$Obs_Year <- year(blue_2yrs$Obs_Date)
 
@@ -560,6 +562,9 @@ hist(blue_yr_trt_20_1$Obs_Date, "days")
 hist(blue_yr_trt_21_1$Obs_Date, "days")
 hist(blue_yr_trt_22_1$Obs_Date, "days")
 hist(blue_yr_trt_23_1$Obs_Date, "days")
+
+## LEFT OFF HERE##
+## Checking structure of germ_sum dataset and adding that to comments
 
 # Create list of events
 germ_sm_sum <- blue_yr_trt %>% 
@@ -1089,6 +1094,7 @@ These are all the datasets cleaned above, this saves R time.
 blue_19_23 <- read_csv("germ_19_23.csv") # reduced to only first germ
 blue_19_23_long_raw <- read_csv("germ_19_23_long_raw.csv") # All binomial observations from first germ through survival
 
+# This dataset is current past year cohort limited
 bluebyyear <- read_csv("blue_year_cohorts.csv")
 
 germ_sm <- read_csv("germ_events_sm.csv")
@@ -1809,6 +1815,7 @@ You'll need to remove toothpicks in the NW corner in 2019 since those were plant
 #| message: false
 #| warning: false
 
+# reminder blue_19_23 is only whether each toothpick germinated or not over it's lifetime
 summary(blue_19_23)
 head(blue_19_23)
 str(blue_19_23)
@@ -1934,8 +1941,17 @@ Try limiting to year planted or year after. So each "Observation Year" includes 
 Create new variables with meteorological data and treatments. Make treatments numeric.
 
 ```{r cohort rain year}
+# reminder that this dataset includes current year cohort and past year cohort, with germinated toothpicks removed. Not raw data, only whether a toothpick germinated or not
 head(bluebyyear)
 
+# randomly select a TP ID and see how many times it shows up
+TP_IDs <- unique(bluebyyear$TP_ID)
+which(bluebyyear$TP_ID == sample(TP_IDs,1))
+# numbers should show up once or twice
+
+```
+
+```{r}
 # merge with treatments
 head(trts)
 blue_yr_trt <- left_join(bluebyyear,trts, by = join_by(plot))
@@ -2057,12 +2073,7 @@ unique(blue_yr_trt$mv23)
 blue_yr_trt <- left_join(blue_yr_trt, year_pp, by = c("Obs_Year"="Year"))
 blue_yr_trt <- left_join(blue_yr_trt, year_mons_pp, by = c("Obs_Year"="Year"))
 
-##### LEFT OFF HERE #####
-# this doesn't work because -50% and +50% are the same
-blue_yr_trt$sum_pp_trt19 <- blue_yr_trt$sum_pp*(blue_yr_trt$mv19/100)
-
-# create Quad_ID
-# example = (1|plot.f/Quad_ID)
+## could put proportional precip here
 
 # remove NE and 2019
 blue_yr_trt <- 
@@ -2151,7 +2162,6 @@ coef(mall9)
 # Need to figure out emmeans, predicted values, coef and back transforming
 
 ```
-
 
 ## Graph germination by year and treatments
 
@@ -2933,9 +2943,23 @@ cover_sum_Apr <- cover %>%
     Obs_Year = year
   )
 
+cover_sum_Sep <- cover %>% 
+  filter(
+    site == "meanvar_blue" & season == 3
+  ) %>% group_by(plot, quad, year, season, collection_date) %>% 
+  summarise(cover_total = sum(cover)) %>% 
+  group_by(plot, year, season, collection_date) %>% # values across quads look pretty similar most of the time, average across quads
+  summarise(cover_avg = mean(cover_total)) %>% 
+  mutate(
+    Obs_Year = year + 1
+  )
+
 # Either low cover in April, low cover August prior
 # merge with blue yr trt
-blue_yr_trt_cover <- left_join(blue_yr_trt, cover_sum_Apr, by = c("plot","Obs_Year"))
+blue_yr_trt_cover_Apr <- left_join(blue_yr_trt, cover_sum_Apr, by = c("plot","Obs_Year"))
+
+blue_yr_trt_cover_Sep <- left_join(blue_yr_trt, cover_sum_Sep, by = c("plot","Obs_Year"))
+
 
 # need to make a august version and do it for biomass and see what is the best predictor
 # I think the treatment years are off because this doesn't make sense
@@ -2961,11 +2985,57 @@ germ_cov_plot <- ggplot(data = germ_sum, aes(x = cover_avg, y = germ_prop, color
 germ_cov_plot
 ### Lower veg cover == higher germ
 
-# Current rainfall
-# Species
-# Change in prior year cover year April cover - year -1 April cover
+# maybe sneak peak at a graph?
+germ_sum_S <- blue_yr_trt_cover_Sep %>% 
+  group_by(plot, Obs_Date, Species) %>% 
+  mutate(germ_prop = sum(Germ.binom)/sum(trial)) %>% 
+  select(plot,
+         Obs_Date,
+         Species,
+         cover_avg,
+         germ_prop) %>% 
+  distinct()
+
+germ_cov_plot_S <- ggplot(data = germ_sum_S, aes(x = cover_avg, y = germ_prop, color = Species)) + # assign data to x- and y-axes
+  geom_point(alpha = 0.5) +    # plot it with a scatterplot, pick color of the points
+  geom_smooth(method = 'lm', fill = NA, linewidth = 0.75) +
+  labs(x = "Veg Cover",    # x-axis label
+       y = "Germination Proportion") + 
+  scale_color_manual(values=c("black","cornflowerblue")) + 
+  theme_bw()
+germ_cov_plot_S
+### Higher veg in September year prior yields high germ next summer, inline with wetter prior years have higher germ
 
 
+
+## Try to find the best model to predict germination including Apr cover, September cover, proportional rainfall, total rainfall, species
+
+## copy and pasted code from soil moisture section.
+## need to go back and make a nicer dataframe for this
+m0 <- glm(Germ.binom ~ 1, family = binomial, data = germ_sm_df_narm)
+m1 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc), family = binomial, data = germ_sm_df_narm)
+m2 <- glmer(Germ.binom ~ 1 + (1|block), family = binomial, data = germ_sm_df_narm)
+m3 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
+
+m_max_7 <- glmer(Germ.binom ~ avg_7_max + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
+
+m_sp <- glmer(Germ.binom ~ Species + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
+
+m_avg_7 <- glmer(Germ.binom ~ avg_7 + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
+
+m_mons_avg <- glmer(Germ.binom ~ avg_mons_max + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
+
+m_mons_max <- glmer(Germ.binom ~ mons_max + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
+
+ICtab(m0,m1,m2,m3,m_max_7,m_sp,m_avg_7,m_mons_avg,m_mons_max)
+lrtest(m_mons_max, m3)
+Anova(m_mons_max)
+summary(m_mons_max)
+#mall
+
+# Check for overdispersion
+# deviance/residual df
+10314.2/27751 
 ```
 
 
