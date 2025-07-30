@@ -562,36 +562,44 @@ hist(blue_yr_trt_20_1$Obs_Date, "days")
 hist(blue_yr_trt_21_1$Obs_Date, "days")
 hist(blue_yr_trt_22_1$Obs_Date, "days")
 hist(blue_yr_trt_23_1$Obs_Date, "days")
+```
 
-## LEFT OFF HERE##
+```{r}
+## LEFT OFF HERE ##
 ## Checking structure of germ_sum dataset and adding that to comments
 
 # Create list of events
+# Total germinations per observation day
 germ_sm_sum <- blue_yr_trt %>% 
   group_by(Obs_Date,Obs_Year) %>% 
   summarise(sum = sum(Germ.binom))
 
+# Total germinations per year
 germ_sm_sum_yr <- blue_yr_trt %>% 
   group_by(Obs_Year) %>% 
   summarise(sumtotal = sum(Germ.binom))
 
+# How much does a single observation day germination count contribute to yearly total?
 germ_sum_per <- left_join(germ_sm_sum, germ_sm_sum_yr, by = join_by(Obs_Year))
 germ_sum_per$percent_yr <- germ_sum_per$sum/germ_sum_per$sumtotal
 
 # A few ways to cut it.
-# The single biggest germ event
+# The single biggest germ event (highest percent per year)
 # The n biggest events that add up to 95% of germination occurrence 
-# All events with over 1% of germs
+# All events with over 5% of germs
 germ_percent_events <- germ_sum_per %>% 
   filter(percent_yr > 0.05)
 nrow(germ_percent_events)
 
-germ_percent_events$event_num <- c(1:8)
-events <- germ_percent_events[,c(1,6)]
+# Assign event numbers to each
+germ_percent_events$event_num <- c(1:nrow(germ_percent_events))
+
+# create key of event date and number
+events <- germ_percent_events[,c("Obs_Date","event_num")]
 
 # Figure out how to remove success germination TPs from following event
 
-# Use the long form, original raw data. limited to first two years
+# Use the long form, original raw data. limited to year planted and year after
 str(blue_2yrs)
 
 # These are the key germination events
