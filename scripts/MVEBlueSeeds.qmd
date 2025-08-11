@@ -565,8 +565,8 @@ hist(blue_yr_trt_23_1$Obs_Date, "days")
 ```
 
 ```{r}
-## LEFT OFF HERE ##
-## Checking structure of germ_sum dataset and adding that to comments
+#| warning: false
+#| eval: false
 
 # Create list of events
 # Total germinations per observation day
@@ -1102,9 +1102,10 @@ These are all the datasets cleaned above, this saves R time.
 blue_19_23 <- read_csv("germ_19_23.csv") # reduced to only first germ
 blue_19_23_long_raw <- read_csv("germ_19_23_long_raw.csv") # All binomial observations from first germ through survival
 
-# This dataset is current past year cohort limited
+# This dataset is limited to planting year and planting year + 1. Not raw data. Did the toothpick germinate in Year X? Yes no
 bluebyyear <- read_csv("blue_year_cohorts.csv")
 
+# This dataset is limited to toothpicks in planting year and planting year + 1. Further, it's every toothpick (from present year or present year +1) that's able to germinate for one of 8 large rainfall events. 
 germ_sm <- read_csv("germ_events_sm.csv")
 
 surv <- read_csv("surv_19_23.csv")
@@ -1746,15 +1747,24 @@ clim_sum <- met_00_23_50 %>%
 
 clim_sum_pp <- clim_sum %>% 
   group_by(Month) %>% 
-  summarise(mean_pp = mean(sum_pp, na.rm = TRUE))
+  summarise(mean_pp = mean(sum_pp, na.rm = TRUE),
+            pp_sd = sd(sum_pp, na.rm = TRUE)) %>% 
+  mutate(pp_upper = mean_pp + 2*pp_sd,
+         pp_lower = mean_pp - 2*pp_sd)
 
 clim_sum_max_t <- clim_sum %>% 
   group_by(Month) %>% 
-  summarise(mean_max_t = mean(daily_max, na.rm = TRUE))
+  summarise(mean_max_t = mean(daily_max, na.rm = TRUE),
+            max_t_sd = sd(daily_max, na.rm = TRUE)) %>% 
+  mutate(max_t_upper = mean_max_t + 2*max_t_sd,
+         max_t_lower = mean_max_t - 2*max_t_sd)
             
 clim_sum_min_t <- clim_sum %>% 
   group_by(Month) %>% 
-  summarise(mean_min_t = mean(daily_min, na.rm = TRUE))
+  summarise(mean_min_t = mean(daily_min, na.rm = TRUE),
+            min_t_sd = sd(daily_min, na.rm = TRUE)) %>% 
+  mutate(min_t_upper = mean_min_t + 2*min_t_sd,
+         min_t_lower = mean_min_t - 2*min_t_sd)
 
 clim_sum_2 <- full_join(clim_sum_pp,clim_sum_max_t, by = join_by(Month))
 clim_sum_3 <- full_join(clim_sum_2,clim_sum_min_t, by = join_by(Month))
@@ -1765,6 +1775,7 @@ clim_sum_3 <- full_join(clim_sum_2,clim_sum_min_t, by = join_by(Month))
 #| warning: false
 
 # Prep for figure
+str(clim_sum_3)
 
 # Range for temperature axis
 max(clim_sum_max_t$mean_max_t)
@@ -1784,8 +1795,11 @@ clim_plot <- ggplot(clim_sum_3, aes(x = Month)) +
   geom_point(aes(y = mean_min_t/coeff), size = 1.5, color = colors[2]) +  
   # geom_smooth(aes(y = mean_min_t/coeff), size = 1.5, color = colors[2]) +
   geom_line(aes(y = mean_pp), size = 1.5, color = colors[1]) + 
+  #geom_ribbon(aes(ymin=pp_lower, ymax=pp_upper), linetype=2, alpha=0.1, color = colors[1]) +
   geom_line(aes(y = mean_max_t/coeff), size = 1.5, color = colors[2]) +
+  #geom_ribbon(aes(ymin=max_t_lower/coeff, ymax=max_t_upper/coeff), linetype=2, alpha=0.1, color = colors[2]) +
   geom_line(aes(y = mean_min_t/coeff), size = 1.5, color = colors[2]) +
+  #geom_ribbon(aes(ymin=min_t_lower/coeff, ymax=min_t_upper/coeff), linetype=2, alpha=0.1, color = colors[2]) +
   labs(
     #title = "Monthly Climate Averages from 2000-2023 at Great Plains Grassland Meteorological Station",
        x = "Month") +
@@ -1809,6 +1823,7 @@ clim_plot
 ggsave("F1_MVEBlue_climate.jpg", clim_plot)
 
 # Consider adding 95% confidence interval around line
+## Needs work, the variation in precip is so high it distorts the graph. Could do 60% but that seems weird
 ```
 
 Figure 1. Climate averages for Meteorological Station 50 near Mean-Variance Blue Experiment from 2000-2023. Purple dots represent total monthly precipitation in millimeters, averaged over 2000-2023. Turquoise dots represent monthly average daily minimum and maximum temperatures in Fahrenheit from 2000-2023.
@@ -2139,12 +2154,14 @@ mall8 <- glmer(Germ.binom ~ var_treatment*mean_treatment + (1|sum_pp_sc) + (1|bl
 mall9 <- glmer(Germ.binom ~ var_treatment*mean_treatment + (1|Obs_Year_sc) + (1|block), family = binomial, data = blue_yr_trt)
 
 ICtab(m0,m1,m2,m3,mall,mall2,mall3, mall5, m_pp, mall6, mall7, mall8, mall9)
+# mall8 or 9 are best
 summary(mall8)
 #mall
 
 # Check for overdispersion
 # deviance/residual df
 19536.0/44443 
+
 ```
 
 Best model is one with an interactive effect of mean and variance treatment with block and year (either precip or year) as random effects.
@@ -2159,15 +2176,28 @@ Anova(mall9)
 summary(mall8)
 summary(mall9)
 
+
+unique(blue_yr_trt$var_treatment)
+
 mall9a <- glmer(Germ.binom ~ var_treatment*mean_treatment + (1|Obs_Year_sc) + (1|block), family = binomial, data = blue_yr_trt)
 
 mall9b <- glmer(Germ.binom ~ 0 + var_treatment:mean_treatment + (1|Obs_Year_sc) + (1|block), family = binomial, data = blue_yr_trt)
+summary(mall9b)
 
-fixef(mall9b)
+plogis(fixef(mall9b))
+# highest germination is in ambient conditions
 Anova(mall9)
-coef(mall9)
+coef(mall9b)
+
+# why are there five categories? var_treatment can be blank?
+
+library(emmeans)
+emmeans(mall9, ~ var_treatment:mean_treatment)
+# Can I just transform these and use them for graphing
 
 # Need to figure out emmeans, predicted values, coef and back transforming
+
+
 
 ```
 
@@ -2973,7 +3003,7 @@ blue_yr_trt_cover_Sep <- left_join(blue_yr_trt, cover_sum_Sep, by = c("plot","Ob
 # I think the treatment years are off because this doesn't make sense
 
 # maybe sneak peak at a graph?
-germ_sum <- blue_yr_trt_cover %>% 
+germ_sum <- blue_yr_trt_cover_Apr %>% 
   group_by(plot, Obs_Date, Species) %>% 
   mutate(germ_prop = sum(Germ.binom)/sum(trial)) %>% 
   select(plot,
