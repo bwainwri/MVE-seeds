@@ -2158,6 +2158,8 @@ ICtab(m0,m1,m2,m3,mall,mall2,mall3, mall5, m_pp, mall6, mall7, mall8, mall9)
 summary(mall8)
 #mall
 
+# lrtest(m_mons_max, m3)
+
 # Check for overdispersion
 # deviance/residual df
 19536.0/44443 
@@ -2224,7 +2226,9 @@ germ_summary_all <- blue_19_23_trt_NE19rm %>%
 Plot all years together.
 
 ```{r}
-ggplot(germ_summary_all, aes(x=var_treatment, y = avg_germ, group = Species, fill = Species, na.rm = TRUE)) + scale_fill_manual(values=c("black","cornflowerblue")) + geom_col(position = position_dodge()) + facet_grid(. ~ mean_treatment) + labs(x = "Variance Treatment", y = "Estimated Germination Probability") + theme_bw()
+germ_all <- ggplot(germ_summary_all, aes(x=var_treatment, y = avg_germ, group = Species, fill = Species, na.rm = TRUE)) + scale_fill_manual(values=c("black","cornflowerblue")) + geom_col(position = position_dodge()) + facet_grid(. ~ mean_treatment) + labs(x = "Variance Treatment", y = "Estimated Germination Probability") + theme_bw()
+
+ggsave("Germ_All.jpg", germ_all, width = 7, height = 7)
 ```
 
 Species functionally the same for all treatments, no major differences between treatments but lowest germination in reduced mean and ambient variance treatment.
@@ -2235,7 +2239,7 @@ Break out each year.
 germ_yr <- ggplot(germ_summary, aes(x=var_treatment, y = avg_germ, group = Species, fill = Species, na.rm = TRUE)) + scale_fill_manual(values=c("black","cornflowerblue")) + geom_col(position = position_dodge()) + facet_grid(Add_Year ~ mean_treatment) + labs(title = "Germination of blue and black grama by Year Added Cohort", x = "Variance Treatment", y = "Estimated Germination Probability") + theme_bw()
 germ_yr
 
-ggsave("GermxYear.jpg", germ_yr, width = 7, height = 12)
+ggsave("GermxAdd_Year.jpg", germ_yr, width = 7, height = 12)
 ```
 
 High interannual variation in germination between species and treatments, dependent on rainfall.
@@ -2276,7 +2280,6 @@ ggsave("GermxObs_Year.jpg", germ_yr, width = 7, height = 12)
 str(sm_event_vars)
 str(germ_sm)
 
-
 germ_sm_df <- left_join(sm_event_vars, germ_sm, by = join_by(Plot == Plot, Obs_Date == Obs_Date))
 ```
 
@@ -2288,23 +2291,31 @@ germ_sm_df_narm <- germ_sm_df[which(complete.cases(germ_sm_df) == TRUE),]
 
 # bring in block
 germ_sm_df_narm <- left_join(germ_sm_df_narm, trts, by=join_by(Plot))
-```
 
+str(germ_sm_df_narm)
+
+germ_sm_df_narm <- germ_sm_df_narm %>% 
+  mutate(avg_7_max_per = avg_7_max*100,
+         avg_7_per = avg_7*100,
+         avg_mons_max_per = avg_mons_max*100,
+         mons_max_per = mons_max*100)
+```
+Find the best model for germination probability with soil moisture.
 ```{r}
 m0 <- glm(Germ.binom ~ 1, family = binomial, data = germ_sm_df_narm)
 m1 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc), family = binomial, data = germ_sm_df_narm)
 m2 <- glmer(Germ.binom ~ 1 + (1|block), family = binomial, data = germ_sm_df_narm)
 m3 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
 
-m_max_7 <- glmer(Germ.binom ~ avg_7_max + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
+m_max_7 <- glmer(Germ.binom ~ avg_7_max_per + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
 
 m_sp <- glmer(Germ.binom ~ Species + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
 
-m_avg_7 <- glmer(Germ.binom ~ avg_7 + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
+m_avg_7 <- glmer(Germ.binom ~ avg_7_per + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
 
-m_mons_avg <- glmer(Germ.binom ~ avg_mons_max + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
+m_mons_avg <- glmer(Germ.binom ~ avg_mons_max_per + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
 
-m_mons_max <- glmer(Germ.binom ~ mons_max + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
+m_mons_max <- glmer(Germ.binom ~ mons_max_per + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
 
 ICtab(m0,m1,m2,m3,m_max_7,m_sp,m_avg_7,m_mons_avg,m_mons_max)
 lrtest(m_mons_max, m3)
@@ -2322,22 +2333,48 @@ Model using the maximum soil moisture from monsoon event is best model so far. N
 ```{r}
 m3 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
 
-m_mons_max <- glmer(Germ.binom ~ mons_max + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
+m_mons_max <- glmer(Germ.binom ~ mons_max_per + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
 
-m_mons_max_sp <- glmer(Germ.binom ~ mons_max + Species + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
+m_mons_max_sp <- glmer(Germ.binom ~ mons_max_per + Species + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
 
-m_mons_max_x_sp <- glmer(Germ.binom ~ mons_max*Species + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
+m_mons_max_x_sp <- glmer(Germ.binom ~ mons_max_per*Species + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
 
 
 ICtab(m3,m_mons_max,m_mons_max_sp,m_mons_max_x_sp)
-#lrtest(m_mons_max, m3)
-Anova(m_mons_max_x_sp)
-summary(m_mons_max_x_sp)
+lrtest(m_mons_max_sp, m_mons_max_x_sp)
+# no significant difference, go with the simpler model
+Anova(m_mons_max_sp)
+summary(m_mons_max_sp)
 #mall
+
+exp(-4.423053)
+# When soil moisture is 0 and species is black, there's a 1.2% probability or baseline odds of germination
+exp(0.080366)
+# For every 1 percent increase in monsoon maximum soil moisutre, germination odds increases by 8%
+exp(-0.206997)
+# Odds of germination if you're species blue is 81.3% of being black
 
 # Check for overdispersion
 # deviance/residual df
 # 10314.2/27751 
+
+m_mons_max_sp <- glmer(Germ.binom ~ mons_max_per + Species + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
+
+m_mons_max_sp_b <- glmer(Germ.binom ~ 0 + mons_max_per + Species + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
+
+summary(m_mons_max_sp_b)
+
+plogis(fixef(m_mons_max_sp_b))
+# what does this mean when one variable is continuous
+# this might mean tht for every 1 nicrease in volumetric water content, probability goes up by 0.99. Perhaps I need to transform the VWC to be percentage
+Anova(m_mons_max_sp_b)
+coef(m_mons_max_sp_b)
+
+library(emmeans)
+emmeans(m_mons_max_sp, ~ mons_max + Species)
+# Not sure what to make of this
+
+# Need to figure out emmeans, predicted values, coef and back transforming
 ```
 
 The models with maximum soil moisture and species, additive and interactive are functionally equal in model fit.
@@ -2551,9 +2588,9 @@ survfit2(Surv(Surv_days, Status) ~ mean_var, data = surv_trt) %>%
   ) + 
   add_confidence_interval()
 
-
+# LEFT OFF HERE #
 ```
-
+Graph shows lowest survival in ambient ambient plots for first year -- interesting. Once again species doesn't matter
 
 ## Characterize Survival (Pulse or Press)
 
