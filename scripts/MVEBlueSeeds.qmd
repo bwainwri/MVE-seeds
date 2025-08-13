@@ -48,6 +48,8 @@ library(beepr)
 library(survival)
 # install.packages("ggsurvfit")
 library(ggsurvfit)
+#install.packages("survminer")
+library(survminer)
 ```
 
 ## Clean and Wrangle Data
@@ -2423,15 +2425,38 @@ ggsave("germ_sm_plot.jpg",germ_sm_plot)
 
 ## Survival Model & Graph
 
+Now we want to analyze survival of seedlings. I used this link as a template: https://www.emilyzabor.com/survival-analysis-in-r.html.
+
+Independent variables of interest: Species, Add_year, mean_treatment, var_treatment
+
 ```{r}
+# Reminder: Survival dataset is all toothpick IDs that germinated, the date they germinated, the date they were last observed + 7 days (assuming they died) 
 head(surv)
 str(surv)
 summary(surv)
 # Plants that are two years old, I'm not confident they died or just stopped being monitored
 
+# Sample of the survival time in days, "+" denotes still alive at time of observation
+Surv(surv$Surv_days, surv$Status)[1:1000]
+
+# survfit() creates survival curves using the Kaplan_Meier method based on a formula
+# overall survival curve
 s1 <- survfit(Surv(Surv_days, Status) ~ 1, data = surv)
 str(s1)
 
+# survfit2 and ggsurvfit creates graphs
+# Overall survival with confidence intervals
+survfit2(Surv(Surv_days, Status) ~ 1, data = surv) %>% 
+  ggsurvfit() +
+  labs(
+    x = "Days",
+    y = "Overall survival probability"
+  ) + 
+  add_confidence_interval() +
+  add_risktable() # shows those living who are at risk of dying and death events that have occured at 250 day intervals
+# Highest die off happens before 250 days
+
+# survival by species
 survfit2(Surv(Surv_days, Status) ~ Species, data = surv) %>% 
   ggsurvfit() +
   labs(
@@ -2441,12 +2466,25 @@ survfit2(Surv(Surv_days, Status) ~ Species, data = surv) %>%
   add_confidence_interval() +
   add_risktable()
 
-summary(survfit(Surv(Surv_days, Status) ~ Species, data = surv), times = 365.25)
+# probability of surviving a year 
+summary(survfit(Surv(Surv_days, Status) ~ 1, data = surv), times = 365.25)
+summary(survfit(Surv(Surv_days, Status) ~ Species, data = surv), times = 365.25) # don't understand why it's 365.25
+# probability of surviving a year if black grama is 18.7%
+# probability of surviving a year if blue grama is 20.1%
+# overall is 19.5%
 
+# quantifies average survival time using median
+survfit(Surv(Surv_days, Status) ~ 1, data = surv)
+# median survival time is 50 days
 survfit(Surv(Surv_days, Status) ~ Species, data = surv)
+# median survival time for black is 51 days,
+# for blue it's 50 days
+# these correspond to a survival probability of 50%
 
 survdiff(Surv(Surv_days, Status) ~ Species, data = surv)
+# difference in survival between species not significant (p = 0.8)
 
+# Fits a regression model for survival
 coxph(Surv(Surv_days, Status) ~ Species, data = surv)
 ```
 We find that bue grama has slightly higher probability of survival after one year at 20.1% while black grama's probability of survival after 1 year is 18.7%.
@@ -2467,12 +2505,16 @@ survfit2(Surv(Surv_days, Status) ~ Add_Year, data = surv) %>%
   add_confidence_interval()
 
 summary(survfit(Surv(Surv_days, Status) ~ Add_Year, data = surv), times = 365.25)
+# highest survival if planted in 2022, lowest in 2019
 
 survfit(Surv(Surv_days, Status) ~ Add_Year, data = surv)
+# highest median survival in 2023, lowest in 2019
 
 survdiff(Surv(Surv_days, Status) ~ Add_Year, data = surv)
+# significant difference among years
 
-coxph(Surv(Surv_days, Status) ~ Add_Year, data = surv)
+
+coxph(Surv(Surv_days, Status) ~ Add_Year, data = surv) 
 ```
 Significant differences in survival among Add_Year.
 
@@ -2498,6 +2540,7 @@ summary(survfit(Surv(Surv_days, Status) ~ mean_treatment, data = surv_trt), time
 survfit(Surv(Surv_days, Status) ~ mean_treatment, data = surv_trt)
 
 survdiff(Surv(Surv_days, Status) ~ mean_treatment, data = surv_trt)
+# no significant difference in mean treatments
 
 coxph(Surv(Surv_days, Status) ~ mean_treatment, data = surv_trt)
 
@@ -2512,8 +2555,10 @@ survfit2(Surv(Surv_days, Status) ~ var_treatment, data = surv_trt) %>%
 summary(survfit(Surv(Surv_days, Status) ~ var_treatment, data = surv_trt), times = 365.25)
 
 survfit(Surv(Surv_days, Status) ~ var_treatment, data = surv_trt)
+# much higher median survival if in a variance increase plot (59 vs 38 for ambient)
 
 survdiff(Surv(Surv_days, Status) ~ var_treatment, data = surv_trt)
+# significant difference in survival between variance treatments
 
 coxph(Surv(Surv_days, Status) ~ var_treatment, data = surv_trt)
 
@@ -2525,9 +2570,7 @@ Var treatment is significant, mean is not.
 cox_model <- coxph(Surv(Surv_days, Status) ~ Species + mean_treatment + var_treatment + Add_Year, data = surv_trt)
 summary(cox_model)
 
-library(survival)
-#install.packages("survminer")
-library(survminer)
+
 # Kaplan-Meier for categorical explanatory variable
 km_model <- survfit(Surv(Surv_days, Status) ~ Species, data = surv_trt)
 ggsurvplot(km_model, data = surv_trt)
@@ -2557,6 +2600,8 @@ summary(step_model)
 ```
 
 Overall best model seems to be the one with var_treatment*mean_treatment.
+
+Difficult to interpret hazard ratios -- return to chat gpt for help. v confused.
 
 Try graphing using predicitve values and then by faceting with two facets of mean and each line is variance.
 ```{r}
