@@ -11,15 +11,14 @@ The Sevilleta Long Term Ecological Research (LTER) Program (Socorro, NM) rolled 
 
 ## Objectives
 
-1.  Read in seed monitoring data for all five years, treatments, soil moisture data, climate data.
-2.  Explore data, provide summary statistics.
+1.  Read in relevant data (seed monitoring data for all five years, treatments, soil moisture data, climate data).
+2.  Create new and necessary dataframes.
 3.  Create graph of typical climate for temperature and precipitation.
 4.  Find the best model for the germination data using year and mean and variance treatments as predictors
 5.  Graph germination by year, mean, and variance by species.
 6.  Figure out the 1-3 events each year where 90-95% of germination occurs and isolate germination and soil moisture to those events and build a model to understand how soil moisture determines germination probability. Graph.
 7.  Find best model of survival by species, year, and mean and variance treatments. Or a model for each species. Graph.
-8.  Characterize die off/survival. Is it gradual and consistent or happen in major events like germination. Graph?
-9.  Figure out how to test for legacy effects on germination and/or survival. Graph.
+8.  Test for legacy effects on germination by using precipitation whiplash or biomass. Graph.
 
 ## Setup
 
@@ -46,18 +45,20 @@ library(bbmle)
 library(lmtest)
 library(beepr)
 library(survival)
-# install.packages("ggsurvfit")
 library(ggsurvfit)
-#install.packages("survminer")
 library(survminer)
+library(emmeans)
 ```
 
 ## Clean and Wrangle Data
 
-Bring in seed monitoring data for all five years, bring in keys, bring in soil moisture data, bring in climate data.
+Bring in seed monitoring data for all five years, keys, soil moisture data, and climate data.
+
+### Seed monitoring
 
 ```{r seed census data hidden}
 #| eval: false # Do not evaluate this chunk
+#| echo: false # Do not show chunk on html
 # This reduces computing power -- a lot of carpentry happens here. This way we don't have to do it every time we run the code
 
 # bring in each year of data (2019-2023, 5 years total)
@@ -342,10 +343,9 @@ summary(blue_19_23_reduced)
 write_csv(blue_19_23_reduced, "germ_19_23.csv")
 ```
 
-Create an alternative dataset that preserves raw data.
-
 ```{r alternate long form germ}
 #| eval: false # Do not evaluate this chunk
+#| echo: false
 
 # Get each year ready for rbind (make loop or fxn)
 
@@ -427,56 +427,68 @@ write_csv(blue_19_23_long_raw, "germ_19_23_long_raw.csv")
 # use this for soil moisture
 ```
 
-Make a data frame that looks at the current year and past year cohorts for each monsoon season. Those will be the trials for probability. But first confirm that most germination happens in first two years.
+So far we have **"germ_19_23.csv"**, which is all the toothpicks and only whether they germinated or not, and **"germ_19_23_long_raw.csv"**, which is the data in long form with toothpicks tracked over time.
+
+Now, make a data frame that looks at the current year and past year cohorts (only) for each monsoon season. But first confirm that most germination happens in first two years.
 
 ```{r}
+#| warning: false
+#| echo: false
+# first look at germination over time for each year added cohort -- I expect that we can reduce each one the year planted and the year after, so as to not inflate zeros
 
-# first look at germination over time by data for each year added -- I expect that we can reduce each one the year planted and the year after, so as to not inflate zeros
-
-# use previously reduced data
+# use already cleaned and wrangled data -- this is only whether or not a toothpick germinated, not tracked over time
 blue_19_23 <- read_csv("germ_19_23.csv")
 
-# Isolate by year
+
 blue_19 <- blue_19_23 %>% 
-  filter(Add_Year == 2019 & Germ.binom == 1) %>% 
-  mutate(Germ_Year = year(Obs_Date)-2018)
+  filter(Add_Year == 2019 & Germ.binom == 1) %>% # Isolate by year and successes
+  mutate(Germ_Year = year(Obs_Date)-2018) # Scale by the year planted. So if planted and germinated in 2019, that's year one. If planted in 2019 and germinated in 2020 that's year 2
 # hist(blue_19$Germ_Year)
+
 blue_20 <- blue_19_23 %>% 
   filter(Add_Year == 2020 & Germ.binom == 1) %>% 
   mutate(Germ_Year = year(Obs_Date) - 2019)
 # hist(blue_20$Germ_Year)
+
 blue_21 <- blue_19_23 %>% 
   filter(Add_Year == 2021 & Germ.binom == 1) %>% 
   mutate(Germ_Year = year(Obs_Date) - 2020)
 # hist(blue_21$Germ_Year)
+
 blue_22 <- blue_19_23 %>% 
   filter(Add_Year == 2022 & Germ.binom == 1) %>% 
   mutate(Germ_Year = year(Obs_Date) - 2021)
 # hist(blue_22$Germ_Year)
+
 blue_23 <- blue_19_23 %>% 
   filter(Add_Year == 2023 & Germ.binom == 1) %>% 
   mutate(Germ_Year = year(Obs_Date) - 2022)
 # hist(blue_23$Germ_Year)
 
 blue_years <- rbind(blue_19, blue_20, blue_21, blue_22, blue_23)
+
+# Germination for all years combined, scaled by year planted
 hist(blue_years$Germ_Year)
-total <- sum(blue_years$Germ.binom)
+# this shows that germination declines precipitously after year 1
 
 # get some percentages
+total <- sum(blue_years$Germ.binom)
 year_sum <- blue_years %>% 
   group_by(Germ_Year) %>% 
   summarise(percent = (sum(Germ.binom)/total)*100)
+year_sum
 ```
 
-75% of germinated seeds occur in their first year, 20% occur in second year, 4% in the third and 0.77% in 4th year.
+75% of germinated seeds occur in their first year, 19% occur in second year, 4% in the third and 0.77% in 4th year.
 
-Sufficient evidence to reduce to first year and second year.
+Sufficient evidence to reduce to first year and second year. Use the long data that tracks each toothpick over time. This results in the dataset **"blue_year_cohorts.csv"** -- not long form, only whether a toothpick germinated in Y1. and if not in Y1 then whether it germed in Y2.
 
 ```{r reduce to y1 and y2}
 #| warning: false
 #| eval: false
+#| echo: false
 
-# Make a dataframe for each years crops of available seeds to germ
+# Make a dataframe for each years crop of available seeds to germ
 blue_19_23_long_raw <- read_csv("germ_19_23_long_raw.csv")
 summary(blue_19_23_long_raw)
 
@@ -487,7 +499,6 @@ blue_2yrs <- blue_19_23_long_raw %>%
 # check your work
 which(blue_2yrs$Add_Year == 2020 & year(blue_2yrs$Obs_Date) > 2022)
 # should be integer(0)
-
 
 blue_2yrs$Obs_Year <- year(blue_2yrs$Obs_Date)
 
@@ -534,20 +545,18 @@ blue_y1_y2 <- blue_y1_y2 %>%
 write_csv(blue_y1_y2, "blue_year_cohorts.csv")
 ```
 
-Create a dataset limited to the major soil moisture germination events. Isolate each Observation Year to the two (or three) events with the most germination. Then pair with soil moisture data from plots.
-
-There's one date for each year with the most germination event and then 4/5 years have a smaller secondary event. 2021 has several aftershock events.
-
-You could get a string of dates with germination events and then filter the `blue_yr_trt` dataframe by those dates and keep the maximum for each year, that would be the easiest for calculating probability because the denominator is just obs year. But more robust would be top two germ events.
+Create a dataset limited to the major soil moisture germination events. Isolate data to the two (or three) events per year with the most germination. Then pair with soil moisture data from plots.
 
 ```{r}
 #| warning: false
 #| eval: false
+#| echo: false
 
+blue_yr_trt <- read_csv("blue_yr_trt.csv")
 str(blue_yr_trt)
+head(blue_yr_trt)
 
-# This shows the high germination event for each observation year
-
+# Isolate by year and germinated toothpicks
 blue_yr_trt_19_1 <- blue_yr_trt %>% 
   filter(Germ.binom == 1 & Obs_Year == 2019)
 blue_yr_trt_20_1 <- blue_yr_trt %>% 
@@ -559,6 +568,7 @@ blue_yr_trt_22_1 <- blue_yr_trt %>%
 blue_yr_trt_23_1 <- blue_yr_trt %>% 
   filter(Germ.binom == 1 & Obs_Year == 2023)
 
+# This shows the high germination events for each observation year
 hist(blue_yr_trt_19_1$Obs_Date, "days")
 hist(blue_yr_trt_20_1$Obs_Date, "days")
 hist(blue_yr_trt_21_1$Obs_Date, "days")
@@ -569,6 +579,7 @@ hist(blue_yr_trt_23_1$Obs_Date, "days")
 ```{r}
 #| warning: false
 #| eval: false
+#| echo: false
 
 # Create list of events
 # Total germinations per observation day
@@ -585,13 +596,16 @@ germ_sm_sum_yr <- blue_yr_trt %>%
 germ_sum_per <- left_join(germ_sm_sum, germ_sm_sum_yr, by = join_by(Obs_Year))
 germ_sum_per$percent_yr <- germ_sum_per$sum/germ_sum_per$sumtotal
 
-# A few ways to cut it.
-# The single biggest germ event (highest percent per year)
-# The n biggest events that add up to 95% of germination occurrence 
-# All events with over 5% of germs
+# We could use different thresholds for inclusion
+# Option 1: The single biggest germ event (highest percent per year)
+# Option 2: The n biggest events that add up to 95% of germination occurrence 
+# Option 3: All events with over 5% of germs
+
+# Option 3
 germ_percent_events <- germ_sum_per %>% 
   filter(percent_yr > 0.05)
 nrow(germ_percent_events)
+# we get 8 events over 5 years
 
 # Assign event numbers to each
 germ_percent_events$event_num <- c(1:nrow(germ_percent_events))
@@ -599,10 +613,12 @@ germ_percent_events$event_num <- c(1:nrow(germ_percent_events))
 # create key of event date and number
 events <- germ_percent_events[,c("Obs_Date","event_num")]
 
-# Figure out how to remove success germination TPs from following event
+# Remove success germination TPs from following event
 
 # Use the long form, original raw data. limited to year planted and year after
-str(blue_2yrs)
+blue_19_23_long_raw <- read_csv("germ_19_23_long_raw.csv")
+blue_2yrs <- blue_19_23_long_raw %>% 
+  filter(year(Obs_Date) < Add_Year+2)
 
 # These are the key germination events
 events$Obs_Date
@@ -722,18 +738,50 @@ sm_germ_events <- rbind(event1,
       event8)
 
 write_csv(sm_germ_events, "germ_events_sm.csv")
-
 ```
 
-```{r treatment data hidden}
-#| eval: false # Do not evaluate this chunk
+There's one date for each year with the most germination event and then 4/5 years have a smaller secondary event. 2021 has several aftershock events.
 
-trts<-read.csv("meanvar_blue_treatments.csv")
-str(trts)
+```{r}
+#| echo: false
+#| message: false
+
+# Create list of events
+# Total germinations per observation day
+blue_yr_trt <- read_csv("blue_yr_trt.csv")
+
+germ_sm_sum <- blue_yr_trt %>% 
+  group_by(Obs_Date,Obs_Year) %>% 
+  summarise(sum = sum(Germ.binom))
+
+# Total germinations per year
+germ_sm_sum_yr <- blue_yr_trt %>% 
+  group_by(Obs_Year) %>% 
+  summarise(sumtotal = sum(Germ.binom))
+
+# How much does a single observation day germination count contribute to yearly total?
+germ_sum_per <- left_join(germ_sm_sum, germ_sm_sum_yr, by = join_by(Obs_Year))
+germ_sum_per$percent_yr <- germ_sum_per$sum/germ_sum_per$sumtotal
+
+germ_percent_events <- germ_sum_per %>% 
+  filter(percent_yr > 0.05)
+nrow(germ_percent_events)
+# we get 8 events over 5 years
+
+# Assign event numbers to each
+germ_percent_events$event_num <- c(1:nrow(germ_percent_events))
+
+
+germ_percent_events
 ```
+
+Determined events that contributed to over 5% of total germination for that year. Resulted in 8 events across all 5 years. Used the long raw data, limited to year 1 and 2. Removed all toothicks that germinated before event 1 so as not to inflate numerator or denominator. Then did that subsequently for all 8 events. Results in the file **"germ_events_sm.csv"**
+
+Then, code from Kris Hall was used to process soil moisture data, resulting in 6 files (e.g.,**"MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2018.csv"**), one for every year from 2018-2023.
 
 ```{r soil moisture hidden}
 #| eval: false # Do not evaluate this chunk
+#| echo: false
 
 # path to where the load_MVE_data_into_R.R file is located - CHANGE THIS TO THE PATH ON YOUR COMPUTER
 source("load_MVE_data_into_R.R")
@@ -904,8 +952,11 @@ sm_t_23 <- read_csv("MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2023.c
 
 ```
 
+Then, clean-up climate data from EDI for met station 50 (near site). This results in **"met_50.csv"**
+
 ```{r climate data hidden}
 #| eval: false # Do not evaluate this chunk
+#| echo: false
 
 met_00_04 <- read_csv("https://portal.edirepository.org/nis/dataviewer?packageid=knb-lter-sev.1.17&entityid=371109f8068b35cf65edc8ba4237c8bd")
 met_05_09 <- read_csv("https://portal.edirepository.org/nis/dataviewer?packageid=knb-lter-sev.1.17&entityid=e326dbe48c0cdc5b91496a469a50e36d")
@@ -1008,8 +1059,12 @@ met_20_23_50 <- met_20_23 %>%
  write_csv(met_00_23_50, "met_50.csv")
 ```
 
+Lastly, I created a survival dataset taking the last observation day (+7 days, because assuming it didn't die on the last day it was observed) and subtracting first observation day. If Status = 1, it died. If Status = 0, it was still alive at time of last census. This results in the file **"surv_19_23.csv"**
+
 ```{r}
 #| eval: false
+#| echo: false
+
 str(blue_19_23_long_raw)
 head(blue_19_23_long_raw)
 
@@ -1034,6 +1089,7 @@ blue_19_23_surv <- blue_19_23_long_raw %>%
 
 ```{r}
 #| eval: false
+#| echo: false
 # Check that these accurately represent the last day of the survey for each cohort:
 
 max_dates <- blue_19_23_long_raw %>% 
@@ -1095,24 +1151,30 @@ write_csv(surv, "surv_19_23.csv")
 
 ## Read in Cleaned Data
 
-These are all the datasets cleaned above, this saves R time.
+These are all the datasets cleaned from above.
 
 ```{r}
 #| warning: false
 #| message: false
 
-blue_19_23 <- read_csv("germ_19_23.csv") # reduced to only first germ
-blue_19_23_long_raw <- read_csv("germ_19_23_long_raw.csv") # All binomial observations from first germ through survival
+# reduced to only first germ
+blue_19_23 <- read_csv("germ_19_23.csv") 
 
-# This dataset is limited to planting year and planting year + 1. Not raw data. Did the toothpick germinate in Year X? Yes no
+# All binomial observations from first germ through survival
+blue_19_23_long_raw <- read_csv("germ_19_23_long_raw.csv") 
+
+# This dataset is limited to planting year and planting year + 1. 
+# Not raw data. Did the toothpick germinate in Year X? Yes no
 bluebyyear <- read_csv("blue_year_cohorts.csv")
 
-# This dataset is limited to toothpicks in planting year and planting year + 1. Further, it's every toothpick (from present year or present year +1) that's able to germinate for one of 8 large rainfall events. 
+# This dataset is limited to toothpicks in planting year and planting 
+# year + 1. Further, it's every toothpick (from present year or present 
+# year +1) that's able to germinate for one of 8 large rainfall events. 
 germ_sm <- read_csv("germ_events_sm.csv")
 
 surv <- read_csv("surv_19_23.csv")
 
-trts<-read.csv("MVE_treatments_allsites_2023.csv")
+trts<-read.csv("MVE_treatments_allsites_2023_adj.csv")
 
 sm_t_18 <- read_csv("MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2018.csv")
 sm_t_19 <- read_csv("MVE-seedsMVE_PlainsGrassland_SoilMoistureTemperature_2019.csv")
@@ -1128,15 +1190,16 @@ met_00_23_50 <- read_csv("met_50.csv")
 
 ```{r}
 #| warning: false
-#| eval: false
+#| message: false
+#| echo: false
 
-str(germ_sm)
-head(germ_sm)
+# str(germ_sm)
+# head(germ_sm)
 events <- as.Date(unique(germ_sm$Obs_Date))
 
 # Need to merge this data set with soil moisture and temperature metrics which are in their own years (sm_t_18-sm_t_23)
 
-head(sm_t_18)
+# head(sm_t_18)
 
 # We can merge all soil moisture frames and then filter by event dates
 sm_t <- rbind(sm_t_18,
@@ -1150,9 +1213,9 @@ sm_t <- rbind(sm_t_18,
 # Because those are the germination events but not necessarily the rain events, which could have been two to four weeks before
 
 # Break out timestamp column into date and time
-head(sm_t$TIMESTAMP)
+# head(sm_t$TIMESTAMP)
 sm_t$Date <- date(sm_t$TIMESTAMP)
-head(sm_t$Date)
+# head(sm_t$Date)
 
 # Filter sm_t by each date and 28 days before and two days after. 
 # (perfect opp for a loop)
@@ -1239,7 +1302,7 @@ sm_event_sum_6 <- sm_t_event_6 %>%
 
 # Filter met station data by each date and 14 days before and after. Graph rainfall total per day for 28 days, with each germ event as it's own facet in a facet grid
 
-summary(met_00_23_50)
+# summary(met_00_23_50)
 
 met_event_1 <- met_00_23_50 %>%
   group_by(Date) %>%
@@ -1295,9 +1358,11 @@ met_event_sum_6 <- met_event_6 %>%
   group_by(Date) %>% 
   summarise(sum_pp = sum(Precipitation, na.rm = TRUE))
 ```
+These graphs show the 6 germination events (no soil moisture data for 2023) from 2019-2022. Vertical black line is germination event (Observation Date). Shows precipittion (yellow), average daily soil moisture (purple), and maximum daily soil moisture (turquoise) for the 28 days leading up to the Observation date.
 
 ```{r}
-#| eval: false
+#| echo: false
+#| warning: false
 
 # I want 6 graphs, with two axes, soil moisture one and precip on the other. Two lines are max and avg sm and one is total daily precip. And a vertical line at the Obs_Date and maximum either soil moisture or precip. Go back and go 28 days back and 2 days forward
 
@@ -1307,7 +1372,7 @@ event3 <- left_join(sm_event_sum_3, met_event_sum_3, by = join_by(Date))
 event4 <- left_join(sm_event_sum_4, met_event_sum_4, by = join_by(Date))
 event5 <- left_join(sm_event_sum_5, met_event_sum_5, by = join_by(Date))
 event6 <- left_join(sm_event_sum_6, met_event_sum_6, by = join_by(Date))
-
+str(event1)
 # colorblind friendly colors
 colors <- viridis(3)
 
@@ -1332,12 +1397,16 @@ event1_plot <- ggplot(event1, aes(x = Date)) +
         axis.title.y.right = element_text(color = colors[3], size=9),
         axis.title.x = element_text(size = 9),
         axis.text = element_text(size = 9)) +
-  scale_x_continuous(breaks=seq(0,13,by=1)) +
+  scale_x_date(date_breaks="1 week") +
+  # scale_x_continuous(breaks=seq(0,13,by=1)) +
   scale_y_continuous(
+    limits=c(0.0,0.3),
     name = "Volumetric Water Content", # Features of the first axis
     sec.axis = sec_axis( trans=~.*coeff, name="Daily Total Precipitation (mm)")) # Add 2nd axis & specify features
 event1_plot
+```
 
+```{r}
 ggsave("rain_event_1.jpg", event1_plot)
 
 coeff <- max(event2$sum_pp)/max(event2$max_sm)
@@ -1360,9 +1429,11 @@ event2_plot <- ggplot(event2, aes(x = Date)) +
         axis.title.y = element_text(color = colors[1], size=9),
         axis.title.y.right = element_text(color = colors[3], size=9),
         axis.title.x = element_text(size = 9),
-        axis.text = element_text(size = 9)) +
-  scale_x_continuous(breaks=seq(0,13,by=1)) +
+                axis.text = element_text(size = 9)) +
+  scale_x_date(date_breaks="1 week") +
+  # scale_x_continuous(breaks=seq(0,13,by=1)) +
   scale_y_continuous(
+    limits=c(0.0,0.3),
     name = "Volumetric Water Content", # Features of the first axis
     sec.axis = sec_axis( trans=~.*coeff, name="Daily Total Precipitation (mm)")) # Add 2nd axis & specify features
 event2_plot
@@ -1390,8 +1461,10 @@ event3_plot <- ggplot(event3, aes(x = Date)) +
         axis.title.y.right = element_text(color = colors[3], size=9),
         axis.title.x = element_text(size = 9),
         axis.text = element_text(size = 9)) +
-  scale_x_continuous(breaks=seq(0,13,by=1)) +
+  scale_x_date(date_breaks="1 week") +
+  # scale_x_continuous(breaks=seq(0,13,by=1)) +
   scale_y_continuous(
+    limits=c(0.0,0.3),
     name = "Volumetric Water Content", # Features of the first axis
     sec.axis = sec_axis( trans=~.*coeff, name="Daily Total Precipitation (mm)")) # Add 2nd axis & specify features
 event3_plot
@@ -1419,8 +1492,10 @@ event4_plot <- ggplot(event4, aes(x = Date)) +
         axis.title.y.right = element_text(color = colors[3], size=9),
         axis.title.x = element_text(size = 9),
         axis.text = element_text(size = 9)) +
-  scale_x_continuous(breaks=seq(0,13,by=1)) +
+  scale_x_date(date_breaks="1 week") +
+  # scale_x_continuous(breaks=seq(0,13,by=1)) +
   scale_y_continuous(
+    limits=c(0.0,0.3),
     name = "Volumetric Water Content", # Features of the first axis
     sec.axis = sec_axis( trans=~.*coeff, name="Daily Total Precipitation (mm)")) # Add 2nd axis & specify features
 event4_plot
@@ -1448,8 +1523,10 @@ event5_plot <- ggplot(event5, aes(x = Date)) +
         axis.title.y.right = element_text(color = colors[3], size=9),
         axis.title.x = element_text(size = 9),
         axis.text = element_text(size = 9)) +
-  scale_x_continuous(breaks=seq(0,13,by=1)) +
+  scale_x_date(date_breaks="1 week") +
+  # scale_x_continuous(breaks=seq(0,13,by=1)) +
   scale_y_continuous(
+    limits=c(0.0,0.3),
     name = "Volumetric Water Content", # Features of the first axis
     sec.axis = sec_axis( trans=~.*coeff, name="Daily Total Precipitation (mm)")) # Add 2nd axis & specify features
 event5_plot
@@ -1478,16 +1555,18 @@ event6_plot <- ggplot(event6, aes(x = Date)) +
         axis.title.y.right = element_text(color = colors[3], size=9),
         axis.title.x = element_text(size = 9),
         axis.text = element_text(size = 9)) +
-  scale_x_continuous(breaks=seq(0,13,by=1)) +
+  scale_x_date(date_breaks="1 week") +
+  # scale_x_continuous(breaks=seq(0,13,by=1)) +
   scale_y_continuous(
+    limits=c(0.0,0.3),
     name = "Volumetric Water Content", # Features of the first axis
     sec.axis = sec_axis( trans=~.*coeff, name="Daily Total Precipitation (mm)")) # Add 2nd axis & specify features
 event6_plot
 
 ggsave("rain_event_6.jpg", event6_plot)
 
-# graphs are severely off, investigate
 ```
+This means we could characterize the soil moisture conditions that led to germination in a few different ways.
 
 Consider taking the average soil moisture from the maximum soil moisture time to the germ date and the maximum leading up to it, and we see which is a better predictor of germination because drought plots might experience a similar maximum but not retain soil moisture, and the retention is actually the key to triggering mass germination. If this is true the average would be a better predictor.
 
@@ -1495,10 +1574,14 @@ Consider taking the average soil moisture from the maximum soil moisture time to
 
 Four measurements of soil moisture for model comparison:
 
-Maximum soil moisture in 28 days leading up to census date Average maximum soil moisture from date of maximum to census date Average soil moisture in 7 days leading up to census data Average maximum soil moisture in 7 days leading up to census date
+- Average maximum soil moisture in 7 days leading up to census date
+- Average soil moisture in 7 days leading up to census data 
+- Maximum soil moisture in 28 days leading up to census date 
+- Average maximum soil moisture from date of maximum to census date
 
 ```{r}
 #| eval: false
+#| echo: false
 
 events
 head(sm_t)
@@ -1568,6 +1651,7 @@ unique(sm_events$value)
 
 ```{r}
 #| eval: false
+#| echo: false
 
 unique(met_00_23_50$Precipitation)
 met_day_sum <- met_00_23_50 %>%
@@ -1652,11 +1736,19 @@ write_csv(sm_event_vars_3, "sm_event_vars.csv")
 #| warning: false
 
 sm_event_vars <- read_csv("sm_event_vars.csv")
+head(sm_event_vars)
 ```
 
 ## Data Exploration
 
-Our data objects are 'blue_19_23', 'trts', 'sm_t_18':'sm_t_23', 'met_00_23_50','blue_19_23_long_raw','bluebyyear'
+Our data objects are 
+`blue_19_23`,
+`blue_19_23_long_raw`,
+`bluebyyear`
+`trts`, 
+`sm_t_18`:`sm_t_23`, 
+`met_00_23_50`
+
 
 ```{r}
 summary(blue_19_23)
@@ -1665,7 +1757,7 @@ summary(blue_19_23)
 sum(blue_19_23$Germ.binom, na.rm = TRUE)/(nrow(blue_19_23)-1)
 ```
 
-Overall germination rate of 13.4% across five years, both treatments, both species. Columns are: Plot, Corner, Species, Row, Column, TP_ID, Add_Year, Obs_Date, and Germ.binom.
+Overall germination rate of 13.5% across five years, both treatments, both species.
 
 ```{r}
 summary(bluebyyear)
@@ -1674,8 +1766,6 @@ summary(bluebyyear)
 bluebyyear <- bluebyyear[!is.na(bluebyyear$Add_Year),]
 bluebyyear <- bluebyyear[!is.na(bluebyyear$Obs_Date),]
 bluebyyear <- bluebyyear[!is.na(bluebyyear$Germ.binom),]
-
-summary(bluebyyear)
 
 bluebyyear$trial <- 1
 bluebyyear %>% 
@@ -1687,10 +1777,25 @@ Highest germination rate in 2022 at 10%. Lowest in 2019 at 1%.
 
 ```{r}
 # str(trts)
+
+trts <- trts %>% 
+  select(
+    site,
+    block,
+    plot,
+    mean_treatment,
+    var_treatment_2019_m,
+    var_treatment_2020_m,
+    var_treatment_2021_m,
+    var_treatment_2022_m,
+    var_treatment_2023_m,
+    var_treatment
+  )
+
 head(trts)
 ```
 
-Treatments for mean-variance blue. Variance treatments flipped at random from 2019-2022.
+Treatments for mean-variance blue. Increased variance treatments flipped at random from 2019-2022. Adjusted treatments because year variance treatments reflect treatment changes for November of that year. So if a plot went from increase (+50% precipitation) in 2021 to decrease (-50%) in 2022, the decrease didn't happen until November of 2022. So monsoon rainfall for 2022 was actually under the "increase" treatment (+50%) in this example.
 
 ```{r}
 # summary(sm_t_20)
@@ -1730,6 +1835,7 @@ I want a graph where the x-axis is days of the year and there are three lines, e
 ```{r}
 #| message: false
 #| warning: false
+#| echo: false
 
 # str(met_00_23_50)
 
@@ -1751,22 +1857,22 @@ clim_sum_pp <- clim_sum %>%
   group_by(Month) %>% 
   summarise(mean_pp = mean(sum_pp, na.rm = TRUE),
             pp_sd = sd(sum_pp, na.rm = TRUE)) %>% 
-  mutate(pp_upper = mean_pp + 2*pp_sd,
-         pp_lower = mean_pp - 2*pp_sd)
+  mutate(pp_upper = mean_pp + 1*pp_sd,
+         pp_lower = mean_pp - 1*pp_sd)
 
 clim_sum_max_t <- clim_sum %>% 
   group_by(Month) %>% 
   summarise(mean_max_t = mean(daily_max, na.rm = TRUE),
             max_t_sd = sd(daily_max, na.rm = TRUE)) %>% 
-  mutate(max_t_upper = mean_max_t + 2*max_t_sd,
-         max_t_lower = mean_max_t - 2*max_t_sd)
+  mutate(max_t_upper = mean_max_t + 1*max_t_sd,
+         max_t_lower = mean_max_t - 1*max_t_sd)
             
 clim_sum_min_t <- clim_sum %>% 
   group_by(Month) %>% 
   summarise(mean_min_t = mean(daily_min, na.rm = TRUE),
             min_t_sd = sd(daily_min, na.rm = TRUE)) %>% 
-  mutate(min_t_upper = mean_min_t + 2*min_t_sd,
-         min_t_lower = mean_min_t - 2*min_t_sd)
+  mutate(min_t_upper = mean_min_t + 1*min_t_sd,
+         min_t_lower = mean_min_t - 1*min_t_sd)
 
 clim_sum_2 <- full_join(clim_sum_pp,clim_sum_max_t, by = join_by(Month))
 clim_sum_3 <- full_join(clim_sum_2,clim_sum_min_t, by = join_by(Month))
@@ -1775,9 +1881,10 @@ clim_sum_3 <- full_join(clim_sum_2,clim_sum_min_t, by = join_by(Month))
 ```{r}
 #| message: false
 #| warning: false
+#| echo: false
 
 # Prep for figure
-str(clim_sum_3)
+# str(clim_sum_3)
 
 # Range for temperature axis
 max(clim_sum_max_t$mean_max_t)
@@ -1824,8 +1931,7 @@ clim_plot
 
 ggsave("F1_MVEBlue_climate.jpg", clim_plot)
 
-# Consider adding 95% confidence interval around line
-## Needs work, the variation in precip is so high it distorts the graph. Could do 60% but that seems weird
+# Ribbons add 66% confidence interval around line but it needs work, the variation in precip is so high it distorts the graph. Could do 60% but that seems weird
 ```
 
 Figure 1. Climate averages for Meteorological Station 50 near Mean-Variance Blue Experiment from 2000-2023. Purple dots represent total monthly precipitation in millimeters, averaged over 2000-2023. Turquoise dots represent monthly average daily minimum and maximum temperatures in Fahrenheit from 2000-2023.
@@ -1841,12 +1947,14 @@ You'll need to remove toothpicks in the NW corner in 2019 since those were plant
 #| warning: false
 
 # reminder blue_19_23 is only whether each toothpick germinated or not over it's lifetime
-summary(blue_19_23)
-head(blue_19_23)
-str(blue_19_23)
-sum(blue_19_23$Germ.binom, na.rm = TRUE)/(nrow(blue_19_23)-1)
+#summary(blue_19_23)
+#head(blue_19_23)
+#str(blue_19_23)
 
-head(trts)
+# Overall germination rate
+sum(blue_19_23$Germ.binom, na.rm = TRUE)/(nrow(blue_19_23)-1)
+# Why did I subtract 1?
+#head(trts)
 
 # join treatments and germ dataset
 trts$Plot <- trts$plot
@@ -1871,8 +1979,8 @@ blackgrama <-
 Try generalized linear mixed effects models for the simplest dataset blue_19_23. This considers what year the seeds were planted but not necessarily the year they germinated. This is only the probability of whether a given seed germinated or not over the 5 years.
 
 ```{r}
-#| eval: false # Do not evaluate this chunk
-#| echo: false # Do not show this chunk in the final rendered document
+#| eval: true # Do evaluate this chunk
+#| echo: true # Do show this chunk in the final rendered document
 
 # Try both species together first
 m0 <- glmer(Germ.binom ~ 1 + (1|block/Plot/Corner) + (1|Add_Year), family = binomial, data = blue_19_23_trt_NE19rm)
@@ -1912,7 +2020,7 @@ No differences by treatments, not including species as a factor.
 Below, try models for each species.
 
 ```{r}
-#| eval: false # Do not evaluate this chunk
+#| eval: true # Do evaluate this chunk
 # try blue grama
 g0 <- glmer(Germ.binom ~ 1 + (1|block/Plot/Corner) + (1|Add_Year), family = binomial, data = bluegrama)
 
@@ -1935,7 +2043,7 @@ Null model is just as good as any other model (no significant predictors).
 Try black grama below.
 
 ```{r}
-#| eval: false # Do not evaluate this chunk
+#| eval: true # Do evaluate this chunk
 # try black grama
 e0 <- glmer(Germ.binom ~ 1 + (1|block/Plot/Corner) + (1|Add_Year), family = binomial, data = blackgrama)
 
@@ -1966,21 +2074,23 @@ Try limiting to year planted or year after. So each "Observation Year" includes 
 Create new variables with meteorological data and treatments. Make treatments numeric.
 
 ```{r cohort rain year}
+#| echo: false
 # reminder that this dataset includes current year cohort and past year cohort, with germinated toothpicks removed. Not raw data, only whether a toothpick germinated or not
-head(bluebyyear)
+# head(bluebyyear)
 
 # randomly select a TP ID and see how many times it shows up
-TP_IDs <- unique(bluebyyear$TP_ID)
-which(bluebyyear$TP_ID == sample(TP_IDs,1))
+# TP_IDs <- unique(bluebyyear$TP_ID)
+# which(bluebyyear$TP_ID == sample(TP_IDs,1))
 # numbers should show up once or twice
 
 ```
 
 ```{r}
+#| echo: false
 # merge with treatments
-head(trts)
+#head(trts)
 blue_yr_trt <- left_join(bluebyyear,trts, by = join_by(plot))
-head(blue_yr_trt)
+#head(blue_yr_trt)
 
 blue_yr_trt <- blue_yr_trt %>% 
   select(
@@ -1997,11 +2107,11 @@ blue_yr_trt <- blue_yr_trt %>%
     Germ.binom,
     trial,
     mean_treatment,
-    var_treatment_2019,
-    var_treatment_2020,
-    var_treatment_2021,
-    var_treatment_2022,
-    var_treatment_2023,
+    var_treatment_2019_m,
+    var_treatment_2020_m,
+    var_treatment_2021_m,
+    var_treatment_2022_m,
+    var_treatment_2023_m,
     var_treatment
   )
 
@@ -2021,31 +2131,32 @@ blue_yr_trt <- blue_yr_trt %>%
   mutate(
     mv19 =
       case_when(
-        mean_treatment == "ambient" & var_treatment_2019 == "ambient" ~ 0
-        , mean_treatment == "reduced" & var_treatment_2019 == "ambient" ~ -25
-        , mean_treatment == "ambient" & var_treatment_2019 == "increase" ~ 50
-        , mean_treatment == "reduced" & var_treatment_2019 == "increase" ~ 25
-        , mean_treatment == "ambient" & var_treatment_2019 == "decrease" ~ -50
+        mean_treatment == "ambient" & var_treatment_2019_m == "ambient" ~ 0
+        , mean_treatment == "reduced" & var_treatment_2019_m == "ambient" ~ -25
+        , mean_treatment == "ambient" & var_treatment_2019_m == "increase" ~ 50
+        , mean_treatment == "reduced" & var_treatment_2019_m == "increase" ~ 25
+        , mean_treatment == "ambient" & var_treatment_2019_m == "decrease" ~ -50
         , plot == 4|7|17|23|26 ~ -75
        # for some reason the same conditional doesn't work, soft coded for progress but would love to figure out why it doesn't work, see below
       )
   )
-# which(blue_yr_trt$mean_treatment == "reduced" & blue_yr_trt$var_treatment_2019 == "decrease")
-# blue_yr_trt[which(blue_yr_trt$plot == 7), c("mean_treatment","var_treatment_2019")]
+#which(blue_yr_trt$mean_treatment == "reduced" & blue_yr_trt$var_treatment_2019_m == "decrease")
+#blue_yr_trt[which(blue_yr_trt$plot == 7), c("mean_treatment","var_treatment_2019")]
 
-unique(blue_yr_trt$mv19)
+#unique(blue_yr_trt[which(is.na(blue_yr_trt$mv19)),2])
+#unique(blue_yr_trt$mv19)
 
 # view(trts[,c("plot","mean_treatment","var_treatment_2020")])
 blue_yr_trt <- blue_yr_trt %>% 
   mutate(
     mv20 =
       case_when(
-        mean_treatment == "ambient" & var_treatment_2020 == "ambient" ~ 0
-        , mean_treatment == "reduced" & var_treatment_2020 == "ambient" ~ -25
-        , mean_treatment == "ambient" & var_treatment_2020 == "increase" ~ 50
-        , mean_treatment == "reduced" & var_treatment_2020 == "increase" ~ 25
-        , mean_treatment == "ambient" & var_treatment_2020 == "decrease" ~ -50
-        , plot == 4|8|18|24|26 ~ -75 # for some reason the same conditional doesn't work, soft coded for progress but would love to figure out why it doesn't work
+        mean_treatment == "ambient" & var_treatment_2020_m == "ambient" ~ 0
+        , mean_treatment == "reduced" & var_treatment_2020_m == "ambient" ~ -25
+        , mean_treatment == "ambient" & var_treatment_2020_m == "increase" ~ 50
+        , mean_treatment == "reduced" & var_treatment_2020_m == "increase" ~ 25
+        , mean_treatment == "ambient" & var_treatment_2020_m == "decrease" ~ -50
+        , plot == 4|7|17|23|26 ~ -75 # for some reason the same conditional doesn't work, soft coded for progress but would love to figure out why it doesn't work
       )
   )
 unique(blue_yr_trt$mv20)
@@ -2055,12 +2166,12 @@ blue_yr_trt <- blue_yr_trt %>%
   mutate(
     mv21 =
       case_when(
-        mean_treatment == "ambient" & var_treatment_2021 == "ambient" ~ 0
-        , mean_treatment == "reduced" & var_treatment_2021 == "ambient" ~ -25
-        , mean_treatment == "ambient" & var_treatment_2021 == "increase" ~ 50
-        , mean_treatment == "reduced" & var_treatment_2021 == "increase" ~ 25
-        , mean_treatment == "ambient" & var_treatment_2021 == "decrease" ~ -50
-        , plot == 4|7|18|24|25 ~ -75 # for some reason the same conditional doesn't work, soft coded for progress but would love to figure out why it doesn't work
+        mean_treatment == "ambient" & var_treatment_2021_m == "ambient" ~ 0
+        , mean_treatment == "reduced" & var_treatment_2021_m == "ambient" ~ -25
+        , mean_treatment == "ambient" & var_treatment_2021_m == "increase" ~ 50
+        , mean_treatment == "reduced" & var_treatment_2021_m == "increase" ~ 25
+        , mean_treatment == "ambient" & var_treatment_2021_m == "decrease" ~ -50
+        , plot == 4|8|18|24|26 ~ -75 # for some reason the same conditional doesn't work, soft coded for progress but would love to figure out why it doesn't work
       )
   )
 unique(blue_yr_trt$mv21)
@@ -2070,12 +2181,12 @@ blue_yr_trt <- blue_yr_trt %>%
   mutate(
     mv22 =
       case_when(
-        mean_treatment == "ambient" & var_treatment_2022 == "ambient" ~ 0
-        , mean_treatment == "reduced" & var_treatment_2022 == "ambient" ~ -25
-        , mean_treatment == "ambient" & var_treatment_2022 == "increase" ~ 50
-        , mean_treatment == "reduced" & var_treatment_2022 == "increase" ~ 25
-        , mean_treatment == "ambient" & var_treatment_2022 == "decrease" ~ -50
-        , plot == 4|8|18|24|26 ~ -75 # for some reason the same conditional doesn't work, soft coded for progress but would love to figure out why it doesn't work
+        mean_treatment == "ambient" & var_treatment_2022_m == "ambient" ~ 0
+        , mean_treatment == "reduced" & var_treatment_2022_m == "ambient" ~ -25
+        , mean_treatment == "ambient" & var_treatment_2022_m == "increase" ~ 50
+        , mean_treatment == "reduced" & var_treatment_2022_m == "increase" ~ 25
+        , mean_treatment == "ambient" & var_treatment_2022_m == "decrease" ~ -50
+        , plot == 4|7|18|24|25 ~ -75 # for some reason the same conditional doesn't work, soft coded for progress but would love to figure out why it doesn't work
       )
   )
 unique(blue_yr_trt$mv22)
@@ -2084,12 +2195,12 @@ blue_yr_trt <- blue_yr_trt %>%
   mutate(
     mv23 =
       case_when(
-        mean_treatment == "ambient" & var_treatment_2023 == "ambient" ~ 0
-        , mean_treatment == "reduced" & var_treatment_2023 == "ambient" ~ -25
-        , mean_treatment == "ambient" & var_treatment_2023 == "increase" ~ 50
-        , mean_treatment == "reduced" & var_treatment_2023 == "increase" ~ 25
-        , mean_treatment == "ambient" & var_treatment_2023 == "decrease" ~ -50
-        , plot == 5|8|17|24|25 ~ -75 # for some reason the same conditional doesn't work, soft coded for progress but would love to figure out why it doesn't work
+        mean_treatment == "ambient" & var_treatment_2023_m == "ambient" ~ 0
+        , mean_treatment == "reduced" & var_treatment_2023_m == "ambient" ~ -25
+        , mean_treatment == "ambient" & var_treatment_2023_m == "increase" ~ 50
+        , mean_treatment == "reduced" & var_treatment_2023_m == "increase" ~ 25
+        , mean_treatment == "ambient" & var_treatment_2023_m == "decrease" ~ -50
+        , plot == 4|8|18|24|26 ~ -75 # for some reason the same conditional doesn't work, soft coded for progress but would love to figure out why it doesn't work
       )
   )
 unique(blue_yr_trt$mv23)
@@ -2112,7 +2223,7 @@ blue_yr_trt$sum_mons_pp_sc <- blue_yr_trt$sum_mons_pp - 80
 
 ```
 
-Try scaling differently Try simplifying random effect structure (limit to 1\|Quad_ID and/or 1\|Obs_Year) Try combining mean and variance treatment into one.
+Try creating a few different scaled or combined variables for modeling. Try simplifying random effect structure (limit to 1\|Quad_ID and/or 1\|Obs_Year) Try combining mean and variance treatment into one.
 
 ```{r}
 blue_yr_trt$Obs_Year_sc_2 <- blue_yr_trt$Obs_Year - mean(blue_yr_trt$Obs_Year)
@@ -2126,11 +2237,12 @@ blue_yr_trt$Quad_ID_ne_yr <- paste0(blue_yr_trt$plot,blue_yr_trt$Species,blue_yr
 blue_yr_trt$meanvar <- paste0(blue_yr_trt$mean_treatment,blue_yr_trt$var_treatment)
 ```
 
-Try new models Try a different optimizer -- didn't work Try a fixed effects model only -- convergence failure went away Check for overdispersion
+Try new models. Try a different optimizer -- didn't work. Try a fixed effects model only -- convergence failure went away. Check for overdispersion
 
 Question: How does a changing climate mean and variance affect co-domininant grass germination?
 
 ```{r}
+#| warning: false
 # Try both species together first
 m0 <- glm(Germ.binom ~ 1, family = binomial, data = blue_yr_trt)
 m1 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc), family = binomial, data = blue_yr_trt)
@@ -2170,9 +2282,6 @@ summary(mall8)
 
 Best model is one with an interactive effect of mean and variance treatment with block and year (either precip or year) as random effects.
 
-RETURN HERE for model coefficients and estimations, predictions.
-Lecture 16 of EVE 198
-
 ```{r}
 Anova(mall8)
 Anova(mall9)
@@ -2180,29 +2289,19 @@ Anova(mall9)
 summary(mall8)
 summary(mall9)
 
-
-unique(blue_yr_trt$var_treatment)
-
 mall9a <- glmer(Germ.binom ~ var_treatment*mean_treatment + (1|Obs_Year_sc) + (1|block), family = binomial, data = blue_yr_trt)
 
 mall9b <- glmer(Germ.binom ~ 0 + var_treatment:mean_treatment + (1|Obs_Year_sc) + (1|block), family = binomial, data = blue_yr_trt)
 summary(mall9b)
 
+# this does give predicted probabilities for each group (ignoring random effects) because predictors are categorical
 plogis(fixef(mall9b))
-# highest germination is in ambient conditions
+# highest germination (6%) is in ambient conditions
 Anova(mall9)
-coef(mall9b)
-
-# why are there five categories? var_treatment can be blank?
 
 library(emmeans)
 emmeans(mall9, ~ var_treatment:mean_treatment)
 # Can I just transform these and use them for graphing
-
-# Need to figure out emmeans, predicted values, coef and back transforming
-
-
-
 ```
 
 ## Graph germination by year and treatments
@@ -2253,6 +2352,11 @@ Try it using Observation Year cohorts.
 #| message: false
 
 blue_yr_trt$p_hat <- blue_yr_trt$Germ.binom/1
+
+# This is the last version of blue_yr_trt
+# Save is as csv and use above
+write_csv(blue_yr_trt, "blue_yr_trt.csv")
+
 blue_19_23_trt_NE19rm$p_hat <- blue_19_23_trt_NE19rm$Germ.binom/1
 
 germ_summary <- blue_yr_trt %>% 
@@ -2272,20 +2376,15 @@ germ_yr
 ggsave("GermxObs_Year.jpg", germ_yr, width = 7, height = 12)
 ```
 
--   figure out how to pull and push from specific folders instead of all in scripts.
--   first at least add total annual precipitation to each year in figure
-
-## Soil Moisture Model & GraphGermination Events
+## Soil Moisture Model & Graph Germination Events
 
 ```{r}
 # Merge germination data from major soil moisture events with soil moisture data from major events, join by Obs_Date and Plot
-str(sm_event_vars)
-str(germ_sm)
+# str(sm_event_vars)
+# str(germ_sm)
 
 germ_sm_df <- left_join(sm_event_vars, germ_sm, by = join_by(Plot == Plot, Obs_Date == Obs_Date))
-```
 
-```{r}
 germ_sm_df$Obs_Year_sc <- germ_sm_df$Obs_Year - 2018
 summary(germ_sm_df)
 
@@ -2294,7 +2393,7 @@ germ_sm_df_narm <- germ_sm_df[which(complete.cases(germ_sm_df) == TRUE),]
 # bring in block
 germ_sm_df_narm <- left_join(germ_sm_df_narm, trts, by=join_by(Plot))
 
-str(germ_sm_df_narm)
+# str(germ_sm_df_narm)
 
 germ_sm_df_narm <- germ_sm_df_narm %>% 
   mutate(avg_7_max_per = avg_7_max*100,
@@ -2302,7 +2401,9 @@ germ_sm_df_narm <- germ_sm_df_narm %>%
          avg_mons_max_per = avg_mons_max*100,
          mons_max_per = mons_max*100)
 ```
+
 Find the best model for germination probability with soil moisture.
+
 ```{r}
 m0 <- glm(Germ.binom ~ 1, family = binomial, data = germ_sm_df_narm)
 m1 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc), family = binomial, data = germ_sm_df_narm)
@@ -2347,14 +2448,15 @@ lrtest(m_mons_max_sp, m_mons_max_x_sp)
 # no significant difference, go with the simpler model
 Anova(m_mons_max_sp)
 summary(m_mons_max_sp)
-#mall
 
-exp(-4.423053)
 # When soil moisture is 0 and species is black, there's a 1.2% probability or baseline odds of germination
-exp(0.080366)
+exp(-4.423053)
+
 # For every 1 percent increase in monsoon maximum soil moisutre, germination odds increases by 8%
-exp(-0.206997)
+exp(0.080366)
+
 # Odds of germination if you're species blue is 81.3% of being black
+exp(-0.206997)
 
 # Check for overdispersion
 # deviance/residual df
@@ -2366,28 +2468,38 @@ m_mons_max_sp_b <- glmer(Germ.binom ~ 0 + mons_max_per + Species + (1|Obs_Year_s
 
 summary(m_mons_max_sp_b)
 
-plogis(fixef(m_mons_max_sp_b))
-# what does this mean when one variable is continuous
-# this might mean tht for every 1 nicrease in volumetric water content, probability goes up by 0.99. Perhaps I need to transform the VWC to be percentage
-Anova(m_mons_max_sp_b)
-coef(m_mons_max_sp_b)
+# monsoon maximum soil moisture and species identity affects germination
+Anova(m_mons_max_sp)
 
-library(emmeans)
-emmeans(m_mons_max_sp, ~ mons_max + Species)
-# Not sure what to make of this
+# soil moisture has a positive effect on germination. If you're blue grama, it's a negative effect
+fixef(m_mons_max_sp)
 
-# Need to figure out emmeans, predicted values, coef and back transforming
+# germination differs more among years than among blocks (varies more temporally than spatially)
+VarCorr(m_mons_max_sp)
+
+# Can't use the below code for predicted probabilities because predictor is continuous. You'll have to create a predicted response curve
+# plogis(fixef(m_mons_max_sp_b))
+
+fe <- fixef(m_mons_max_sp_b)
+
+# For Species BLACK at mean soil moisture (e.g., 0.5)
+logit_p_black <- fe["mons_max_per"] * 0.2 + fe["SpeciesBLACK"]
+p_black <- plogis(logit_p_black)
+
+# For Species BLUE at same moisture
+logit_p_blue <- fe["mons_max_per"] * 0.2 + fe["SpeciesBLUE"]
+p_blue <- plogis(logit_p_blue)
+
+# This gives you the actual predicted germination probabilities for each species at soil moisture = 0.2.
+# You can then repeat this over a range of moisture values to plot response curves.
+p_black
+p_blue
 ```
 
-The models with maximum soil moisture and species, additive and interactive are functionally equal in model fit.
+Chose the additive model because it's simpler.
 
-How do we determine which one?
+Graph raw values below.
 
-I'm drawn to interactive effect because it makes more ecological sense. But species and species x soil moisture actually aren't significant.
-
-Go back and do treatment comparisons and find coefficients
-
-What might a graph look like? Scatter plot with linear regression lines. Dots are proportion of germination and x-axis is soil moisture. Differentiated by species. Try that out. Go back and look at eco statistics notes.
 
 ```{r}
 germ_sm_df_narm$trial <- 1
@@ -2404,6 +2516,8 @@ germ_summary_sm <- germ_sm_df_narm %>%
 ```
 
 ```{r}
+#| message: false
+
 germ_sm_plot <- ggplot(data = germ_summary_sm, aes(x = mons_max, y = germ_prop, color = Species)) + # assign data to x- and y-axes
   geom_point(alpha = 0.5) +    # plot it with a scatterplot, pick color of the points
   geom_smooth(method = 'lm', fill = NA, linewidth = 0.75) +
@@ -2414,14 +2528,13 @@ germ_sm_plot <- ggplot(data = germ_summary_sm, aes(x = mons_max, y = germ_prop, 
 germ_sm_plot
 
 ggsave("germ_sm_plot.jpg",germ_sm_plot)
-# investigate variance of each species,
-# try to graph with actual predicted values or coefficients
-
-# Could also look at paired proportion data for same events and categorize how many times Black won versus blue
-
-# is temperature the deciding factor? Because we could hypothesize that warmer temps could swing the favor to black grama
-
 ```
+
+Next try to graph with actual predicted values or coefficients
+
+We could also look at paired proportion data for same events and categorize how many times Black won versus blue
+
+Is temperature the deciding factor? Because we could hypothesize that warmer temps could swing the favor to black grama
 
 ## Survival Model & Graph
 
@@ -2432,17 +2545,17 @@ Independent variables of interest: Species, Add_year, mean_treatment, var_treatm
 ```{r}
 # Reminder: Survival dataset is all toothpick IDs that germinated, the date they germinated, the date they were last observed + 7 days (assuming they died) 
 head(surv)
-str(surv)
+# str(surv)
 summary(surv)
 # Plants that are two years old, I'm not confident they died or just stopped being monitored
 
 # Sample of the survival time in days, "+" denotes still alive at time of observation
-Surv(surv$Surv_days, surv$Status)[1:1000]
+# Surv(surv$Surv_days, surv$Status)[1:1000]
 
 # survfit() creates survival curves using the Kaplan_Meier method based on a formula
 # overall survival curve
 s1 <- survfit(Surv(Surv_days, Status) ~ 1, data = surv)
-str(s1)
+# str(s1)
 
 # survfit2 and ggsurvfit creates graphs
 # Overall survival with confidence intervals
@@ -2453,7 +2566,9 @@ survfit2(Surv(Surv_days, Status) ~ 1, data = surv) %>%
     y = "Overall survival probability"
   ) + 
   add_confidence_interval() +
-  add_risktable() # shows those living who are at risk of dying and death events that have occured at 250 day intervals
+  add_risktable() 
+# risk table shows those living who are at risk of dying and death events
+# that have occured at 250 day intervals
 # Highest die off happens before 250 days
 
 # survival by species
@@ -2487,6 +2602,7 @@ survdiff(Surv(Surv_days, Status) ~ Species, data = surv)
 # Fits a regression model for survival
 coxph(Surv(Surv_days, Status) ~ Species, data = surv)
 ```
+
 We find that bue grama has slightly higher probability of survival after one year at 20.1% while black grama's probability of survival after 1 year is 18.7%.
 
 Median survival time is 51 days for Black grama and 50 days for Blue, this corresponds to a survival probability of 50%.
@@ -2516,13 +2632,14 @@ survdiff(Surv(Surv_days, Status) ~ Add_Year, data = surv)
 
 coxph(Surv(Surv_days, Status) ~ Add_Year, data = surv) 
 ```
+
 Significant differences in survival among Add_Year.
 
 Try treatments and then combos.
 
 ```{r}
-head(surv)
-head(trts)
+#head(surv)
+#head(trts)
 trts$Plot <- trts$plot
 
 surv_trt <- left_join(surv,trts,by=join_by(Plot))
@@ -2563,7 +2680,8 @@ survdiff(Surv(Surv_days, Status) ~ var_treatment, data = surv_trt)
 coxph(Surv(Surv_days, Status) ~ var_treatment, data = surv_trt)
 
 ```
-Var treatment is significant, mean is not. 
+
+Var treatment is significant, mean is not.
 
 ```{r}
 # Cox model with all explanatory variables
@@ -2599,13 +2717,12 @@ summary(step_model)
 
 ```
 
-Overall best model seems to be the one with var_treatment*mean_treatment.
-
-Difficult to interpret hazard ratios -- return to chat gpt for help. v confused.
+Overall best model seems to be the one with var_treatment\*mean_treatment.
 
 Try graphing using predicitve values and then by faceting with two facets of mean and each line is variance.
+
 ```{r}
-str(surv_trt)
+# str(surv_trt)
 # Create new data for predicting survival curves with the interaction between var1 and var2
 new_data <- expand.grid(
   var_treatment = levels(as.factor(surv_trt$var_treatment)),  # Levels of the first categorical variable
@@ -2635,21 +2752,23 @@ survfit2(Surv(Surv_days, Status) ~ mean_var, data = surv_trt) %>%
 
 # LEFT OFF HERE #
 ```
-Graph shows lowest survival in ambient ambient plots for first year -- interesting. Once again species doesn't matter
 
-## Characterize Survival (Pulse or Press)
+Graph shows lowest survival in ambient ambient plots -- interesting. Once again species doesn't matter
 
 ## Legacy Model & Graph
 
+My hypothesis is that plots that experience drought conditions the year prior and the experience high precip, have higher germination due to reduced competition.
+
 A couple options:
-- use the treatment spreadsheet to attach percentages for each plot in each year. Then multiply the percentage by that years rainfall or monsoon rainfall. Quantify the change in rainfall from year-1 to year and use that to model germination. It's a little brief, legacy should really be longer. Maybe there's a way to add strength of drought using accumulated drought years. Consider just whiplash years.
-- use actual spring cover data to show that pre-existing cover conditions or decline in cover and drought relief provide conditions for germination. So cover + calculated rainfall in the model, the lower the cover and higher the rainfall the better the germination
-- Variables:
-Change in rainfall year - year -1 (ex: 2020-2019)
-Whiplash Y/N
-April cover
-Current rainfall
-Species
+1. Change in calculated plot rainfall. Use the treatment spreadsheet to attach percentages for each plot in each year. Then multiply the percentage by that years rainfall or monsoon rainfall. Quantify the change in rainfall from year-1 to year and use that to model germination. It's a little brief, legacy should really be longer. 
+2. Use actual spring cover data to show that pre-existing cover conditions or decline in cover and drought relief provide conditions for germination. 
+3. Cover + calculated rainfall, the lower the cover and higher the rainfall the better the germination - 
+
+Variables: Change in rainfall year - year -1 (ex: 2020-2019) 
+Whiplash Y/N 
+April cover 
+Current rainfall 
+Species 
 Change in prior year cover year April cover - year -1 April cover
 
 Create variables
@@ -2659,10 +2778,11 @@ Mean-Variance Cover and Height: https://portal.edirepository.org/nis/mapbrowse?p
 Mean_Variance Biomass: https://portal.edirepository.org/nis/mapbrowse?packageid=knb-lter-sev.350.1
 
 ```{r}
-head(met_00_23_50)
-head(trts)
-head(bluebyyear) # has year and year + 1 germination data
-head(blue_yr_trt) # current year and past year germ + treatments and precip
+#| echo: false
+#head(met_00_23_50)
+#head(trts)
+#head(bluebyyear) # has year and year + 1 germination data
+#head(blue_yr_trt) # current year and past year germ + treatments and precip
 
 ## Change in rainfall year - year -1 (ex: 2020-2019)
 # Use blue_yr_trt to calculate year - year -1 rainfall
@@ -2703,10 +2823,13 @@ pp_18 <- data.frame(plot = 1:30
            , mv22 = 0
            , mv23 = 0
            )
+
 blue_pp_difs <- rbind(pp_18, blue_pp_dif)
 
 # Go back and update mve treatment with 2023
-str(blue_pp_difs)
+# str(blue_pp_difs)
+blue_pp_difs$mvfactor18 <- 1
+
 blue_pp_difs <-
   blue_pp_difs %>%
   mutate(
@@ -2784,14 +2907,14 @@ blue_pp_18 <-
     Obs_Year,
     sum_pp,
     sum_mons_pp,
-    mvfactor19
+    mvfactor18
   ) %>% 
   filter(
     Obs_Year == 2018
   ) %>% 
   mutate(
-  prop_pp_18 = sum_pp*mvfactor19, #mvfactor is 1 dor 2018
-  prop_mons_pp_18 = sum_mons_pp*mvfactor19) %>% 
+  prop_pp_18 = sum_pp*mvfactor18, #mvfactor is 1 for 2018
+  prop_mons_pp_18 = sum_mons_pp*mvfactor18) %>% 
   select(
     plot,
     prop_pp_18,
@@ -2929,7 +3052,7 @@ blue_pp <- blue_pp %>%
     , pp_mons_22_21 = prop_mons_pp_22-prop_mons_pp_21
     , pp_mons_23_22 = prop_mons_pp_23-prop_mons_pp_22
   )
-str(blue_pp)
+# str(blue_pp)
 
 # separate mons dif and total pp dif into their own datasets and make longer and add years, then merge with master
 blue_pp_total_difs <- blue_pp %>% 
@@ -3004,14 +3127,78 @@ blue_pp_mons_difs <- blue_pp %>%
   ) %>% 
   select(-"year_dif")
 
+# can do the same thing for proportional pp
+blue_pp_totes <- blue_pp %>% 
+  select(
+    plot,
+    prop_pp_19,
+    prop_pp_20,
+    prop_pp_21,
+    prop_pp_22,
+    prop_pp_23
+  ) %>% 
+  pivot_longer(cols=c(
+    prop_pp_19,
+    prop_pp_20,
+    prop_pp_21,
+    prop_pp_22,
+    prop_pp_23),
+    names_to = "year",
+    values_to = "prop_pp") %>% 
+  mutate(
+    Obs_Year = 
+    case_when(
+      year == "prop_pp_19" ~ 2019,
+      year == "prop_pp_20" ~ 2020,
+      year == "prop_pp_21" ~ 2021,
+      year == "prop_pp_22" ~ 2022,
+      year == "prop_pp_23" ~ 2023
+    )
+  ) %>% 
+  select(-"year")
+
+blue_pp_mons_totes <- blue_pp %>% 
+  select(
+    plot,
+    prop_mons_pp_19,
+    prop_mons_pp_20,
+    prop_mons_pp_21,
+    prop_mons_pp_22,
+    prop_mons_pp_23
+  ) %>% 
+  pivot_longer(cols=c(
+    prop_mons_pp_19,
+    prop_mons_pp_20,
+    prop_mons_pp_21,
+    prop_mons_pp_22,
+    prop_mons_pp_23),
+    names_to = "year",
+    values_to = "prop_mons_pp") %>% 
+  mutate(
+    Obs_Year = 
+    case_when(
+      year == "prop_mons_pp_19" ~ 2019,
+      year == "prop_mons_pp_20" ~ 2020,
+      year == "prop_mons_pp_21" ~ 2021,
+      year == "prop_mons_pp_22" ~ 2022,
+      year == "prop_mons_pp_23" ~ 2023
+    )
+  ) %>% 
+  select(-"year")
+
 # pivot_longer and then assign Obs_Year and join with blue_yr_trt
 pp_difs <- left_join(blue_pp_total_difs, blue_pp_mons_difs, by = c("plot","Obs_Year"))
 
-blue_yr_trt_ppdifs <- left_join(blue_yr_trt, pp_difs, by = c("plot","Obs_Year"))
-str(blue_yr_trt)
-str(pp_difs)
-unique(pp_difs$plot)
+pp_1 <- left_join(pp_difs, blue_pp_totes, by = c("plot","Obs_Year"))
+pp_2 <- left_join(pp_1, blue_pp_mons_totes, by = c("plot","Obs_Year"))
 
+blue_yr_trt_ppdifs <- left_join(blue_yr_trt, pp_2, by = c("plot","Obs_Year"))
+#str(blue_yr_trt)
+#str(pp_difs)
+#unique(pp_difs$plot)
+```
+
+```{r}
 # maybe sneak peak at a graph?
 germ_sum <- blue_yr_trt_ppdifs %>% 
   group_by(plot, Obs_Date, Species) %>% 
@@ -3026,13 +3213,48 @@ germ_sum <- blue_yr_trt_ppdifs %>%
 germ_leg_plot <- ggplot(data = germ_sum, aes(x = pp_mons_dif, y = germ_prop, color = Species)) + # assign data to x- and y-axes
   geom_point(alpha = 0.5) +    # plot it with a scatterplot, pick color of the points
   geom_smooth(method = 'lm', fill = NA, linewidth = 0.75) +
-  labs(x = "Difference in precipitation",    # x-axis label
+  labs(x = "Interannual difference in monsoon precipitation",    # x-axis label
        y = "Germination Proportion") + 
   scale_color_manual(values=c("black","cornflowerblue")) + 
   theme_bw()
 germ_leg_plot
 
-# both decline with previous pp_dif and pp_mons_dif which is crazy. If the prior year was wetter than the current year, estimated probability of germination is higher.
+# maybe sneak peak at a graph?
+germ_sum <- blue_yr_trt_ppdifs %>% 
+  group_by(plot, Obs_Date, Species) %>% 
+  mutate(germ_prop = sum(Germ.binom)/sum(trial)) %>% 
+  select(plot,
+         Obs_Date,
+         Species,
+         pp_dif,
+         germ_prop) %>% 
+  distinct()
+
+germ_leg_plot <- ggplot(data = germ_sum, aes(x = pp_dif, y = germ_prop, color = Species)) + # assign data to x- and y-axes
+  geom_point(alpha = 0.5) +    # plot it with a scatterplot, pick color of the points
+  geom_smooth(method = 'lm', fill = NA, linewidth = 0.75) +
+  labs(x = "Interannual difference in total annual precipitation",    # x-axis label
+       y = "Germination Proportion") + 
+  scale_color_manual(values=c("black","cornflowerblue")) + 
+  theme_bw()
+germ_leg_plot
+
+# Germination increases if the prior year was drier than the current year
+
+
+germ_sum <- blue_yr_trt_ppdifs %>% 
+  group_by(plot, Obs_Year, Species) %>% 
+  mutate(germ_prop = sum(Germ.binom)/sum(trial)) %>% 
+  select(plot,
+         Obs_Year,
+         Species,
+         whiplash_mons,
+         germ_prop) %>% 
+  distinct()
+
+ggplot(germ_sum, aes(x=whiplash_mons, y = germ_prop, group = Species, fill = Species, na.rm = TRUE)) + scale_fill_manual(values=c("black","cornflowerblue")) + geom_col(position = position_dodge()) +
+labs(x = "Whiplash", y = "Estimated Germination Probability") + theme_bw()
+# For some reason wetter prior has germination than drier. A lot of values that fall under wetter prior are super small, like a 6 mm difference in monsoon precip
 
 germ_sum <- blue_yr_trt_ppdifs %>% 
   group_by(plot, Obs_Year, Species) %>% 
@@ -3046,9 +3268,14 @@ germ_sum <- blue_yr_trt_ppdifs %>%
 
 ggplot(germ_sum, aes(x=whiplash_total, y = germ_prop, group = Species, fill = Species, na.rm = TRUE)) + scale_fill_manual(values=c("black","cornflowerblue")) + geom_col(position = position_dodge()) +
 labs(x = "Whiplash", y = "Estimated Germination Probability") + theme_bw()
+# For some reason wetter prior has germination than drier 
+```
 
+```{r}
+#| warning: false
+#| message: false
 
-# April (August?) cover and/or biomass
+# April (September?) cover and/or biomass
 cover <- read.csv("sev349_mean_variance_quad_cover_height.csv")
 biomass <- read.csv("sevnnn_mean_variance_biomass.csv")
 
@@ -3060,7 +3287,8 @@ cover_sum_Apr <- cover %>%
   group_by(plot, year, season, collection_date) %>% # values across quads look pretty similar most of the time, average across quads
   summarise(cover_avg = mean(cover_total)) %>% 
   mutate(
-    Obs_Year = year
+    Obs_Year = year,
+    cover_Apr = cover_avg
   )
 
 cover_sum_Sep <- cover %>% 
@@ -3071,34 +3299,36 @@ cover_sum_Sep <- cover %>%
   group_by(plot, year, season, collection_date) %>% # values across quads look pretty similar most of the time, average across quads
   summarise(cover_avg = mean(cover_total)) %>% 
   mutate(
-    Obs_Year = year + 1
+    Obs_Year = year + 1,
+    cover_Sep_prior = cover_avg
   )
 
-# Either low cover in April, low cover August prior
+# Either low cover in April, low cover September prior
 # merge with blue yr trt
-blue_yr_trt_cover_Apr <- left_join(blue_yr_trt, cover_sum_Apr, by = c("plot","Obs_Year"))
+blue_yr_trt_pp_cover_1 <- left_join(blue_yr_trt_ppdifs, cover_sum_Apr, by = c("plot","Obs_Year"))
 
-blue_yr_trt_cover_Sep <- left_join(blue_yr_trt, cover_sum_Sep, by = c("plot","Obs_Year"))
+blue_yr_trt_pp_cover <- left_join(blue_yr_trt_pp_cover_1, cover_sum_Sep, by = c("plot","Obs_Year"))
 
 
 # need to make a august version and do it for biomass and see what is the best predictor
 # I think the treatment years are off because this doesn't make sense
 
 # maybe sneak peak at a graph?
-germ_sum <- blue_yr_trt_cover_Apr %>% 
+germ_sum <- blue_yr_trt_pp_cover %>%
+  filter(season.x == 2) %>% 
   group_by(plot, Obs_Date, Species) %>% 
   mutate(germ_prop = sum(Germ.binom)/sum(trial)) %>% 
   select(plot,
          Obs_Date,
          Species,
-         cover_avg,
+         cover_Apr,
          germ_prop) %>% 
   distinct()
 
-germ_cov_plot <- ggplot(data = germ_sum, aes(x = cover_avg, y = germ_prop, color = Species)) + # assign data to x- and y-axes
+germ_cov_plot <- ggplot(data = germ_sum, aes(x = cover_Apr, y = germ_prop, color = Species)) + # assign data to x- and y-axes
   geom_point(alpha = 0.5) +    # plot it with a scatterplot, pick color of the points
   geom_smooth(method = 'lm', fill = NA, linewidth = 0.75) +
-  labs(x = "Veg Cover",    # x-axis label
+  labs(x = "Veg Cover (April)",    # x-axis label
        y = "Germination Proportion") + 
   scale_color_manual(values=c("black","cornflowerblue")) + 
   theme_bw()
@@ -3106,58 +3336,78 @@ germ_cov_plot
 ### Lower veg cover == higher germ
 
 # maybe sneak peak at a graph?
-germ_sum_S <- blue_yr_trt_cover_Sep %>% 
+germ_sum_S <- blue_yr_trt_pp_cover %>%
+  filter(season.y == 3) %>%  
   group_by(plot, Obs_Date, Species) %>% 
   mutate(germ_prop = sum(Germ.binom)/sum(trial)) %>% 
   select(plot,
          Obs_Date,
          Species,
-         cover_avg,
+         cover_Sep_prior,
          germ_prop) %>% 
   distinct()
 
-germ_cov_plot_S <- ggplot(data = germ_sum_S, aes(x = cover_avg, y = germ_prop, color = Species)) + # assign data to x- and y-axes
+germ_cov_plot_S <- ggplot(data = germ_sum_S, aes(x = cover_Sep_prior, y = germ_prop, color = Species)) + # assign data to x- and y-axes
   geom_point(alpha = 0.5) +    # plot it with a scatterplot, pick color of the points
   geom_smooth(method = 'lm', fill = NA, linewidth = 0.75) +
-  labs(x = "Veg Cover",    # x-axis label
+  labs(x = "Veg Cover (September prior)",    # x-axis label
        y = "Germination Proportion") + 
   scale_color_manual(values=c("black","cornflowerblue")) + 
   theme_bw()
 germ_cov_plot_S
-### Higher veg in September year prior yields high germ next summer, inline with wetter prior years have higher germ
+### Higher veg in September year prior yields high germ next summer, inline with wetter prior monsoon years have higher germ
+```
 
-
-
+```{r}
 ## Try to find the best model to predict germination including Apr cover, September cover, proportional rainfall, total rainfall, species
+str(blue_yr_trt_pp_cover)
 
 ## copy and pasted code from soil moisture section.
-## need to go back and make a nicer dataframe for this
-m0 <- glm(Germ.binom ~ 1, family = binomial, data = germ_sm_df_narm)
-m1 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc), family = binomial, data = germ_sm_df_narm)
-m2 <- glmer(Germ.binom ~ 1 + (1|block), family = binomial, data = germ_sm_df_narm)
-m3 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
 
-m_max_7 <- glmer(Germ.binom ~ avg_7_max + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
+m0 <- glm(Germ.binom ~ 1, family = binomial, data = blue_yr_trt_pp_cover)
+m1 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc), family = binomial, data = blue_yr_trt_pp_cover)
+m2 <- glmer(Germ.binom ~ 1 + (1|block), family = binomial, data = blue_yr_trt_pp_cover)
+m3 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc) + (1|block), family = binomial, data = blue_yr_trt_pp_cover)
 
-m_sp <- glmer(Germ.binom ~ Species + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
+m_pp_dif <- glmer(Germ.binom ~ pp_dif + (1|block), family = binomial, data = blue_yr_trt_pp_cover)
 
-m_avg_7 <- glmer(Germ.binom ~ avg_7 + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
+m_whip <- glmer(Germ.binom ~ whiplash_total + (1|block), family = binomial, data = blue_yr_trt_pp_cover)
 
-m_mons_avg <- glmer(Germ.binom ~ avg_mons_max + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
+m_pp_mons_dif <- glmer(Germ.binom ~ pp_mons_dif + (1|block), family = binomial, data = blue_yr_trt_pp_cover)
 
-m_mons_max <- glmer(Germ.binom ~ mons_max + (1|Obs_Year_sc) + (1|block), family = binomial, data = germ_sm_df_narm)
+m_whip_mons <- glmer(Germ.binom ~ whiplash_mons + (1|Obs_Year_sc) + (1|block), family = binomial, data = blue_yr_trt_pp_cover)
 
-ICtab(m0,m1,m2,m3,m_max_7,m_sp,m_avg_7,m_mons_avg,m_mons_max)
-lrtest(m_mons_max, m3)
-Anova(m_mons_max)
-summary(m_mons_max)
-#mall
+m_whip_mons_sp <- glmer(Germ.binom ~ whiplash_mons*Species + (1|Obs_Year_sc) + (1|block), family = binomial, data = blue_yr_trt_pp_cover)
+
+m_whip_mons_sp_2 <- glmer(Germ.binom ~ whiplash_mons + Species + (1|Obs_Year_sc) + (1|block), family = binomial, data = blue_yr_trt_pp_cover)
+
+m_prop_pp <- glmer(Germ.binom ~ prop_pp + (1|block), family = binomial, data = blue_yr_trt_pp_cover)
+
+m_prop_pp_sp <- glmer(Germ.binom ~ prop_pp*Species + (1|block), family = binomial, data = blue_yr_trt_pp_cover)
+
+m_prop_mons_pp <- glmer(Germ.binom ~ prop_mons_pp + (1|block), family = binomial, data = blue_yr_trt_pp_cover)
+
+m_Apr <- glmer(Germ.binom ~ cover_Apr + (1|block), family = binomial, data = blue_yr_trt_pp_cover)
+
+m_Sep <- glmer(Germ.binom ~ cover_Sep_prior + (1|block), family = binomial, data = blue_yr_trt_pp_cover)
+
+ICtab(m0,m1,m2,m3,m_pp_dif,m_whip,m_pp_mons_dif,m_whip_mons,m_prop_pp,m_prop_mons_pp,m_Apr,m_Sep,m_whip_mons_sp, m_prop_pp_sp, m_whip_mons_sp_2)
+
+# Best model appears to be interactive predictor variable of monsoon whiplash and species
+
+m_whip_mons_sp_b <- glmer(Germ.binom ~ 0 + whiplash_mons:Species + (1|Obs_Year_sc) + (1|block), family = binomial, data = blue_yr_trt_pp_cover)
+
+
+Anova(m_whip_mons_sp)
+plogis(fixef(m_whip_mons_sp_b))
+# So black grama is responding strongest to drier prior years
+# why does the graph look different
+
+lrtest(m_whip_mons_sp, m2)
+summary(m_whip_mons_sp)
 
 # Check for overdispersion
 # deviance/residual df
-10314.2/27751 
+deviance(m_whip_mons_sp)/44779
+# <3 so we're good
 ```
-
-
-
-
