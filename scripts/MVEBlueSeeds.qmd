@@ -1,9 +1,36 @@
 ---
 title: "MVE Blue Seeds"
 author: "Brooke Wainwright"
-format: html
+format:
+  pdf:
+    toc: true
+    number-sections: true
+    colorlinks: true
 editor: visual
 ---
+
+## Notes from 10/28 with Jenn
+- Get recent soil moisture from EDI
+- Get the rest of the germ data for 2023 into 2024, ignore 2024 cohort
+- Add confidence bands around climate graph -- jenn to send standard
+- Use MVE color scheme and same treatment names as recent paper
+- Why did blue do better in 2022
+- For germination bar graphs use ratio of blue to black germination then create line graphs over time where each line is a different treatment and each point is the ratio value for each year
+- In her experience year rarely explains anything but things related to climate do
+- Look at the germination ratio related to climate
+- For the germination and soil moisture model, are the slopes of blue and black different in the interaction model? You can use emtrends for slopes.
+- Intercepts are overall who is doing better, slope is how sensitive
+- right now species estimate (in non interactive model) says the overall means across soil moisture
+Survival: cut off strictly at 2 years
+- Doing this may improve assuption violations for Add Year
+- Need better output for survival model. Look at contrasts -- test for essect of mean treatment within variance treatments then flip the order. Get something that looks like anova table for survival
+- Get an emmeans or contrast statement. Find a way to get a pairwise contrast statement to figure out which differ
+- For survival and soil moisture -- use mortality events like you did for germination events, parallel to germination
+- Whiplash graph would suggest that blue grama germination is less variable overtime. blue grama should have more stable germination over time, black should have higher cv
+- Survival + legacy: run the survival curve for each cohort in each plot and take ratio at 250 days. Use that proportion and recreate legacy graphs
+- Don't look at biomass, then stear clear of competition
+- In recent MVE paper on cover, black grama is not responding to treatments, and increasing overall slightly. blue grama is declining in drier more variable plots and significantly declining overall over time
+- Use this in discussion to compare and contrast the effects of treatments at different life history stages.
 
 ## Background
 
@@ -1238,7 +1265,7 @@ sm_t_event_2 <- sm_t %>%
   filter(sensor == "VWC" & depth == 12) %>% 
   mutate(event = "event_2") %>% 
   ungroup()
-unique(sm_t_event_2$Date)
+# unique(sm_t_event_2$Date)
 
 sm_event_sum_2 <- sm_t_event_2 %>% 
   group_by(Date) %>% 
@@ -1251,7 +1278,7 @@ sm_t_event_3 <- sm_t %>%
   filter(sensor == "VWC" & depth == 12) %>% 
   mutate(event = "event_3") %>% 
   ungroup()
-unique(sm_t_event_3$Date)
+# unique(sm_t_event_3$Date)
 
 sm_event_sum_3 <- sm_t_event_3 %>% 
   group_by(Date) %>% 
@@ -1264,7 +1291,7 @@ sm_t_event_4 <- sm_t %>%
   filter(sensor == "VWC" & depth == 12) %>% 
   mutate(event = "event_4") %>% 
   ungroup()
-unique(sm_t_event_4$Date)
+# unique(sm_t_event_4$Date)
 
 sm_event_sum_4 <- sm_t_event_4 %>% 
   group_by(Date) %>% 
@@ -1277,7 +1304,7 @@ sm_t_event_5 <- sm_t %>%
   filter(sensor == "VWC" & depth == 12) %>% 
   mutate(event = "event_5") %>% 
   ungroup()
-unique(sm_t_event_5$Date)
+# unique(sm_t_event_5$Date)
 
 sm_event_sum_5 <- sm_t_event_5 %>% 
   group_by(Date) %>% 
@@ -1290,7 +1317,7 @@ sm_t_event_6 <- sm_t %>%
   filter(sensor == "VWC" & depth == 12) %>% 
   mutate(event = "event_6") %>% 
   ungroup()
-unique(sm_t_event_6$Date)
+# unique(sm_t_event_6$Date)
 
 sm_event_sum_6 <- sm_t_event_6 %>% 
   group_by(Date) %>% 
@@ -1358,7 +1385,7 @@ met_event_sum_6 <- met_event_6 %>%
   group_by(Date) %>% 
   summarise(sum_pp = sum(Precipitation, na.rm = TRUE))
 ```
-These graphs show the 6 germination events (no soil moisture data for 2023) from 2019-2022. Vertical black line is germination event (Observation Date). Shows precipittion (yellow), average daily soil moisture (purple), and maximum daily soil moisture (turquoise) for the 28 days leading up to the Observation date.
+Graphs below show the 6 germination events (no soil moisture data for 2023) from 2019-2022. Vertical black line is germination event (Observation Date). Shows precipitation (yellow), average daily soil moisture (purple), and maximum daily soil moisture (turquoise) for the 28 days leading up to the Observation date.
 
 ```{r}
 #| echo: false
@@ -1372,7 +1399,7 @@ event3 <- left_join(sm_event_sum_3, met_event_sum_3, by = join_by(Date))
 event4 <- left_join(sm_event_sum_4, met_event_sum_4, by = join_by(Date))
 event5 <- left_join(sm_event_sum_5, met_event_sum_5, by = join_by(Date))
 event6 <- left_join(sm_event_sum_6, met_event_sum_6, by = join_by(Date))
-str(event1)
+# str(event1)
 # colorblind friendly colors
 colors <- viridis(3)
 
@@ -1404,10 +1431,12 @@ event1_plot <- ggplot(event1, aes(x = Date)) +
     name = "Volumetric Water Content", # Features of the first axis
     sec.axis = sec_axis( trans=~.*coeff, name="Daily Total Precipitation (mm)")) # Add 2nd axis & specify features
 event1_plot
+ggsave("rain_event_1.jpg", event1_plot)
 ```
 
 ```{r}
-ggsave("rain_event_1.jpg", event1_plot)
+#| echo: false
+#| warning: false
 
 coeff <- max(event2$sum_pp)/max(event2$max_sm)
 event2_plot <- ggplot(event2, aes(x = Date)) + 
@@ -1751,7 +1780,7 @@ Our data objects are
 
 
 ```{r}
-summary(blue_19_23)
+summary(blue_19_23) # whether a toothpick germinated or not
 # head(blue_19_23)
 # str(blue_19_23)
 sum(blue_19_23$Germ.binom, na.rm = TRUE)/(nrow(blue_19_23)-1)
@@ -1760,7 +1789,7 @@ sum(blue_19_23$Germ.binom, na.rm = TRUE)/(nrow(blue_19_23)-1)
 Overall germination rate of 13.5% across five years, both treatments, both species.
 
 ```{r}
-summary(bluebyyear)
+summary(bluebyyear) # whether a toothpick germinated in it's first or second year
 
 # drop NAs in Add-Year, Obs_Date, and Germ_binom. Investigate later if you want
 bluebyyear <- bluebyyear[!is.na(bluebyyear$Add_Year),]
@@ -1830,7 +1859,7 @@ summary(germ_sm)
 
 The climate data are collected from meteorological stations at the Sevilleta NWR. These data come from met station 50, which is the nearest station to MVE Blue. Data began in 2000 and continues through 2023. Data is organized by date and time, temperature in celsius per hour, and minimum and maximum temperature for hour, total precipitation per hour in millimeters. I'm interested in the average range of temperatures for each season and the average annual and seasonal precipitation. Data comes from here(<https://portal.edirepository.org/nis/mapbrowse?packageid=knb-lter-sev.1.17>)
 
-I want a graph where the x-axis is days of the year and there are three lines, each with confidence bands: average daily precip, daily high temperature, daily low temperature.
+I want a graph where the x-axis is days of the year and there are three lines, each with confidence bands: average daily precip, daily high temperature, daily low temperature. Adding confidence bands really distorts the graph because precipitation has such high variability and temperature doesn't. 
 
 ```{r}
 #| message: false
@@ -1887,8 +1916,8 @@ clim_sum_3 <- full_join(clim_sum_2,clim_sum_min_t, by = join_by(Month))
 # str(clim_sum_3)
 
 # Range for temperature axis
-max(clim_sum_max_t$mean_max_t)
-min(clim_sum_min_t$mean_min_t)
+# max(clim_sum_max_t$mean_max_t)
+# min(clim_sum_min_t$mean_min_t)
 
 # colorblind friendly colors
 colors <- viridis(3)
@@ -1953,7 +1982,6 @@ You'll need to remove toothpicks in the NW corner in 2019 since those were plant
 
 # Overall germination rate
 sum(blue_19_23$Germ.binom, na.rm = TRUE)/(nrow(blue_19_23)-1)
-# Why did I subtract 1?
 #head(trts)
 
 # join treatments and germ dataset
@@ -2159,7 +2187,7 @@ blue_yr_trt <- blue_yr_trt %>%
         , plot == 4|7|17|23|26 ~ -75 # for some reason the same conditional doesn't work, soft coded for progress but would love to figure out why it doesn't work
       )
   )
-unique(blue_yr_trt$mv20)
+# unique(blue_yr_trt$mv20)
 
 # view(trts[,c("plot","mean_treatment","var_treatment_2021")])
 blue_yr_trt <- blue_yr_trt %>% 
@@ -2174,7 +2202,7 @@ blue_yr_trt <- blue_yr_trt %>%
         , plot == 4|8|18|24|26 ~ -75 # for some reason the same conditional doesn't work, soft coded for progress but would love to figure out why it doesn't work
       )
   )
-unique(blue_yr_trt$mv21)
+# unique(blue_yr_trt$mv21)
 
 # view(trts[,c("plot","mean_treatment","var_treatment_2022")])
 blue_yr_trt <- blue_yr_trt %>% 
@@ -2189,7 +2217,7 @@ blue_yr_trt <- blue_yr_trt %>%
         , plot == 4|7|18|24|25 ~ -75 # for some reason the same conditional doesn't work, soft coded for progress but would love to figure out why it doesn't work
       )
   )
-unique(blue_yr_trt$mv22)
+# unique(blue_yr_trt$mv22)
 
 blue_yr_trt <- blue_yr_trt %>% 
   mutate(
@@ -2203,7 +2231,7 @@ blue_yr_trt <- blue_yr_trt %>%
         , plot == 4|8|18|24|26 ~ -75 # for some reason the same conditional doesn't work, soft coded for progress but would love to figure out why it doesn't work
       )
   )
-unique(blue_yr_trt$mv23)
+# unique(blue_yr_trt$mv23)
 
 # bring in total precip, mons_precip, and create proportional rain for monsoon and total based on treatment
 blue_yr_trt <- left_join(blue_yr_trt, year_pp, by = c("Obs_Year"="Year"))
@@ -2299,9 +2327,8 @@ plogis(fixef(mall9b))
 # highest germination (6%) is in ambient conditions
 Anova(mall9)
 
-library(emmeans)
 emmeans(mall9, ~ var_treatment:mean_treatment)
-# Can I just transform these and use them for graphing
+# Can I just transform these and use them for graphing?
 ```
 
 ## Graph germination by year and treatments
@@ -2328,7 +2355,7 @@ Plot all years together.
 
 ```{r}
 germ_all <- ggplot(germ_summary_all, aes(x=var_treatment, y = avg_germ, group = Species, fill = Species, na.rm = TRUE)) + scale_fill_manual(values=c("black","cornflowerblue")) + geom_col(position = position_dodge()) + facet_grid(. ~ mean_treatment) + labs(x = "Variance Treatment", y = "Estimated Germination Probability") + theme_bw()
-
+germ_all
 ggsave("Germ_All.jpg", germ_all, width = 7, height = 7)
 ```
 
@@ -2377,6 +2404,8 @@ ggsave("GermxObs_Year.jpg", germ_yr, width = 7, height = 12)
 ```
 
 ## Soil Moisture Model & Graph Germination Events
+
+emtrends(model, var="soilmoist", ~species) -- use this for looking at slopes of interactive model of soil moisture and species
 
 ```{r}
 # Merge germination data from major soil moisture events with soil moisture data from major events, join by Obs_Date and Plot
@@ -3198,77 +3227,77 @@ blue_yr_trt_ppdifs <- left_join(blue_yr_trt, pp_2, by = c("plot","Obs_Year"))
 #unique(pp_difs$plot)
 ```
 
+Exploratory graphs below.
+
 ```{r}
-# maybe sneak peak at a graph?
-germ_sum <- blue_yr_trt_ppdifs %>% 
-  group_by(plot, Obs_Date, Species) %>% 
+#| message: false
+
+# Look at difference in monsoon precipitation. Negative values mean year before was wetter than Observation year. Positive values indicate prior year was drier than observation year
+germ_sum_1 <- blue_yr_trt_ppdifs %>% 
+  group_by(plot, Obs_Year, Species) %>% 
   mutate(germ_prop = sum(Germ.binom)/sum(trial)) %>% 
   select(plot,
-         Obs_Date,
+         Obs_Year,
          Species,
          pp_mons_dif,
          germ_prop) %>% 
   distinct()
 
-germ_leg_plot <- ggplot(data = germ_sum, aes(x = pp_mons_dif, y = germ_prop, color = Species)) + # assign data to x- and y-axes
+germ_mons_legacy <- ggplot(data = germ_sum_1, aes(x = pp_mons_dif, y = germ_prop, color = Species)) + # assign data to x- and y-axes
   geom_point(alpha = 0.5) +    # plot it with a scatterplot, pick color of the points
   geom_smooth(method = 'lm', fill = NA, linewidth = 0.75) +
   labs(x = "Interannual difference in monsoon precipitation",    # x-axis label
        y = "Germination Proportion") + 
   scale_color_manual(values=c("black","cornflowerblue")) + 
   theme_bw()
-germ_leg_plot
+germ_mons_legacy
 
-# maybe sneak peak at a graph?
-germ_sum <- blue_yr_trt_ppdifs %>% 
-  group_by(plot, Obs_Date, Species) %>% 
+# Look at difference in total annual precipitation. Negative values mean year before was wetter than Observation year. Positive values indicate prior year was drier than observation year
+germ_sum_2 <- blue_yr_trt_ppdifs %>% 
+  group_by(plot, Obs_Year, Species) %>% 
   mutate(germ_prop = sum(Germ.binom)/sum(trial)) %>% 
   select(plot,
-         Obs_Date,
+         Obs_Year,
          Species,
          pp_dif,
          germ_prop) %>% 
   distinct()
 
-germ_leg_plot <- ggplot(data = germ_sum, aes(x = pp_dif, y = germ_prop, color = Species)) + # assign data to x- and y-axes
+germ_total_legacy <- ggplot(data = germ_sum_2, aes(x = pp_dif, y = germ_prop, color = Species)) + # assign data to x- and y-axes
   geom_point(alpha = 0.5) +    # plot it with a scatterplot, pick color of the points
   geom_smooth(method = 'lm', fill = NA, linewidth = 0.75) +
   labs(x = "Interannual difference in total annual precipitation",    # x-axis label
        y = "Germination Proportion") + 
   scale_color_manual(values=c("black","cornflowerblue")) + 
   theme_bw()
-germ_leg_plot
+germ_total_legacy
 
 # Germination increases if the prior year was drier than the current year
 
-
-germ_sum <- blue_yr_trt_ppdifs %>% 
-  group_by(plot, Obs_Year, Species) %>% 
+# Now look at binning into whiplash years (drier prior or wetter prior). Start with Monsoon
+germ_sum_3 <- blue_yr_trt_ppdifs %>% 
+  group_by(whiplash_mons, Species) %>% 
   mutate(germ_prop = sum(Germ.binom)/sum(trial)) %>% 
-  select(plot,
-         Obs_Year,
-         Species,
+  select(Species,
          whiplash_mons,
          germ_prop) %>% 
   distinct()
 
-ggplot(germ_sum, aes(x=whiplash_mons, y = germ_prop, group = Species, fill = Species, na.rm = TRUE)) + scale_fill_manual(values=c("black","cornflowerblue")) + geom_col(position = position_dodge()) +
+ggplot(germ_sum_3, aes(x=whiplash_mons, y = germ_prop, group = Species, fill = Species, na.rm = TRUE)) + scale_fill_manual(values=c("black","cornflowerblue")) + geom_col(position = position_dodge()) +
 labs(x = "Whiplash", y = "Estimated Germination Probability") + theme_bw()
-# For some reason wetter prior has germination than drier. A lot of values that fall under wetter prior are super small, like a 6 mm difference in monsoon precip
 
-germ_sum <- blue_yr_trt_ppdifs %>% 
-  group_by(plot, Obs_Year, Species) %>% 
+# now look at whiplash categories using total precipitation
+germ_sum_4 <- blue_yr_trt_ppdifs %>% 
+  group_by(whiplash_total, Species) %>% 
   mutate(germ_prop = sum(Germ.binom)/sum(trial)) %>% 
-  select(plot,
-         Obs_Year,
-         Species,
+  select(Species,
          whiplash_total,
          germ_prop) %>% 
   distinct()
 
-ggplot(germ_sum, aes(x=whiplash_total, y = germ_prop, group = Species, fill = Species, na.rm = TRUE)) + scale_fill_manual(values=c("black","cornflowerblue")) + geom_col(position = position_dodge()) +
+ggplot(germ_sum_4, aes(x=whiplash_total, y = germ_prop, group = Species, fill = Species, na.rm = TRUE)) + scale_fill_manual(values=c("black","cornflowerblue")) + geom_col(position = position_dodge()) +
 labs(x = "Whiplash", y = "Estimated Germination Probability") + theme_bw()
-# For some reason wetter prior has germination than drier 
+
 ```
 
 ```{r}
@@ -3309,23 +3338,19 @@ blue_yr_trt_pp_cover_1 <- left_join(blue_yr_trt_ppdifs, cover_sum_Apr, by = c("p
 
 blue_yr_trt_pp_cover <- left_join(blue_yr_trt_pp_cover_1, cover_sum_Sep, by = c("plot","Obs_Year"))
 
-
-# need to make a august version and do it for biomass and see what is the best predictor
-# I think the treatment years are off because this doesn't make sense
-
-# maybe sneak peak at a graph?
-germ_sum <- blue_yr_trt_pp_cover %>%
+# Look at how april cover affects same year germination
+germ_sum_5 <- blue_yr_trt_pp_cover %>%
   filter(season.x == 2) %>% 
-  group_by(plot, Obs_Date, Species) %>% 
+  group_by(plot, Obs_Year, Species) %>% 
   mutate(germ_prop = sum(Germ.binom)/sum(trial)) %>% 
   select(plot,
-         Obs_Date,
+         Obs_Year,
          Species,
          cover_Apr,
          germ_prop) %>% 
   distinct()
 
-germ_cov_plot <- ggplot(data = germ_sum, aes(x = cover_Apr, y = germ_prop, color = Species)) + # assign data to x- and y-axes
+germ_cov_plot <- ggplot(data = germ_sum_5, aes(x = cover_Apr, y = germ_prop, color = Species)) + # assign data to x- and y-axes
   geom_point(alpha = 0.5) +    # plot it with a scatterplot, pick color of the points
   geom_smooth(method = 'lm', fill = NA, linewidth = 0.75) +
   labs(x = "Veg Cover (April)",    # x-axis label
@@ -3335,19 +3360,19 @@ germ_cov_plot <- ggplot(data = germ_sum, aes(x = cover_Apr, y = germ_prop, color
 germ_cov_plot
 ### Lower veg cover == higher germ
 
-# maybe sneak peak at a graph?
-germ_sum_S <- blue_yr_trt_pp_cover %>%
+# Look at prior year september cover and how that affects germination
+germ_sum_6 <- blue_yr_trt_pp_cover %>%
   filter(season.y == 3) %>%  
-  group_by(plot, Obs_Date, Species) %>% 
+  group_by(plot, Obs_Year, Species) %>% 
   mutate(germ_prop = sum(Germ.binom)/sum(trial)) %>% 
   select(plot,
-         Obs_Date,
+         Obs_Year,
          Species,
          cover_Sep_prior,
          germ_prop) %>% 
   distinct()
 
-germ_cov_plot_S <- ggplot(data = germ_sum_S, aes(x = cover_Sep_prior, y = germ_prop, color = Species)) + # assign data to x- and y-axes
+germ_cov_plot_S <- ggplot(data = germ_sum_6, aes(x = cover_Sep_prior, y = germ_prop, color = Species)) + # assign data to x- and y-axes
   geom_point(alpha = 0.5) +    # plot it with a scatterplot, pick color of the points
   geom_smooth(method = 'lm', fill = NA, linewidth = 0.75) +
   labs(x = "Veg Cover (September prior)",    # x-axis label
@@ -3358,11 +3383,11 @@ germ_cov_plot_S
 ### Higher veg in September year prior yields high germ next summer, inline with wetter prior monsoon years have higher germ
 ```
 
+All of these graphs makes sense except for the September prior graph. I would expect a drier prior year would have lower cover and lead to high germination. But maybe this is explained by certain species doing well in dry conditions? 
+
 ```{r}
 ## Try to find the best model to predict germination including Apr cover, September cover, proportional rainfall, total rainfall, species
-str(blue_yr_trt_pp_cover)
-
-## copy and pasted code from soil moisture section.
+# str(blue_yr_trt_pp_cover)
 
 m0 <- glm(Germ.binom ~ 1, family = binomial, data = blue_yr_trt_pp_cover)
 m1 <- glmer(Germ.binom ~ 1 + (1|Obs_Year_sc), family = binomial, data = blue_yr_trt_pp_cover)
